@@ -40,7 +40,9 @@
     <livewire:header />
 
     <main>
-        <section
+        <livewire:hero />
+
+        {{-- <section
             class="hero-mesh min-h-screen lg:min-h-[80vh] flex flex-col justify-center items-center text-center px-5 sm:px-8 relative overflow-hidden">
             <div class="max-w-4xl mx-auto z-10 py-12 lg:py-24">
                 <h1
@@ -70,7 +72,7 @@
                         fill="#FFFFFF"></path>
                 </svg>
             </div>
-        </section>
+        </section> --}}
 
         <section class="bg-white border-b border-gray-100 py-12 px-5 sm:px-8">
             <div class="max-w-6xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
@@ -169,8 +171,8 @@
                                 class="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600 mb-6">
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2"
                                     viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z">
+                                    </path>
                                 </svg>
                             </div>
                             <h3 class="text-xl font-bold text-gray-900 mb-2">Neurology</h3>
