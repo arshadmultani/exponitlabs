@@ -1,4 +1,8 @@
 {
+  "_controller-mGt1s8dJ-CiUZmuJe.js": {
+    "file": "assets/controller-mGt1s8dJ-CiUZmuJe.js",
+    "name": "controller-mGt1s8dJ"
+  },
   "_fonts-DkuEHybc.css": {
     "file": "assets/fonts-DkuEHybc.css",
     "src": "_fonts-DkuEHybc.css"
@@ -51,8 +55,17 @@
     "file": "assets/instrument-sans-600-normal-DMks36a2.woff",
     "src": "_instrument-sans-600-normal-DMks36a2.woff"
   },
+  "node_modules/mind-ar/dist/mindar-image.prod.js": {
+    "file": "assets/mindar-image.prod-K1fB_JlM.js",
+    "name": "mindar-image.prod",
+    "src": "node_modules/mind-ar/dist/mindar-image.prod.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_controller-mGt1s8dJ-CiUZmuJe.js"
+    ]
+  },
   "resources/css/app.css": {
-    "file": "assets/app-DVP4EDFI.css",
+    "file": "assets/app-SkUxrD8P.css",
     "name": "app",
     "names": [
       "app.css"
@@ -60,10 +73,37 @@
     "src": "resources/css/app.css",
     "isEntry": true
   },
+  "resources/css/ar.css": {
+    "file": "assets/ar-BD5WwtZE.css",
+    "name": "ar",
+    "names": [
+      "ar.css"
+    ],
+    "src": "resources/css/ar.css",
+    "isEntry": true
+  },
   "resources/js/app.js": {
     "file": "assets/app-34mOoJaZ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true
+  },
+  "resources/js/ar-compiler.js": {
+    "file": "assets/ar-compiler-9Sf5d_kR.js",
+    "name": "ar-compiler",
+    "src": "resources/js/ar-compiler.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "node_modules/mind-ar/dist/mindar-image.prod.js"
+    ]
+  },
+  "resources/js/ar.js": {
+    "file": "assets/ar-eN8eCT8G.js",
+    "name": "ar",
+    "src": "resources/js/ar.js",
+    "isEntry": true,
+    "imports": [
+      "_controller-mGt1s8dJ-CiUZmuJe.js"
+    ]
   }
 }

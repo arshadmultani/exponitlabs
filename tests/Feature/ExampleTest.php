@@ -1,7 +1,10 @@
 <?php
 
-test('the application returns a successful response', function () {
-    $response = $this->get('/');
+test('the health check endpoint is up', function () {
+    $this->get('/up')->assertOk();
+});
 
-    $response->assertStatus(200);
+test('the panel at / redirects guests to login', function () {
+    // Filament owns "/" and requires authentication.
+    $this->get('/')->assertRedirect();
 });
