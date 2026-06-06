@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ArController;
+use App\Http\Controllers\MicrositeController;
 
 // Public augmented-reality viewer. Filament still owns "/".
 // The QR code printed on a creative points here; only published creatives are visible.
@@ -11,3 +12,6 @@ Route::get('/ar/{creative}', [ArController::class, 'show'])->name('ar.show');
 Route::middleware('auth')
     ->post('/admin/ar/{creative}/compile', [ArController::class, 'storeMind'])
     ->name('ar.compile');
+
+// Public doctor website (microsite). Shared link / QR points here.
+Route::get('/dr/{slug}', [MicrositeController::class, 'show'])->name('microsite.show');

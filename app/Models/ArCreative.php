@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Support\Str;
 
 #[Fillable(['name', 'slug', 'marker_image_path', 'video_path', 'mind_file_path', 'tracking_score', 'status', 'play_mode'])]
 class ArCreative extends Model
