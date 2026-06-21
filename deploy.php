@@ -90,3 +90,50 @@ task('version:sync_local', function () {
     runLocally("echo '$version' > version.txt");
     writeln("Local version.txt synced to: $version");
 });
+
+// ---------------------------------------------------------------------------
+// Pull production data down to local (one-way; prod is the source of truth).
+// ---------------------------------------------------------------------------
+
+// Builds an "scp" command using the current host's SSH settings. The shared host
+// has no rsync, so Deployer's download() (rsync) can't be used — scp runs locally.
+function scpFrom(string $remotePath, string $localPath, bool $recursive = false): void
+{
+    $host = currentHost();
+    runLocally(sprintf(
+        'scp %s -P %s -i %s %s@%s:%s %s',
+        $recursive ? '-r' : '',
+        $host->get('port'),
+        $host->get('identity_file'),
+        $host->get('remote_user'),
+        $host->getHostname(),
+        $remotePath,
+        $localPath,
+    ));
+}
+
+// Overwrites local database/database.sqlite with a consistent snapshot of prod.
+task('db:pull', function () {
+    $snapshot = '/tmp/exponit-db-pull.sqlite';
+
+    // cd first so the shell expands "~" in {{deploy_path}}; then use a relative
+    // path. ".backup" takes a consistent copy even while the app is live (WAL-safe).
+    run('cd {{deploy_path}} && sqlite3 shared/database/database.sqlite ".backup \''.$snapshot.'\'"');
+    scpFrom($snapshot, 'database/database.sqlite');
+    run("rm -f $snapshot");
+
+    writeln('<info>Pulled production database → database/database.sqlite</info>');
+})->desc('Download the production SQLite database to local (overwrites local DB)');
+
+// Mirrors prod uploaded media (product/news images, etc.) into local storage.
+task('media:pull', function () {
+    runLocally('mkdir -p storage/app/public');
+    // ~ in deploy_path expands on the remote shell for scp; copy dir contents.
+    $base = currentHost()->get('deploy_path');
+    scpFrom($base.'/shared/storage/app/public/.', 'storage/app/public/', recursive: true);
+    writeln('<info>Pulled production media → storage/app/public</info>');
+})->desc('Download production uploaded media to local');
+
+// Convenience: DB + media in one go.
+task('pull', ['db:pull', 'media:pull'])
+    ->desc('Pull production database and media to local');
