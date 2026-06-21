@@ -15,9 +15,13 @@ export default defineConfig({
             ],
             refresh: true,
             fonts: [
-                bunny('Sora', { weights: [400, 500, 600, 700] }),
-                bunny('DM Sans', { weights: [400, 500, 600] }),
-                bunny('Funnel Sans', { weights: [400, 600, 700] }),
+                // No font preloads: the LCP element is text with font-display:swap,
+                // so it paints at FCP with the system fallback and swaps in later.
+                // On slow mobile links, preloading fonts only steals bandwidth from
+                // the critical CSS and delays LCP.
+                bunny('Sora', { weights: [600, 700], display: 'swap', preload: false }),
+                bunny('DM Sans', { weights: [400, 500], display: 'swap', preload: false }),
+                bunny('Funnel Sans', { weights: [400, 600], display: 'swap', preload: false }),
             ],
         }),
         tailwindcss(),

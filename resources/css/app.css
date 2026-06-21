@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
+/* Public site + microsite only. Filament ships its own compiled CSS, so we do
+   NOT scan vendor/filament here — that would bloat the public bundle. */
 @source "../views";
-@source "../../vendor/filament/**/*.blade.php";
-@source "../../vendor/livewire/**/*.blade.php";
 
 /*
  * Exponit Labs public site design tokens.
