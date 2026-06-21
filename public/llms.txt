@@ -1,0 +1,31 @@
+# Exponit Labs
+
+> Exponit Labs is a focused pharmaceutical company based in Mumbai, Maharashtra, India,
+> delivering reliable prescription products across four therapeutic areas — pain
+> management, gastro care, antibiotics and allergy treatment — through trusted,
+> quality-controlled manufacturing partnerships.
+
+Important: Products referenced are prescription medicines for use under medical
+supervision. Information is for healthcare professionals and general reference only and
+is not medical advice.
+
+## Key pages
+
+- [Home](https://exponit.com/): Overview of Exponit Labs and its product focus.
+- [About](https://exponit.com/about): Company approach — focus, quality, ethics, reliability.
+- [Products](https://exponit.com/products): Full product range, filterable by therapeutic area.
+- [News](https://exponit.com/news): Company updates, portfolio and partnership news.
+- [Contact](https://exponit.com/contact): Enquiries and partnership requests.
+
+## Therapeutic areas
+
+- Pain Management — analgesics and anti-inflammatory formulations.
+- Gastro Care — acidity, reflux and gut-health formulations.
+- Antibiotics — broad and targeted-spectrum antibacterials.
+- Allergy — antihistamines and respiratory-allergy relief.
+
+## Resources
+
+- [Sitemap](https://exponit.com/sitemap.xml)
+- [Privacy Policy](https://exponit.com/privacy-policy)
+- [Terms & Conditions](https://exponit.com/terms)

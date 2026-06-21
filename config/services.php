@@ -40,4 +40,10 @@ return [
         'chat_id' => env('TELEGRAM_BACKUP_CHAT_ID'),
     ],
 
+    // Google Analytics 4. Set GA_MEASUREMENT_ID to inject the gtag snippet
+    // on the public site; leave blank to disable (e.g. in dev/tests).
+    'ga' => [
+        'measurement_id' => env('GA_MEASUREMENT_ID'),
+    ],
+
 ];

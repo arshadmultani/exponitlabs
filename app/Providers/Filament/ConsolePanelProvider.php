@@ -24,7 +24,7 @@ class ConsolePanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('console')
-            ->path('/')
+            ->path('/console')
             ->login()
             ->passwordReset()
             ->colors([
