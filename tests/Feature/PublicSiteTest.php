@@ -111,11 +111,42 @@ it('emits sitewide and per-page JSON-LD', function () {
 
     $this->get(route('home'))
         ->assertSee('"@type":"Organization"', false)
-        ->assertSee('"@type":"WebSite"', false);
+        ->assertSee('"@type":"WebSite"', false)
+        ->assertSee('"@type":"FAQPage"', false)
+        ->assertSee('"contactPoint"', false);
 
     $this->get(route('products.show', $product))
         ->assertSee('"@type":"Product"', false)
-        ->assertSee('"@type":"BreadcrumbList"', false);
+        ->assertSee('"@type":"BreadcrumbList"', false)
+        ->assertSee('"manufacturer"', false);
+});
+
+it('shows a published news post and 404s a draft', function () {
+    $post = NewsPost::factory()->create(['title' => 'A Real Update']);
+    $draft = NewsPost::factory()->draft()->create();
+
+    $this->get(route('news.show', $post))
+        ->assertOk()
+        ->assertSee('A Real Update')
+        ->assertSee('"@type":"NewsArticle"', false);
+
+    $this->get(route('news.show', $draft))->assertNotFound();
+});
+
+it('lists news posts that link to their detail pages', function () {
+    $post = NewsPost::factory()->create();
+
+    $this->get(route('news.index'))
+        ->assertOk()
+        ->assertSee(route('news.show', $post));
+});
+
+it('includes published news in the sitemap', function () {
+    $post = NewsPost::factory()->create();
+
+    $this->get('/sitemap.xml')
+        ->assertOk()
+        ->assertSee(route('news.show', $post));
 });
 
 it('ships robots.txt and llms.txt with the right content', function () {

@@ -3,57 +3,169 @@
     "file": "assets/controller-mGt1s8dJ-CiUZmuJe.js",
     "name": "controller-mGt1s8dJ"
   },
-  "_fonts-DkuEHybc.css": {
-    "file": "assets/fonts-DkuEHybc.css",
-    "src": "_fonts-DkuEHybc.css"
+  "_dm-sans-400-normal-BjWJ59Pq.woff": {
+    "file": "assets/dm-sans-400-normal-BjWJ59Pq.woff",
+    "src": "_dm-sans-400-normal-BjWJ59Pq.woff"
   },
-  "_instrument-sans-400-normal-D1W7dsQl.woff": {
-    "file": "assets/instrument-sans-400-normal-D1W7dsQl.woff",
-    "src": "_instrument-sans-400-normal-D1W7dsQl.woff"
+  "_dm-sans-400-normal-BtiwyxMk.woff2": {
+    "file": "assets/dm-sans-400-normal-BtiwyxMk.woff2",
+    "src": "_dm-sans-400-normal-BtiwyxMk.woff2"
   },
-  "_instrument-sans-400-normal-DRC__1Mx.woff2": {
-    "file": "assets/instrument-sans-400-normal-DRC__1Mx.woff2",
-    "src": "_instrument-sans-400-normal-DRC__1Mx.woff2"
+  "_dm-sans-400-normal-BwCSEQnW.woff": {
+    "file": "assets/dm-sans-400-normal-BwCSEQnW.woff",
+    "src": "_dm-sans-400-normal-BwCSEQnW.woff"
   },
-  "_instrument-sans-400-normal-Q_nF8v4l.woff2": {
-    "file": "assets/instrument-sans-400-normal-Q_nF8v4l.woff2",
-    "src": "_instrument-sans-400-normal-Q_nF8v4l.woff2"
+  "_dm-sans-400-normal-CW0RaeGs.woff2": {
+    "file": "assets/dm-sans-400-normal-CW0RaeGs.woff2",
+    "src": "_dm-sans-400-normal-CW0RaeGs.woff2"
   },
-  "_instrument-sans-400-normal-r32jotim.woff": {
-    "file": "assets/instrument-sans-400-normal-r32jotim.woff",
-    "src": "_instrument-sans-400-normal-r32jotim.woff"
+  "_dm-sans-500-normal-B9HHJjqV.woff2": {
+    "file": "assets/dm-sans-500-normal-B9HHJjqV.woff2",
+    "src": "_dm-sans-500-normal-B9HHJjqV.woff2"
   },
-  "_instrument-sans-500-normal-CAxz3nsc.woff": {
-    "file": "assets/instrument-sans-500-normal-CAxz3nsc.woff",
-    "src": "_instrument-sans-500-normal-CAxz3nsc.woff"
+  "_dm-sans-500-normal-BJfUCQsA.woff2": {
+    "file": "assets/dm-sans-500-normal-BJfUCQsA.woff2",
+    "src": "_dm-sans-500-normal-BJfUCQsA.woff2"
   },
-  "_instrument-sans-500-normal-CTEe1bJa.woff2": {
-    "file": "assets/instrument-sans-500-normal-CTEe1bJa.woff2",
-    "src": "_instrument-sans-500-normal-CTEe1bJa.woff2"
+  "_dm-sans-500-normal-DR84L5F-.woff": {
+    "file": "assets/dm-sans-500-normal-DR84L5F-.woff",
+    "src": "_dm-sans-500-normal-DR84L5F-.woff"
   },
-  "_instrument-sans-500-normal-Dk9ku72i.woff2": {
-    "file": "assets/instrument-sans-500-normal-Dk9ku72i.woff2",
-    "src": "_instrument-sans-500-normal-Dk9ku72i.woff2"
+  "_dm-sans-500-normal-Dr3UlScf.woff": {
+    "file": "assets/dm-sans-500-normal-Dr3UlScf.woff",
+    "src": "_dm-sans-500-normal-Dr3UlScf.woff"
   },
-  "_instrument-sans-500-normal-Z6ESRlEs.woff": {
-    "file": "assets/instrument-sans-500-normal-Z6ESRlEs.woff",
-    "src": "_instrument-sans-500-normal-Z6ESRlEs.woff"
+  "_dm-sans-600-normal-4vooXBpG.woff2": {
+    "file": "assets/dm-sans-600-normal-4vooXBpG.woff2",
+    "src": "_dm-sans-600-normal-4vooXBpG.woff2"
   },
-  "_instrument-sans-600-normal-B7fBEWYG.woff2": {
-    "file": "assets/instrument-sans-600-normal-B7fBEWYG.woff2",
-    "src": "_instrument-sans-600-normal-B7fBEWYG.woff2"
+  "_dm-sans-600-normal-Aqo67rzb.woff2": {
+    "file": "assets/dm-sans-600-normal-Aqo67rzb.woff2",
+    "src": "_dm-sans-600-normal-Aqo67rzb.woff2"
   },
-  "_instrument-sans-600-normal-B9e8oLYv.woff": {
-    "file": "assets/instrument-sans-600-normal-B9e8oLYv.woff",
-    "src": "_instrument-sans-600-normal-B9e8oLYv.woff"
+  "_dm-sans-600-normal-BmdmIIQ2.woff": {
+    "file": "assets/dm-sans-600-normal-BmdmIIQ2.woff",
+    "src": "_dm-sans-600-normal-BmdmIIQ2.woff"
   },
-  "_instrument-sans-600-normal-BsaQcF38.woff2": {
-    "file": "assets/instrument-sans-600-normal-BsaQcF38.woff2",
-    "src": "_instrument-sans-600-normal-BsaQcF38.woff2"
+  "_dm-sans-600-normal-DRtaDpgU.woff": {
+    "file": "assets/dm-sans-600-normal-DRtaDpgU.woff",
+    "src": "_dm-sans-600-normal-DRtaDpgU.woff"
   },
-  "_instrument-sans-600-normal-DMks36a2.woff": {
-    "file": "assets/instrument-sans-600-normal-DMks36a2.woff",
-    "src": "_instrument-sans-600-normal-DMks36a2.woff"
+  "_fonts-CXcRqghs.css": {
+    "file": "assets/fonts-CXcRqghs.css",
+    "src": "_fonts-CXcRqghs.css"
+  },
+  "_funnel-sans-400-normal-BgdqIIMT.woff2": {
+    "file": "assets/funnel-sans-400-normal-BgdqIIMT.woff2",
+    "src": "_funnel-sans-400-normal-BgdqIIMT.woff2"
+  },
+  "_funnel-sans-400-normal-Cbx87RSP.woff": {
+    "file": "assets/funnel-sans-400-normal-Cbx87RSP.woff",
+    "src": "_funnel-sans-400-normal-Cbx87RSP.woff"
+  },
+  "_funnel-sans-400-normal-DoUbjnPF.woff2": {
+    "file": "assets/funnel-sans-400-normal-DoUbjnPF.woff2",
+    "src": "_funnel-sans-400-normal-DoUbjnPF.woff2"
+  },
+  "_funnel-sans-400-normal-lg3X1pA2.woff": {
+    "file": "assets/funnel-sans-400-normal-lg3X1pA2.woff",
+    "src": "_funnel-sans-400-normal-lg3X1pA2.woff"
+  },
+  "_funnel-sans-600-normal-BLIooA7Q.woff": {
+    "file": "assets/funnel-sans-600-normal-BLIooA7Q.woff",
+    "src": "_funnel-sans-600-normal-BLIooA7Q.woff"
+  },
+  "_funnel-sans-600-normal-C79PO7m9.woff2": {
+    "file": "assets/funnel-sans-600-normal-C79PO7m9.woff2",
+    "src": "_funnel-sans-600-normal-C79PO7m9.woff2"
+  },
+  "_funnel-sans-600-normal-CP_VrzUP.woff": {
+    "file": "assets/funnel-sans-600-normal-CP_VrzUP.woff",
+    "src": "_funnel-sans-600-normal-CP_VrzUP.woff"
+  },
+  "_funnel-sans-600-normal-JFr4uGf0.woff2": {
+    "file": "assets/funnel-sans-600-normal-JFr4uGf0.woff2",
+    "src": "_funnel-sans-600-normal-JFr4uGf0.woff2"
+  },
+  "_funnel-sans-700-normal-BmG_XEFx.woff2": {
+    "file": "assets/funnel-sans-700-normal-BmG_XEFx.woff2",
+    "src": "_funnel-sans-700-normal-BmG_XEFx.woff2"
+  },
+  "_funnel-sans-700-normal-CQdsfxpd.woff": {
+    "file": "assets/funnel-sans-700-normal-CQdsfxpd.woff",
+    "src": "_funnel-sans-700-normal-CQdsfxpd.woff"
+  },
+  "_funnel-sans-700-normal-DZ-JAr-Z.woff": {
+    "file": "assets/funnel-sans-700-normal-DZ-JAr-Z.woff",
+    "src": "_funnel-sans-700-normal-DZ-JAr-Z.woff"
+  },
+  "_funnel-sans-700-normal-zWJ0t61R.woff2": {
+    "file": "assets/funnel-sans-700-normal-zWJ0t61R.woff2",
+    "src": "_funnel-sans-700-normal-zWJ0t61R.woff2"
+  },
+  "_sora-400-normal-BmhJC382.woff": {
+    "file": "assets/sora-400-normal-BmhJC382.woff",
+    "src": "_sora-400-normal-BmhJC382.woff"
+  },
+  "_sora-400-normal-CRt88UEn.woff2": {
+    "file": "assets/sora-400-normal-CRt88UEn.woff2",
+    "src": "_sora-400-normal-CRt88UEn.woff2"
+  },
+  "_sora-400-normal-OW7qkl5a.woff": {
+    "file": "assets/sora-400-normal-OW7qkl5a.woff",
+    "src": "_sora-400-normal-OW7qkl5a.woff"
+  },
+  "_sora-400-normal-Twk1CgKs.woff2": {
+    "file": "assets/sora-400-normal-Twk1CgKs.woff2",
+    "src": "_sora-400-normal-Twk1CgKs.woff2"
+  },
+  "_sora-500-normal-01eiPEn0.woff2": {
+    "file": "assets/sora-500-normal-01eiPEn0.woff2",
+    "src": "_sora-500-normal-01eiPEn0.woff2"
+  },
+  "_sora-500-normal-B5KKQIFO.woff2": {
+    "file": "assets/sora-500-normal-B5KKQIFO.woff2",
+    "src": "_sora-500-normal-B5KKQIFO.woff2"
+  },
+  "_sora-500-normal-DwxUJRqY.woff": {
+    "file": "assets/sora-500-normal-DwxUJRqY.woff",
+    "src": "_sora-500-normal-DwxUJRqY.woff"
+  },
+  "_sora-500-normal-w58xtEt9.woff": {
+    "file": "assets/sora-500-normal-w58xtEt9.woff",
+    "src": "_sora-500-normal-w58xtEt9.woff"
+  },
+  "_sora-600-normal-1_7fyUAY.woff": {
+    "file": "assets/sora-600-normal-1_7fyUAY.woff",
+    "src": "_sora-600-normal-1_7fyUAY.woff"
+  },
+  "_sora-600-normal-Cdg4DaK0.woff2": {
+    "file": "assets/sora-600-normal-Cdg4DaK0.woff2",
+    "src": "_sora-600-normal-Cdg4DaK0.woff2"
+  },
+  "_sora-600-normal-Cue1zdhl.woff2": {
+    "file": "assets/sora-600-normal-Cue1zdhl.woff2",
+    "src": "_sora-600-normal-Cue1zdhl.woff2"
+  },
+  "_sora-600-normal-DLOJK0Ta.woff": {
+    "file": "assets/sora-600-normal-DLOJK0Ta.woff",
+    "src": "_sora-600-normal-DLOJK0Ta.woff"
+  },
+  "_sora-700-normal-9waGdLWo.woff2": {
+    "file": "assets/sora-700-normal-9waGdLWo.woff2",
+    "src": "_sora-700-normal-9waGdLWo.woff2"
+  },
+  "_sora-700-normal-BKPfQAnC.woff": {
+    "file": "assets/sora-700-normal-BKPfQAnC.woff",
+    "src": "_sora-700-normal-BKPfQAnC.woff"
+  },
+  "_sora-700-normal-DM0oy5s8.woff2": {
+    "file": "assets/sora-700-normal-DM0oy5s8.woff2",
+    "src": "_sora-700-normal-DM0oy5s8.woff2"
+  },
+  "_sora-700-normal-Oc7uZIYt.woff": {
+    "file": "assets/sora-700-normal-Oc7uZIYt.woff",
+    "src": "_sora-700-normal-Oc7uZIYt.woff"
   },
   "node_modules/mind-ar/dist/mindar-image.prod.js": {
     "file": "assets/mindar-image.prod-K1fB_JlM.js",
@@ -65,7 +177,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-2fEGHzpF.css",
+    "file": "assets/app-DtC3QttI.css",
     "name": "app",
     "names": [
       "app.css"
@@ -83,7 +195,7 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-34mOoJaZ.js",
+    "file": "assets/app-C2wk3co_.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true

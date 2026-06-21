@@ -5,16 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dr. {{ $microsite->doctor->name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Funnel+Sans:ital,wght@0,300..800;1,300..800&display=swap"
-        rel="stylesheet">
+
+    {{-- Self-hosted fonts + compiled Tailwind + bundled Alpine. No external CDNs. --}}
+    {{ Illuminate\Support\Facades\Vite::fonts() }}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
         body {
             background-color: {{ $microsite->bg_color ?? '#24669B' }};
+            font-family: "Funnel Sans", sans-serif;
         }
 
         .active-nav {

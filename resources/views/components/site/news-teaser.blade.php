@@ -26,7 +26,8 @@
                             </time>
                             <h3 class="mt-3 text-lg font-semibold text-ink">{{ $post->title }}</h3>
                             <p class="mt-2 text-sm leading-6 text-muted flex-1">{{ $post->excerpt }}</p>
-                            <a href="{{ route('news.index') }}#{{ $post->slug }}"
+                            <a href="{{ route('news.show', $post) }}"
+                                aria-label="Read more: {{ $post->title }}"
                                 class="mt-5 inline-flex items-center gap-1 text-sm font-medium text-brand">
                                 Read more
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

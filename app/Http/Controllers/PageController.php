@@ -67,6 +67,21 @@ class PageController extends Controller
         ]);
     }
 
+    public function newsShow(NewsPost $post)
+    {
+        abort_unless($post->is_published && $post->published_at && $post->published_at->lte(now()), 404);
+
+        $related = NewsPost::published()
+            ->whereKeyNot($post->getKey())
+            ->take(3)
+            ->get();
+
+        return view('pages.news.show', [
+            'post' => $post,
+            'related' => $related,
+        ]);
+    }
+
     public function contact()
     {
         return view('pages.contact');
@@ -91,11 +106,18 @@ class PageController extends Controller
             'changefreq' => 'monthly',
         ]);
 
+        $news = NewsPost::published()->get()->map(fn (NewsPost $p) => [
+            'loc' => route('news.show', $p),
+            'lastmod' => $p->updated_at?->toAtomString(),
+            'priority' => '0.6',
+            'changefreq' => 'monthly',
+        ]);
+
         // Build the XML directly — a Blade view can't safely emit the "<?xml" prolog.
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";
         $xml .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'."\n";
 
-        foreach ($static->merge($products) as $url) {
+        foreach ($static->merge($products)->merge($news) as $url) {
             $xml .= "  <url>\n";
             $xml .= '    <loc>'.htmlspecialchars($url['loc'], ENT_XML1).'</loc>'."\n";
             if (! empty($url['lastmod'])) {

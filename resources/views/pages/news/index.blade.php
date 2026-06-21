@@ -18,7 +18,8 @@
             @else
                 <div class="grid gap-6 md:grid-cols-3">
                     @foreach ($posts as $post)
-                        <article id="{{ $post->slug }}" class="flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface scroll-mt-28">
+                        <a href="{{ route('news.show', $post) }}"
+                            class="group flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition hover:-translate-y-1 hover:border-brand/40">
                             @if ($post->coverUrl())
                                 <img src="{{ $post->coverUrl() }}" alt="{{ $post->title }}" loading="lazy"
                                     class="aspect-[16/9] w-full object-cover">
@@ -29,14 +30,14 @@
                                 </time>
                                 <h2 class="mt-3 text-lg font-semibold text-ink">{{ $post->title }}</h2>
                                 <p class="mt-2 text-sm leading-6 text-muted flex-1">{{ $post->excerpt }}</p>
-                                @if ($post->body)
-                                    <details class="mt-4 group">
-                                        <summary class="cursor-pointer list-none text-sm font-medium text-brand">Read more</summary>
-                                        <div class="mt-3 prose prose-sm max-w-none text-muted">{!! $post->body !!}</div>
-                                    </details>
-                                @endif
+                                <span class="mt-5 inline-flex items-center gap-1 text-sm font-medium text-brand">
+                                    Read more
+                                    <svg class="h-4 w-4 transition group-hover:translate-x-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                    </svg>
+                                </span>
                             </div>
-                        </article>
+                        </a>
                     @endforeach
                 </div>
 

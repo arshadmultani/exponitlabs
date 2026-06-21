@@ -46,19 +46,13 @@
         </script>
     @endif
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&display=swap"
-        rel="stylesheet">
-
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('images/logo.svg') }}">
 
-    {{-- Alpine + intersect for the mobile nav and scroll-reveal (same approach as the microsite). --}}
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {{-- Self-hosted fonts: inlined @font-face + preloads (no render-blocking CDN). --}}
+    {{ Illuminate\Support\Facades\Vite::fonts() }}
 
-    @vite(['resources/css/app.css'])
+    {{-- Compiled CSS + bundled Alpine (mobile nav, scroll-reveal). No external CDNs. --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-surface text-ink antialiased pb-24 lg:pb-0">

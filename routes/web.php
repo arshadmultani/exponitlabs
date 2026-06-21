@@ -11,6 +11,7 @@ Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/products', [PageController::class, 'products'])->name('products.index');
 Route::get('/products/{product:slug}', [PageController::class, 'product'])->name('products.show');
 Route::get('/news', [PageController::class, 'news'])->name('news.index');
+Route::get('/news/{post:slug}', [PageController::class, 'newsShow'])->name('news.show');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [PageController::class, 'submitContact'])
     ->middleware(\Spatie\Honeypot\ProtectAgainstSpam::class)

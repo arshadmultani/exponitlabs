@@ -2,6 +2,10 @@
     title="Exponit Labs — Reliable Pharmaceutical Products"
     description="Exponit Labs delivers focused pharmaceutical products across pain management, gastro care, antibiotics and allergy treatment through trusted manufacturing partnerships.">
 
+    <x-slot:schema>
+        {!! \App\Support\Seo::faqPage()->toScript() !!}
+    </x-slot:schema>
+
     <x-site.hero />
 
     <x-site.therapeutic-areas :areas="$areas" />
@@ -11,6 +15,8 @@
     <x-site.science-quality />
 
     <x-site.news-teaser :posts="$news" />
+
+    <x-site.faq />
 
     <x-site.cta-band />
 
