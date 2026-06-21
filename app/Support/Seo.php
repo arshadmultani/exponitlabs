@@ -17,14 +17,24 @@ class Seo
 
     public const DESCRIPTION = 'Focused pharmaceutical products across pain management, gastro care, antibiotics and allergy treatment, through trusted manufacturing partnerships.';
 
+    /** Official profiles — used for schema sameAs (entity disambiguation) and the footer. */
+    public const SOCIALS = [
+        'instagram' => 'https://instagram.com/exponitlabs',
+        'x' => 'https://x.com/exponitlabs',
+        'facebook' => 'https://www.facebook.com/exponitlabs',
+        'linkedin' => 'https://www.linkedin.com/company/exponitlabs',
+    ];
+
     /** Sitewide company identity. */
     public static function organization(): \Spatie\SchemaOrg\Organization
     {
         return Schema::organization()
             ->name(self::NAME)
+            ->alternateName('Exponit')
             ->url(url('/'))
             ->logo(asset('images/logo.svg'))
             ->description(self::DESCRIPTION)
+            ->sameAs(array_values(self::SOCIALS))
             ->address(
                 Schema::postalAddress()
                     ->addressLocality('Mumbai')

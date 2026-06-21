@@ -8,6 +8,20 @@
                 antibiotics and allergy treatment.
             </p>
             <p class="leading-relaxed text-muted/80 mt-3">Mumbai, Maharashtra, India</p>
+
+            @php
+                // Map our social keys to Bootstrap Icons names (X's logo is "twitter-x").
+                $socialIcons = ['instagram' => 'instagram', 'x' => 'twitter-x', 'facebook' => 'facebook', 'linkedin' => 'linkedin'];
+            @endphp
+            <div class="mt-5 flex gap-3">
+                @foreach (\App\Support\Seo::SOCIALS as $name => $href)
+                    <a href="{{ $href }}" rel="me noopener" target="_blank"
+                        aria-label="Exponit Labs on {{ $name === 'x' ? 'X' : ucfirst($name) }}"
+                        class="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition hover:border-brand hover:text-brand">
+                        @svg('bi-'.$socialIcons[$name], 'h-4 w-4')
+                    </a>
+                @endforeach
+            </div>
         </div>
 
         <div>
