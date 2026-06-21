@@ -15,6 +15,7 @@ set('writable_mode', 'chmod');
 set('shared_files', [
     '.env',
     'version.txt',
+    'database/database.sqlite',
 ]);
 set('shared_dirs', [
     'storage',
