@@ -97,7 +97,7 @@ it('renders the Filament edit page with the in-browser compiler widget', functio
     $creative = makeReadyCreative();
 
     $this->actingAs($user)
-        ->get("/ar-creatives/{$creative->slug}/edit")
+        ->get("/console/ar-creatives/{$creative->slug}/edit")
         ->assertOk()
         ->assertSee('AR tracking file')
         ->assertSee('Re-compile tracking file');

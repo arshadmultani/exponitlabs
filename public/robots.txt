@@ -1,2 +1,14 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /console
+Disallow: /ar/
+Disallow: /dr/
+
+# AI answer engines are welcome to read public marketing content.
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://exponit.com/sitemap.xml
