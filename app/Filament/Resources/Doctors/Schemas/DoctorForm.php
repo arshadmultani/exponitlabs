@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Doctors\Schemas;
 
+use App\Filament\Forms\Components\LocationMapField;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -46,6 +47,15 @@ class DoctorForm
 
                         TextInput::make('town')
                             ->maxLength(255),
+
+                        Select::make('area_id')
+                            ->label('Area')
+                            ->relationship('area', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->createOptionForm([
+                                TextInput::make('name')->required()->maxLength(255),
+                            ]),
                     ]),
 
                 Section::make('Contact')
@@ -59,9 +69,20 @@ class DoctorForm
                             ->tel()
                             ->maxLength(255),
 
+                        TextInput::make('clinic_name')
+                            ->maxLength(255),
+
                         TextInput::make('address')
                             ->columnSpanFull()
                             ->maxLength(255),
+                    ]),
+
+                Section::make('Location')
+                    ->description('Drag the pin or use your current location. Coordinates are saved automatically.')
+                    ->components([
+                        LocationMapField::make('location')
+                            ->label('Map')
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Profile photo')

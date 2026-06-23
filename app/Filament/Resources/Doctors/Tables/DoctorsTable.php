@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Doctors\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -34,6 +35,12 @@ class DoctorsTable
                 TextColumn::make('town')
                     ->toggleable(),
 
+                TextColumn::make('area.name')
+                    ->label('Area')
+                    ->badge()
+                    ->toggleable()
+                    ->searchable(),
+
                 IconColumn::make('has_microsite')
                     ->label('Website')
                     ->state(fn ($record) => $record->microsite()->exists())
@@ -52,6 +59,7 @@ class DoctorsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->recordActions([
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

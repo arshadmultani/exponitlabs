@@ -21,5 +21,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Real doctor data from database/data/doctors.csv (idempotent by name).
+        $this->call(DoctorImportSeeder::class);
     }
 }
