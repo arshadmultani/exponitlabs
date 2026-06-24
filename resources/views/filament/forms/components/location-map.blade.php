@@ -24,7 +24,7 @@
         </div>
 
         <div x-ref="map"
-            style="height: {{ $getHeight() }}px;"
+            style="height: {{ $getHeight() }}px; position: relative; isolation: isolate; z-index: 0;"
             class="w-full overflow-hidden rounded-lg border border-gray-300 dark:border-gray-700"></div>
 
         <p class="mt-2 text-xs text-gray-500 dark:text-gray-400">

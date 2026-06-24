@@ -2,14 +2,12 @@
 
 namespace App\Filament\Resources\Doctors\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Table;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\ImageColumn;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
 
 class DoctorsTable
 {
@@ -18,12 +16,16 @@ class DoctorsTable
         return $table
             ->defaultSort('id', 'desc')
             ->columns([
-                ImageColumn::make('profile_photo')
-                    ->label('Photo')
-                    ->disk('public')
-                    ->circular()
-                    ->height(40),
-
+                // ImageColumn::make('profile_photo')
+                //     ->label('Photo')
+                //     ->disk('public')
+                //     ->circular()
+                //     ->height(40),
+                TextColumn::make('area.name')
+                    ->label('Area')
+                    ->badge()
+                    ->toggleable()
+                    ->searchable(),
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
@@ -35,23 +37,17 @@ class DoctorsTable
                 TextColumn::make('town')
                     ->toggleable(),
 
-                TextColumn::make('area.name')
-                    ->label('Area')
-                    ->badge()
-                    ->toggleable()
-                    ->searchable(),
+                // IconColumn::make('has_microsite')
+                //     ->label('Website')
+                //     ->state(fn ($record) => $record->microsite()->exists())
+                //     ->boolean(),
 
-                IconColumn::make('has_microsite')
-                    ->label('Website')
-                    ->state(fn ($record) => $record->microsite()->exists())
-                    ->boolean(),
-
-                TextColumn::make('status')
-                    ->badge()
-                    ->colors([
-                        'success' => 'active',
-                        'gray' => 'inactive',
-                    ]),
+                // TextColumn::make('status')
+                //     ->badge()
+                //     ->colors([
+                //         'success' => 'active',
+                //         'gray' => 'inactive',
+                //     ]),
 
                 TextColumn::make('created_at')
                     ->dateTime('M d, Y')

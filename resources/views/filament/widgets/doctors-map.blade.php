@@ -27,7 +27,7 @@
                 </span>
             </div>
 
-            <div x-ref="map" style="height: 60vh;"
+            <div x-ref="map" style="height: 60vh; position: relative; isolation: isolate; z-index: 0;"
                 class="w-full overflow-hidden rounded-xl border border-gray-300 dark:border-gray-700"></div>
         </div>
     </x-filament::section>
