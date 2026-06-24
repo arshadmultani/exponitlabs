@@ -52,8 +52,7 @@
                             <input type="number" min="0" max="100" step="0.1"
                                 x-model.number="gst_percent"
                                 class="mt-2 w-full rounded-xl border border-line bg-surface-alt px-4 py-3 text-ink outline-none focus:border-brand focus:bg-surface">
-                            <p class="mt-1 text-xs text-muted">Set per SKU (commonly 5% or 12%). Confirm the HSN rate
-                                with your CA.</p>
+                            <p class="mt-1 text-xs text-muted">Set per SKU (commonly 5% or 12%).</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-ink">Supply type</label>
@@ -227,10 +226,10 @@
                                 </dl>
                             </div>
 
-                            <p class="text-xs text-muted">
+                            {{-- <p class="text-xs text-muted">
                                 Per-unit invoice preview only — not a filing-ready document. PTR/PTS are treated as
                                 GST-inclusive (derived from MRP).
-                            </p>
+                            </p> --}}
                         </div>
                     </template>
 
