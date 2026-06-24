@@ -21,6 +21,7 @@ Route::post('/contact', [PageController::class, 'submitContact'])
 // Static regulatory pages (linked from the footer).
 Route::view('/privacy-policy', 'pages.legal.privacy')->name('privacy');
 Route::view('/terms', 'pages.legal.terms')->name('terms');
+Route::view('/refund-policy', 'pages.legal.refund')->name('refund');
 
 // PTR/PTS calculator
 Route::view('/pricing-calculator', 'pages.pricing-calculator')->name('pricing-calculator');

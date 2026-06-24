@@ -97,6 +97,7 @@ class PageController extends Controller
             ['loc' => route('contact'), 'priority' => '0.5', 'changefreq' => 'yearly'],
             ['loc' => route('privacy'), 'priority' => '0.2', 'changefreq' => 'yearly'],
             ['loc' => route('terms'), 'priority' => '0.2', 'changefreq' => 'yearly'],
+            ['loc' => route('refund'), 'priority' => '0.2', 'changefreq' => 'yearly'],
         ]);
 
         $products = Product::active()->get()->map(fn (Product $p) => [
