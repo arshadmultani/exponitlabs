@@ -149,6 +149,13 @@ it('includes published news in the sitemap', function () {
         ->assertSee(route('news.show', $post));
 });
 
+it('serves the internal pricing calculator as a noindex page', function () {
+    $this->get(route('pricing-calculator'))
+        ->assertOk()
+        ->assertSee('pharmaCalc', false)
+        ->assertSee('noindex, nofollow', false);
+});
+
 it('ships robots.txt and llms.txt with the right content', function () {
     // Static files served by the webserver, not the Laravel router — assert on disk.
     expect(file_get_contents(public_path('robots.txt')))

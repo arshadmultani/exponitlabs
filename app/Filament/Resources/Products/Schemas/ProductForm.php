@@ -44,6 +44,20 @@ class ProductForm
 
                         TextInput::make('packaging'),
 
+                        TextInput::make('mrp')
+                            ->label('MRP (₹)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('₹')
+                            ->helperText('Used by the pricing calculator.'),
+
+                        TextInput::make('unit_cost')
+                            ->label('Unit cost (₹)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('₹')
+                            ->helperText('Company cost per unit (incl. GST). Optional.'),
+
                         Textarea::make('description')
                             ->rows(4)
                             ->columnSpanFull(),

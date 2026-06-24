@@ -2,8 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ArController;
-use App\Http\Controllers\MicrositeController;
+use Spatie\Honeypot\ProtectAgainstSpam;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\MicrositeController;
 
 // Public marketing website. Filament admin lives at /console, so "/" is ours.
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -14,12 +15,15 @@ Route::get('/news', [PageController::class, 'news'])->name('news.index');
 Route::get('/news/{post:slug}', [PageController::class, 'newsShow'])->name('news.show');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [PageController::class, 'submitContact'])
-    ->middleware(\Spatie\Honeypot\ProtectAgainstSpam::class)
+    ->middleware(ProtectAgainstSpam::class)
     ->name('contact.submit');
 
 // Static regulatory pages (linked from the footer).
 Route::view('/privacy-policy', 'pages.legal.privacy')->name('privacy');
 Route::view('/terms', 'pages.legal.terms')->name('terms');
+
+// PTR/PTS calculator
+Route::view('/pricing-calculator', 'pages.pricing-calculator')->name('pricing-calculator');
 
 // SEO: XML sitemap (DIY, no package).
 Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');

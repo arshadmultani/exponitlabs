@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -23,6 +24,8 @@ class Product extends Model
         'composition',
         'strength',
         'packaging',
+        'mrp',
+        'unit_cost',
         'description',
         'image_path',
         'is_featured',
@@ -36,6 +39,8 @@ class Product extends Model
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'mrp' => 'decimal:2',
+            'unit_cost' => 'decimal:2',
         ];
     }
 
@@ -75,6 +80,11 @@ class Product extends Model
     public function therapeuticArea(): BelongsTo
     {
         return $this->belongsTo(TherapeuticArea::class);
+    }
+
+    public function pricings(): HasMany
+    {
+        return $this->hasMany(ProductPricing::class);
     }
 
     public function imageUrl(): ?string

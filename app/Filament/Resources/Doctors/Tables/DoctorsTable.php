@@ -21,15 +21,14 @@ class DoctorsTable
                 //     ->disk('public')
                 //     ->circular()
                 //     ->height(40),
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('area.name')
                     ->label('Area')
                     ->badge()
                     ->toggleable()
                     ->searchable(),
-                TextColumn::make('name')
-                    ->searchable()
-                    ->sortable(),
-
                 TextColumn::make('specialty')
                     ->toggleable()
                     ->searchable(),
