@@ -149,6 +149,13 @@ it('includes published news in the sitemap', function () {
         ->assertSee(route('news.show', $post));
 });
 
+it('shows the custom 404 page with the game', function () {
+    $this->get('/this-page-does-not-exist-xyz')
+        ->assertNotFound()
+        ->assertSee('404')
+        ->assertSee('Back to home');
+});
+
 it('serves the internal pricing calculator as a noindex page', function () {
     $this->get(route('pricing-calculator'))
         ->assertOk()
