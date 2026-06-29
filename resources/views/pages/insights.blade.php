@@ -5,16 +5,18 @@
         <div class="mx-auto max-w-7xl px-6 lg:px-12">
 
             <div class="flex flex-wrap items-end justify-between gap-4">
-                <x-site.section-heading eyebrow="Sales Audit" title="Market insights"
-                    subtitle="Pack-level secondary-sales audit. Slice by therapy, molecule, brand or company." />
-                <div class="text-right text-xs text-muted">
+                <div class="min-w-0">
+                    <x-site.section-heading eyebrow="Sales Audit" title="Market insights"
+                        subtitle="Pack-level secondary-sales audit. Slice by therapy, molecule, brand or company." />
+                </div>
+                <div class="shrink-0 text-right text-xs text-muted">
                     <div>MAT period: <span class="font-semibold text-ink">{{ $matLabel }}</span></div>
                 </div>
             </div>
 
             {{-- Filters --}}
             <div
-                class="mt-8 grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-6">
+                class="mt-8 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-6">
                 <div>
                     <label class="mb-1 block text-xs font-medium text-muted">Acute / Chronic</label>
                     <select x-model="filters.acute_chronic" @change="load()"
@@ -70,7 +72,7 @@
             </div>
 
             {{-- KPIs --}}
-            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4" :class="loading && 'opacity-50'">
+            <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4" :class="loading && 'opacity-50'">
                 <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div class="text-xs font-medium uppercase tracking-wide text-muted">MAT Value</div>
                     <div class="mt-1 text-2xl font-bold text-ink" x-text="fmt(data.kpi.mat)"></div>
@@ -119,7 +121,7 @@
             </div>
 
             {{-- Top-N tables --}}
-            <div class="mt-6 grid gap-6 lg:grid-cols-2">
+            <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <template x-for="block in topBlocks" :key="block.key">
                     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <h3 class="mb-3 text-sm font-semibold text-ink" x-text="block.title"></h3>
