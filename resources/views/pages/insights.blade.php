@@ -1,7 +1,7 @@
 <x-layouts.public title="Market Insights — Exponit Labs" description="Internal pharma sales-audit dashboard."
     robots="noindex, nofollow">
 
-    <section class="py-10 lg:py-14" x-data="insightsDashboard()" x-init="load()">
+    <section class="overflow-x-hidden py-10 lg:py-14" x-data="insightsDashboard()" x-init="load()">
         <div class="mx-auto max-w-7xl px-6 lg:px-12">
 
             <div class="flex flex-wrap items-end justify-between gap-4">
@@ -60,11 +60,11 @@
                         company</label>
                     <div class="flex gap-2">
                         <input x-model="filters.q" @keydown.enter="load()" type="search" placeholder="e.g. PARACETAMOL"
-                            class="w-full rounded-lg border-slate-300 text-sm">
+                            class="w-full min-w-0 rounded-lg border-slate-300 text-sm">
                         <button @click="load()"
-                            class="rounded-lg bg-ink px-3 text-sm font-medium text-white">Go</button>
+                            class="shrink-0 rounded-lg bg-ink px-3 text-sm font-medium text-white">Go</button>
                         <button @click="reset()"
-                            class="rounded-lg border border-slate-300 px-3 text-sm text-muted">Reset</button>
+                            class="shrink-0 rounded-lg border border-slate-300 px-3 text-sm text-muted">Reset</button>
                     </div>
                 </div>
             </div>
@@ -123,26 +123,28 @@
                 <template x-for="block in topBlocks" :key="block.key">
                     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
                         <h3 class="mb-3 text-sm font-semibold text-ink" x-text="block.title"></h3>
-                        <div class="space-y-1.5">
-                            <template x-for="(row,i) in data.top[block.key]" :key="i">
-                                <div class="relative rounded-md px-2 py-1.5">
-                                    <div class="absolute inset-y-0 left-0 rounded-md bg-brand/10"
-                                        :style="`width:${barWidth(row.mat, block.key)}%`"></div>
-                                    <div class="relative flex items-center justify-between gap-2 text-sm">
-                                        <div class="min-w-0">
-                                            <div class="truncate font-medium text-ink" x-text="row.label"></div>
-                                            <div class="truncate text-[11px] text-muted" x-text="row.sub"></div>
-                                        </div>
-                                        <div class="flex shrink-0 items-center gap-3">
-                                            <span class="font-semibold text-ink" x-text="fmt(row.mat)"></span>
-                                            <span class="w-12 text-right text-xs" :class="growthClass(row.growth)"
-                                                x-text="row.growth===null?'—':(row.growth>0?'+':'')+row.growth+'%'"></span>
+                        <div class="overflow-x-auto">
+                            <div class="w-max min-w-full space-y-1.5">
+                                <template x-for="(row,i) in data.top[block.key]" :key="i">
+                                    <div class="relative min-w-full rounded-md px-2 py-1.5">
+                                        <div class="absolute inset-y-0 left-0 rounded-md bg-brand/10"
+                                            :style="`width:${barWidth(row.mat, block.key)}%`"></div>
+                                        <div class="relative flex items-center justify-between gap-6 text-sm">
+                                            <div class="whitespace-nowrap">
+                                                <div class="font-medium text-ink" x-text="row.label"></div>
+                                                <div class="text-[11px] text-muted" x-text="row.sub"></div>
+                                            </div>
+                                            <div class="flex shrink-0 items-center gap-3 whitespace-nowrap">
+                                                <span class="font-semibold text-ink" x-text="fmt(row.mat)"></span>
+                                                <span class="w-12 text-right text-xs" :class="growthClass(row.growth)"
+                                                    x-text="row.growth===null?'—':(row.growth>0?'+':'')+row.growth+'%'"></span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </template>
-                            <p x-show="!data.top[block.key]?.length" class="py-4 text-center text-sm text-muted">No
-                                data.</p>
+                                </template>
+                                <p x-show="!data.top[block.key]?.length" class="py-4 text-center text-sm text-muted">No
+                                    data.</p>
+                            </div>
                         </div>
                     </div>
                 </template>
