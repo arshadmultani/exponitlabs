@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ArController;
 use Spatie\Honeypot\ProtectAgainstSpam;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\MicrositeController;
 
 // Public marketing website. Filament admin lives at /console, so "/" is ours.
@@ -40,3 +41,11 @@ Route::middleware('auth')
 
 // Public doctor website (microsite). Shared link / QR points here.
 Route::get('/dr/{slug}', [MicrositeController::class, 'show'])->name('microsite.show');
+
+// Internal pharma sales-audit dashboard. Reads the read-only `insights` SQLite
+// store. Kept in its own group so a gate drops in here later — add
+// ->middleware('auth') (or 'auth:web') to the group to lock it down.
+Route::prefix('insights')->name('insights.')->group(function () {
+    Route::get('/', [InsightsController::class, 'index'])->name('index');
+    Route::get('/data', [InsightsController::class, 'data'])->name('data');
+});

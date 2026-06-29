@@ -16,6 +16,9 @@ set('shared_files', [
     '.env',
     'version.txt',
     'database/database.sqlite',
+    // Read-only analytics store for /insights. Built locally, pushed up with
+    // `dep insights:push`; lives in shared/ so deploys never wipe it.
+    'database/insights.sqlite',
 ]);
 set('shared_dirs', [
     'storage',
@@ -137,3 +140,38 @@ task('media:pull', function () {
 // Convenience: DB + media in one go.
 task('pull', ['db:pull', 'media:pull'])
     ->desc('Pull production database and media to local');
+
+// ---------------------------------------------------------------------------
+// Push the locally-built insights store UP to prod. This is the one file we
+// ship local→server (it's a disposable build artifact, not prod-authored data,
+// so it can't clobber anything the server owns). Rebuild it first with:
+//   php artisan insights:import "/path/to/MONTH.xlsx"
+// ---------------------------------------------------------------------------
+
+// Uploads a local file to the host over scp (the shared host has no rsync).
+function scpTo(string $localPath, string $remotePath): void
+{
+    $host = currentHost();
+    runLocally(sprintf(
+        'scp -P %s -i %s %s %s@%s:%s',
+        $host->get('port'),
+        $host->get('identity_file'),
+        $localPath,
+        $host->get('remote_user'),
+        $host->getHostname(),
+        $remotePath,
+    ));
+}
+
+task('insights:push', function () {
+    if (! file_exists('database/insights.sqlite')) {
+        throw new \RuntimeException('database/insights.sqlite not found — run `php artisan insights:import <file.xlsx>` first.');
+    }
+    // Ensure the shared dir exists, upload to a temp name, then atomically swap
+    // so a half-uploaded file is never read by the live app.
+    run('mkdir -p {{deploy_path}}/shared/database');
+    $dest = '{{deploy_path}}/shared/database/insights.sqlite';
+    scpTo('database/insights.sqlite', parse($dest).'.tmp');
+    run("mv $dest.tmp $dest");
+    writeln('<info>Pushed insights.sqlite → production shared/database</info>');
+})->desc('Upload the locally-built insights.sqlite to production');

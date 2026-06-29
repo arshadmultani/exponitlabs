@@ -44,6 +44,21 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
+        // Read-only analytics store for the pharma sales-audit dashboard (/insights).
+        // Built locally by `php artisan insights:import` from the monthly xlsx, then
+        // shipped to shared/ on deploy. The app only ever READS this connection.
+        'insights' => [
+            'driver' => 'sqlite',
+            'url' => env('INSIGHTS_DB_URL'),
+            'database' => env('INSIGHTS_DB_DATABASE', database_path('insights.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => false,
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+            'transaction_mode' => 'DEFERRED',
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
