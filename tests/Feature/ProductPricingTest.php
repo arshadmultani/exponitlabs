@@ -19,10 +19,10 @@ it('stores the computed snapshot from the product MRP on save', function () {
     ]);
 
     expect((float) $pricing->mrp_snapshot)->toBe(120.0);
-    expect(round((float) $pricing->ptr, 2))->toBe(96.0);
-    expect(round((float) $pricing->pts, 2))->toBe(86.4);
-    expect(round((float) $pricing->effective_pts, 2))->toBe(66.46);
-    expect(round((float) $pricing->profit_per_unit, 2))->toBe(58.46);
+    expect(round((float) $pricing->ptr, 2))->toBe(91.43);
+    expect(round((float) $pricing->pts, 2))->toBe(82.29);
+    expect(round((float) $pricing->effective_pts, 2))->toBe(63.30);
+    expect(round((float) $pricing->profit_per_unit, 2))->toBe(55.30);
     expect(round((float) $pricing->mrp_to_cost_ratio, 1))->toBe(15.0);
 });
 
@@ -38,8 +38,8 @@ it('recomputes the snapshot when inputs change', function () {
         'supply_type' => 'intra_state',
     ]);
 
-    expect(round((float) $pricing->ptr, 2))->toBe(160.0); // 200 * 0.8
+    expect(round((float) $pricing->ptr, 2))->toBe(152.38); // 200/1.05 * 0.8
 
     $pricing->update(['retailer_margin_percent' => 25]);
-    expect(round((float) $pricing->ptr, 2))->toBe(150.0); // 200 * 0.75
+    expect(round((float) $pricing->ptr, 2))->toBe(142.86); // 200/1.05 * 0.75
 });

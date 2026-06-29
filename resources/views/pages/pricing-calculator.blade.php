@@ -68,7 +68,7 @@
                         <label class="block text-sm font-medium text-ink">Company unit cost (₹) <span
                                 class="text-muted">— optional</span></label>
                         <input type="number" min="0" step="0.01" x-model.number="unit_cost"
-                            placeholder="incl. GST; leave blank to skip profit"
+                            placeholder="ex-GST (net); leave blank to skip profit"
                             class="mt-2 w-full rounded-xl border border-line bg-surface-alt px-4 py-3 text-ink outline-none focus:border-brand focus:bg-surface">
                     </div>
 
@@ -206,7 +206,7 @@
                                     <div
                                         class="flex items-baseline justify-between gap-4 border-t border-white/15 pt-3">
                                         <dt class="text-white/70">Total per unit <span class="text-xs">(= PTS
-                                                ✓)</span></dt>
+                                                + GST)</span></dt>
                                         <dd class="text-lg font-semibold text-brand-light"
                                             x-text="money(r.invoiceUnitTotal)"></dd>
                                     </div>
@@ -296,7 +296,8 @@
                     if (isNaN(gst) || gst < 0) e.push('GST % cannot be negative.');
 
                     if (!e.length) {
-                        const ptr = mrp * (1 - rm / 100);
+                        const netMrp = gst > -100 ? mrp / (1 + gst / 100) : mrp;
+                        const ptr = netMrp * (1 - rm / 100);
                         const pts = ptr * (1 - sm / 100);
                         if (ptr < 0 || pts < 0) e.push('These margins make PTR or PTS negative.');
                     }
@@ -314,17 +315,19 @@
                             .unit_cost) <= 0) ?
                         null : this.num(this.unit_cost);
 
-                    const ptr = mrp * (1 - rm / 100);
+                    const netMrp = gst > -100 ? mrp / (1 + gst / 100) : mrp;
+                    const ptr = netMrp * (1 - rm / 100);
                     const pts = ptr * (1 - sm / 100);
                     const total = paid + free;
                     const effPts = total > 0 ? (paid * pts) / total : pts;
 
                     const stockistMarginPerUnit = ptr - effPts;
                     const stockistMarginPctActual = ptr ? (stockistMarginPerUnit / ptr) * 100 : 0;
-                    const retailerMarginPerUnit = mrp - ptr;
+                    const retailerMarginPerUnit = netMrp - ptr;
 
-                    const taxablePTS = pts / (1 + gst / 100);
-                    const gstAmtPTS = pts - taxablePTS;
+                    // PTS is already GST-exclusive (net) — GST is added on top at invoice.
+                    const taxablePTS = pts;
+                    const gstAmtPTS = pts * gst / 100;
 
                     const invoiceTaxable = paid * taxablePTS;
                     const invoiceGst = paid * gstAmtPTS;

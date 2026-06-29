@@ -6,8 +6,12 @@ namespace App\Support;
  * Pharma trade-pricing maths (PTR / PTS / scheme / GST / margin).
  *
  * Single source of truth for the *stored* calculation. Mirrors the client-side
- * Alpine version on the public /pricing-calculator page exactly. PTR and PTS are
- * treated as GST-INCLUSIVE (both derive from MRP, which is GST-inclusive by law).
+ * Alpine version on the public /pricing-calculator page exactly. MRP is GST-inclusive
+ * by law; GST is stripped ONCE inside PTR so PTR and PTS are GST-EXCLUSIVE (net) rates.
+ * GST is then added back on top at the invoice stage. This matches the standard
+ * PTR/PTS convention (e.g. vibcare.co.in/ptr-pts-calculator):
+ *   PTR = (MRP − MRP×RM%) / (1 + GST%)
+ *   PTS = PTR × (1 − SM%)
  */
 class PricingCalculator
 {
@@ -32,7 +36,8 @@ class PricingCalculator
             ? (float) $in['unit_cost']
             : null;
 
-        $ptr = $mrp * (1 - $rm / 100);
+        $netMrp = $gst > -100 ? $mrp / (1 + $gst / 100) : $mrp;
+        $ptr = $netMrp * (1 - $rm / 100);
         $pts = $ptr * (1 - $sm / 100);
 
         $total = $paid + $free;
@@ -40,10 +45,11 @@ class PricingCalculator
 
         $stockistMarginPerUnit = $ptr - $effPts;
         $stockistMarginPctActual = $ptr != 0.0 ? ($stockistMarginPerUnit / $ptr) * 100 : 0.0;
-        $retailerMarginPerUnit = $mrp - $ptr;
+        $retailerMarginPerUnit = $netMrp - $ptr;
 
-        $taxablePts = $gst > -100 ? $pts / (1 + $gst / 100) : $pts;
-        $gstAmtPts = $pts - $taxablePts;
+        // PTS is already GST-exclusive (net) — GST is added on top at invoice.
+        $taxablePts = $pts;
+        $gstAmtPts = $pts * $gst / 100;
 
         $invoiceTaxable = $paid * $taxablePts;
         $invoiceGst = $paid * $gstAmtPts;
