@@ -28,6 +28,7 @@ class Product extends Model
         'unit_cost',
         'description',
         'image_path',
+        'images',
         'is_featured',
         'is_active',
         'sort_order',
@@ -38,6 +39,7 @@ class Product extends Model
         return [
             'is_featured' => 'boolean',
             'is_active' => 'boolean',
+            'images' => 'array',
             'sort_order' => 'integer',
             'mrp' => 'decimal:2',
             'unit_cost' => 'decimal:2',
@@ -53,8 +55,15 @@ class Product extends Model
         });
 
         static::deleting(function (Product $product): void {
-            if ($product->image_path && Storage::disk(self::DISK)->exists($product->image_path)) {
-                Storage::disk(self::DISK)->delete($product->image_path);
+            $paths = array_merge(
+                $product->image_path ? [$product->image_path] : [],
+                $product->images ?? [],
+            );
+
+            foreach (array_unique($paths) as $path) {
+                if ($path && Storage::disk(self::DISK)->exists($path)) {
+                    Storage::disk(self::DISK)->delete($path);
+                }
             }
         });
     }
@@ -90,6 +99,27 @@ class Product extends Model
     public function imageUrl(): ?string
     {
         return $this->image_path ? Storage::disk(self::DISK)->url($this->image_path) : null;
+    }
+
+    /**
+     * Full gallery as public URLs: cover image first, then the extra images,
+     * de-duplicated. Used by the product page lightbox/thumbnail strip.
+     *
+     * @return array<int, string>
+     */
+    public function galleryUrls(): array
+    {
+        $paths = array_merge(
+            $this->image_path ? [$this->image_path] : [],
+            $this->images ?? [],
+        );
+
+        return collect($paths)
+            ->filter()
+            ->unique()
+            ->map(fn (string $path) => Storage::disk(self::DISK)->url($path))
+            ->values()
+            ->all();
     }
 
     public function scopeActive(Builder $query): Builder

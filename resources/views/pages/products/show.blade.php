@@ -21,20 +21,59 @@
                 @endif
             </nav>
 
+            @php($gallery = $product->galleryUrls())
+
             <div class="mt-8 grid lg:grid-cols-2 gap-12 items-start">
                 {{-- Visual --}}
-                <div class="overflow-hidden rounded-3xl border border-line bg-surface-alt aspect-[4/3]">
-                    @if ($product->imageUrl())
-                        <img src="{{ $product->imageUrl() }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
-                    @else
+                @if (count($gallery))
+                    <div x-data="{
+                        active: 0,
+                        images: @js($gallery),
+                        next() { this.active = (this.active + 1) % this.images.length },
+                        prev() { this.active = (this.active - 1 + this.images.length) % this.images.length },
+                    }" class="space-y-4">
+                        <div class="group relative overflow-hidden rounded-3xl border border-line bg-surface-alt aspect-[4/3]">
+                            <img :src="images[active]" alt="{{ $product->name }}"
+                                class="h-full w-full object-cover transition-opacity duration-200">
+
+                            @if (count($gallery) > 1)
+                                <button type="button" @click="prev()" aria-label="Previous image"
+                                    class="absolute left-3 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-full bg-white/85 text-ink shadow-md ring-1 ring-line backdrop-blur transition hover:bg-white hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m15 18-6-6 6-6" />
+                                    </svg>
+                                </button>
+                                <button type="button" @click="next()" aria-label="Next image"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 grid h-10 w-10 place-items-center rounded-full bg-white/85 text-ink shadow-md ring-1 ring-line backdrop-blur transition hover:bg-white hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m9 18 6-6-6-6" />
+                                    </svg>
+                                </button>
+                            @endif
+                        </div>
+
+                        @if (count($gallery) > 1)
+                            <div class="grid grid-cols-4 gap-3 sm:grid-cols-5">
+                                <template x-for="(img, i) in images" :key="i">
+                                    <button type="button" @click="active = i"
+                                        class="overflow-hidden rounded-xl border bg-surface-alt aspect-square transition"
+                                        :class="active === i ? 'border-brand ring-2 ring-brand/30' : 'border-line hover:border-brand/50'">
+                                        <img :src="img" alt="" class="h-full w-full object-cover">
+                                    </button>
+                                </template>
+                            </div>
+                        @endif
+                    </div>
+                @else
+                    <div class="overflow-hidden rounded-3xl border border-line bg-surface-alt aspect-[4/3]">
                         <div class="flex h-full w-full items-center justify-center brand-mesh">
                             <div class="rotate-[38deg] flex overflow-hidden rounded-[100px] shadow-xl">
                                 <div class="h-44 w-22 bg-gradient-to-b from-ink to-[#0E4D8D]"></div>
                                 <div class="h-44 w-22 bg-gradient-to-b from-brand to-brand-light"></div>
                             </div>
                         </div>
-                    @endif
-                </div>
+                    </div>
+                @endif
 
                 {{-- Details --}}
                 <div>

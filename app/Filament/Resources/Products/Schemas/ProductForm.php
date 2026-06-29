@@ -67,12 +67,28 @@ class ProductForm
                     ->columns(2)
                     ->components([
                         FileUpload::make('image_path')
-                            ->label('Product image')
+                            ->label('Cover image')
+                            ->helperText('Primary image — used on cards, listings and social previews.')
                             ->image()
                             ->disk('public')
                             ->directory('products/images')
                             ->visibility('public')
                             ->maxSize(4 * 1024)
+                            ->columnSpanFull(),
+
+                        FileUpload::make('images')
+                            ->label('Gallery images')
+                            ->helperText('Additional photos shown on the product page. Drag to reorder.')
+                            ->image()
+                            ->multiple()
+                            ->reorderable()
+                            ->appendFiles()
+                            ->disk('public')
+                            ->directory('products/images')
+                            ->visibility('public')
+                            ->maxSize(4 * 1024)
+                            ->maxFiles(8)
+                            ->panelLayout('grid')
                             ->columnSpanFull(),
 
                         Toggle::make('is_featured')
