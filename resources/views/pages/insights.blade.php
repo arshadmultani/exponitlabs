@@ -103,17 +103,35 @@
                     <h3 class="text-sm font-semibold text-ink">Monthly value trend</h3>
                     <span class="text-xs text-muted" x-text="trendRange()"></span>
                 </div>
-                <svg viewBox="0 0 100 34" preserveAspectRatio="none" class="h-44 w-full overflow-visible">
-                    <polyline :points="areaPath()" fill="url(#grad)" stroke="none" />
-                    <polyline :points="linePath()" fill="none" stroke="#1FB6AA" stroke-width="0.4"
-                        vector-effect="non-scaling-stroke" />
-                    <defs>
-                        <linearGradient id="grad" x1="0" x2="0" y1="0" y2="1">
-                            <stop offset="0%" stop-color="#1FB6AA" stop-opacity="0.25" />
-                            <stop offset="100%" stop-color="#1FB6AA" stop-opacity="0" />
-                        </linearGradient>
-                    </defs>
-                </svg>
+                <div class="relative h-44 touch-pan-y" @mousemove="onHover($event)" @mouseleave="hoverIndex=null"
+                    @touchstart.passive="onHover($event)" @touchmove.passive="onHover($event)"
+                    @touchend="hoverIndex=null">
+                    <svg viewBox="0 0 100 34" preserveAspectRatio="none" class="h-full w-full overflow-visible">
+                        <polyline :points="areaPath()" fill="url(#grad)" stroke="none" />
+                        <polyline :points="linePath()" fill="none" stroke="#1FB6AA" stroke-width="0.4"
+                            vector-effect="non-scaling-stroke" />
+                        <defs>
+                            <linearGradient id="grad" x1="0" x2="0" y1="0" y2="1">
+                                <stop offset="0%" stop-color="#1FB6AA" stop-opacity="0.25" />
+                                <stop offset="100%" stop-color="#1FB6AA" stop-opacity="0" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+
+                    {{-- Hover/tap readout: guide line + dot + tooltip --}}
+                    <template x-if="hoverIndex!==null && data.trend.length">
+                        <div class="pointer-events-none absolute inset-0">
+                            <div class="absolute bottom-0 top-0 w-px bg-ink/15" :style="`left:${dotLeft()}%`"></div>
+                            <div class="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-brand bg-white"
+                                :style="`left:${dotLeft()}%; top:${dotTop()}%`"></div>
+                            <div class="absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-lg bg-ink px-2 py-1 text-center text-[11px] leading-tight text-white shadow-lg"
+                                :style="`left:${tipLeft()}%; top:${Math.max(dotTop()-3,2)}%`">
+                                <div class="font-semibold" x-text="data.trend[hoverIndex].label"></div>
+                                <div class="text-brand-light" x-text="fmt(data.trend[hoverIndex].value)"></div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
                 <div class="mt-1 flex justify-between text-[10px] text-muted">
                     <span x-text="data.trend.length ? data.trend[0].label : ''"></span>
                     <span x-text="data.trend.length ? data.trend[data.trend.length-1].label : ''"></span>
@@ -236,6 +254,7 @@
                         title: 'Top therapy groups'
                     },
                 ],
+                hoverIndex: null,
 
                 groupsForSupergroup() {
                     const sg = this.filters.supergroup;
@@ -307,6 +326,29 @@
                     const pts = this._pts();
                     if (!pts.length) return '';
                     return `0,34 ${pts.map(p => p.join(',')).join(' ')} 100,34`;
+                },
+
+                // --- trend hover/tap readout ---
+                onHover(e) {
+                    const n = this.data.trend.length;
+                    if (!n) return;
+                    const point = e.touches ? e.touches[0] : e;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    let x = (point.clientX - rect.left) / rect.width;
+                    x = Math.max(0, Math.min(1, x));
+                    this.hoverIndex = Math.round(x * (n - 1));
+                },
+                dotLeft() {
+                    const n = this.data.trend.length;
+                    return n > 1 ? (this.hoverIndex / (n - 1)) * 100 : 0;
+                },
+                dotTop() {
+                    const p = this._pts()[this.hoverIndex];
+                    return p ? (p[1] / 34) * 100 : 0; // viewBox height is 34
+                },
+                tipLeft() {
+                    // keep the tooltip from spilling past the chart edges
+                    return Math.min(90, Math.max(10, this.dotLeft()));
                 },
             }));
         });
