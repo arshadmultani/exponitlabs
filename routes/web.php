@@ -45,7 +45,7 @@ Route::get('/dr/{slug}', [MicrositeController::class, 'show'])->name('microsite.
 // Internal pharma sales-audit dashboard. Reads the read-only `insights` SQLite
 // store. Kept in its own group so a gate drops in here later — add
 // ->middleware('auth') (or 'auth:web') to the group to lock it down.
-Route::prefix('insights')->name('insights.')->group(function () {
+Route::middleware('auth:web')->prefix('insights')->name('insights.')->group(function () {
     Route::get('/', [InsightsController::class, 'index'])->name('index');
     Route::get('/data', [InsightsController::class, 'data'])->name('data');
 });

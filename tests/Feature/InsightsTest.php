@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -25,10 +26,16 @@ it('renders the dashboard as a noindex internal page', function () {
         $this->markTestSkipped('insights.sqlite not built — run `php artisan insights:import`.');
     }
 
-    $this->get('/insights')
+    $this->actingAs(User::factory()->create())
+        ->get('/insights')
         ->assertOk()
         ->assertSee('Market insights')
         ->assertSee('noindex', false);
+});
+
+it('blocks guests from the gated dashboard', function () {
+    $this->get('/insights')->assertRedirect('/');
+    $this->getJson('/insights/data')->assertUnauthorized();
 });
 
 it('returns sliced KPIs + trend + top lists as JSON', function () {
@@ -36,7 +43,8 @@ it('returns sliced KPIs + trend + top lists as JSON', function () {
         $this->markTestSkipped('insights.sqlite not built — run `php artisan insights:import`.');
     }
 
-    $res = $this->getJson('/insights/data?q=PARACETAMOL');
+    $res = $this->actingAs(User::factory()->create())
+        ->getJson('/insights/data?q=PARACETAMOL');
 
     $res->assertOk()->assertJsonStructure([
         'kpi' => ['mat', 'prev', 'growth', 'share', 'packs'],
