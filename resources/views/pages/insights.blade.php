@@ -1,4 +1,4 @@
-<x-layouts.public title="Market Insights — Exponit Labs" description="Internal pharma sales-audit dashboard."
+<x-layouts.public title="Market Insights — Exponit Labs"     description="Internal pharma market intelligence dashboard — brand and molecule-level sales data, growth trends and competitive analytics for Exponit Labs." 
     robots="noindex, nofollow">
 
     <section class="overflow-x-hidden py-10 lg:py-14" x-data="insightsDashboard()" x-init="load()">

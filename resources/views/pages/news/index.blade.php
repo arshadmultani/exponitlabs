@@ -1,6 +1,6 @@
 <x-layouts.public
     title="Exponit Labs — News"
-    description="Updates from Exponit Labs on our portfolio, partnerships and people.">
+    description="Read the latest news from Exponit Labs — product launches, partnership announcements, therapeutic area insights and company updates from Mumbai.">
 
     <section class="brand-mesh">
         <div class="mx-auto max-w-7xl px-6 lg:px-12 py-20 lg:py-24">

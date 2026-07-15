@@ -1,4 +1,4 @@
-<x-layouts.public title="Terms &amp; Conditions — Exponit Labs" description="Terms and conditions for the Exponit Labs website.">
+<x-layouts.public title="Terms &amp; Conditions — Exponit Labs" description="Terms and conditions governing the use of the Exponit Labs website, including product information disclaimers and user responsibilities.">
     <section class="py-20 lg:py-28">
         <div class="mx-auto max-w-3xl px-6 lg:px-12">
             <h1 class="text-4xl font-semibold tracking-tight text-ink">Terms &amp; Conditions</h1>

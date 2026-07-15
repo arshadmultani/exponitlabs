@@ -1,6 +1,6 @@
 @props([
     'title' => 'Exponit Labs',
-    'description' => 'Exponit Labs — focused pharmaceutical products across pain management, gastro care, antibiotics and allergy treatment.',
+    'description' => 'Exponit Labs is a Mumbai-based pharmaceutical company focused on prescription medicines in pain management, gastro care, antibiotics and allergy treatment.',
     'image' => null,
     'robots' => 'index, follow',
 ])

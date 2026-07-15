@@ -1,5 +1,5 @@
 <x-layouts.public title="Pricing Calculator — Exponit Labs"
-    description="Internal trade-pricing calculator: PTR, PTS, scheme-adjusted price, GST invoice breakdown and margins."
+    description="Internal trade-pricing tool for Exponit Labs — calculate PTR, PTS, scheme-adjusted pricing, GST invoice breakdowns and profit margins for pharmaceutical products.">
     robots="noindex, nofollow">
 
     <section class="py-12 lg:py-16" x-data="pharmaCalc()">

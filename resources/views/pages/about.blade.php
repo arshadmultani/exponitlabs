@@ -1,6 +1,6 @@
 <x-layouts.public
     title="Exponit Labs — About Us"
-    description="Exponit Labs is a focused pharmaceutical company delivering reliable products across pain management, gastro care, antibiotics and allergy treatment.">
+    description="Learn about Exponit Labs — our focus on quality, ethical practices and dependable pharmaceutical supply through trusted manufacturing partnerships in India.">
 
     {{-- Page header --}}
     <section class="relative overflow-hidden brand-mesh">

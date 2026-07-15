@@ -1,6 +1,6 @@
 <x-layouts.public
     title="Exponit Labs — Contact"
-    description="Get in touch with Exponit Labs about our products or partnership opportunities.">
+    description="Contact Exponit Labs for product enquiries, partnership opportunities or general questions. Based in Mumbai, India — we respond to all professional enquiries.">
 
     <section class="brand-mesh">
         <div class="mx-auto max-w-7xl px-6 lg:px-12 py-20 lg:py-24">

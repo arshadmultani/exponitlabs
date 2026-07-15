@@ -1,5 +1,5 @@
 <x-layouts.public title="Refund &amp; Cancellation Policy — Exponit Labs"
-    description="Refund and cancellation policy for Exponit Labs.">
+    description="Exponit Labs refund and cancellation policy — eligibility criteria, process timelines and how to raise a request for eligible orders.">
     <section class="py-20 lg:py-28">
         <div class="mx-auto max-w-3xl px-6 lg:px-12">
             <h1 class="text-4xl font-semibold tracking-tight text-ink">Refund &amp; Cancellation Policy</h1>

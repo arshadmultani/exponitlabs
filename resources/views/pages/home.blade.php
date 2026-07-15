@@ -1,6 +1,6 @@
 <x-layouts.public
     title="Exponit Labs — Reliable Pharmaceutical Products"
-    description="Exponit Labs delivers focused pharmaceutical products across pain management, gastro care, antibiotics and allergy treatment through trusted manufacturing partnerships.">
+    description="Exponit Labs is a Mumbai-based pharmaceutical company with a focused range of prescription products in pain management, gastro care, antibiotics and allergy treatment.">
 
     <x-slot:schema>
         {!! \App\Support\Seo::webPage()->toScript() !!}

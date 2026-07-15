@@ -1,6 +1,6 @@
 <x-layouts.public
     title="Exponit Labs — Products"
-    description="Browse the Exponit Labs product range across pain management, gastro care, antibiotics and allergy treatment.">
+    description="Explore the Exponit Labs pharmaceutical portfolio — prescription medicines in analgesics, gastro care, antibiotics and antihistamines, filterable by therapeutic area.">
 
     {{-- Page header --}}
     <section class="brand-mesh">

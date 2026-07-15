@@ -1,4 +1,4 @@
-<x-layouts.public title="Privacy Policy — Exponit Labs" description="Privacy policy for the Exponit Labs website.">
+<x-layouts.public title="Privacy Policy — Exponit Labs" description="How Exponit Labs collects, uses and protects your personal data. Read our full privacy policy for website visitors and healthcare professionals.">
     <section class="py-20 lg:py-28">
         <div class="mx-auto max-w-3xl px-6 lg:px-12">
             <h1 class="text-4xl font-semibold tracking-tight text-ink">Privacy Policy</h1>
