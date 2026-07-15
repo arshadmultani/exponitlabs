@@ -21,7 +21,9 @@
                     Pharmaceutical Company
                 </div>
 
-                <h1 class="mt-6 text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.05] text-ink">
+                <p class="mt-6 text-sm font-semibold tracking-wide text-brand uppercase">Exponit Labs</p>
+
+                <h1 class="mt-4 text-5xl lg:text-7xl font-semibold tracking-tight leading-[1.05] text-ink">
                     Reliable<br>
                     Pharmaceutical<br>
                     Products.
@@ -32,6 +34,10 @@
                     Exponit Labs delivers focused pharmaceutical products across pain management,
                     gastro care, antibiotics and allergy treatment through trusted manufacturing
                     partnerships.
+                </p>
+
+                <p class="mt-4 text-sm text-muted/70">
+                    Visit <a href="https://exponit.com" class="underline hover:text-brand">exponit.com</a> to explore our full pharmaceutical portfolio.
                 </p>
 
                 <div class="mt-10 flex flex-wrap gap-4">

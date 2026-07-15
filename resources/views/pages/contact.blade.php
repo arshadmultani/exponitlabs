@@ -1,5 +1,5 @@
 <x-layouts.public
-    title="Contact — Exponit Labs"
+    title="Exponit Labs — Contact"
     description="Get in touch with Exponit Labs about our products or partnership opportunities.">
 
     <section class="brand-mesh">

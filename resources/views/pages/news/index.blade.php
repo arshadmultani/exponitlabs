@@ -1,5 +1,5 @@
 <x-layouts.public
-    title="News — Exponit Labs"
+    title="Exponit Labs — News"
     description="Updates from Exponit Labs on our portfolio, partnerships and people.">
 
     <section class="brand-mesh">

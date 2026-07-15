@@ -3,6 +3,7 @@
     description="Exponit Labs delivers focused pharmaceutical products across pain management, gastro care, antibiotics and allergy treatment through trusted manufacturing partnerships.">
 
     <x-slot:schema>
+        {!! \App\Support\Seo::webPage()->toScript() !!}
         {!! \App\Support\Seo::faqPage()->toScript() !!}
     </x-slot:schema>
 

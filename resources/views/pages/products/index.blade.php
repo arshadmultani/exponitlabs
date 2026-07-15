@@ -1,5 +1,5 @@
 <x-layouts.public
-    title="Products — Exponit Labs"
+    title="Exponit Labs — Products"
     description="Browse the Exponit Labs product range across pain management, gastro care, antibiotics and allergy treatment.">
 
     {{-- Page header --}}

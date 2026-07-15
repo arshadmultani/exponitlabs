@@ -34,6 +34,7 @@
     {{-- Sitewide structured data (SEO + AEO). Page-specific schema via the "schema" slot. --}}
     {!! \App\Support\Seo::organization()->toScript() !!}
     {!! \App\Support\Seo::website()->toScript() !!}
+    {!! \App\Support\Seo::siteNavigation()->toScript() !!}
     {{ $schema ?? '' }}
 
     @if ($gaId = config('services.ga.measurement_id'))

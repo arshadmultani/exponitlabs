@@ -4,7 +4,14 @@ namespace App\Support;
 
 use App\Models\NewsPost;
 use App\Models\Product;
+use Spatie\SchemaOrg\BreadcrumbList;
+use Spatie\SchemaOrg\FAQPage;
+use Spatie\SchemaOrg\NewsArticle;
+use Spatie\SchemaOrg\Organization;
 use Spatie\SchemaOrg\Schema;
+use Spatie\SchemaOrg\SiteNavigationElement;
+use Spatie\SchemaOrg\WebPage;
+use Spatie\SchemaOrg\WebSite;
 
 /**
  * Central builder for the site's JSON-LD structured data. Answer engines
@@ -57,12 +64,12 @@ class Seo
     ];
 
     /** Sitewide company identity — a rich entity to aid brand recognition. */
-    public static function organization(): \Spatie\SchemaOrg\Organization
+    public static function organization(): Organization
     {
         return Schema::organization()
             ->setProperty('@id', url('/').'#organization')
             ->name(self::NAME)
-            ->alternateName('Exponit')
+            ->alternateName(['Exponit Labs', 'Exponit', 'ExponitLabs'])
             ->url(url('/'))
             ->logo(Schema::imageObject()->url(asset('images/logo.svg')))
             ->image(asset('og-image.png'))
@@ -85,12 +92,46 @@ class Seo
     }
 
     /** Sitewide WebSite node. */
-    public static function website(): \Spatie\SchemaOrg\WebSite
+    public static function website(): WebSite
     {
         return Schema::webSite()
             ->name(self::NAME)
             ->url(url('/'))
             ->publisher(Schema::organization()->setProperty('@id', url('/').'#organization'));
+    }
+
+    /** Homepage WebPage schema — ties the brand name to the URL. */
+    public static function webPage(): WebPage
+    {
+        return Schema::webPage()
+            ->setProperty('@id', url('/').'#webpage')
+            ->name('Exponit Labs — Reliable Pharmaceutical Products')
+            ->url(url('/'))
+            ->about(Schema::organization()->setProperty('@id', url('/').'#organization'))
+            ->mainEntity(Schema::organization()->setProperty('@id', url('/').'#organization'))
+            ->publisher(Schema::organization()->setProperty('@id', url('/').'#organization'))
+            ->datePublished(now()->subYear()->toAtomString())
+            ->dateModified(now()->toAtomString());
+    }
+
+    /** Sitewide navigation structured data. */
+    public static function siteNavigation(): SiteNavigationElement
+    {
+        return Schema::siteNavigationElement()
+            ->name('Main Navigation')
+            ->url(url('/'))
+            ->hasPart(
+                collect([
+                    ['Home', route('home')],
+                    ['About', route('about')],
+                    ['Products', route('products.index')],
+                    ['News', route('news.index')],
+                    ['Contact', route('contact')],
+                ])->map(fn ($item) => Schema::siteNavigationElement()
+                    ->name($item[0])
+                    ->url($item[1])
+                )->all()
+            );
     }
 
     /** Product detail structured data. */
@@ -119,7 +160,7 @@ class Seo
     }
 
     /** Breadcrumb trail for a product page. */
-    public static function productBreadcrumb(Product $product): \Spatie\SchemaOrg\BreadcrumbList
+    public static function productBreadcrumb(Product $product): BreadcrumbList
     {
         $items = [
             ['Products', route('products.index')],
@@ -141,7 +182,7 @@ class Seo
     }
 
     /** News article structured data. */
-    public static function newsArticle(NewsPost $post): \Spatie\SchemaOrg\NewsArticle
+    public static function newsArticle(NewsPost $post): NewsArticle
     {
         $schema = Schema::newsArticle()
             ->headline($post->title)
@@ -163,7 +204,7 @@ class Seo
     }
 
     /** FAQ structured data built from the shared FAQS list. */
-    public static function faqPage(): \Spatie\SchemaOrg\FAQPage
+    public static function faqPage(): FAQPage
     {
         return Schema::fAQPage()->mainEntity(
             collect(self::FAQS)->map(fn ($faq) => Schema::question()
