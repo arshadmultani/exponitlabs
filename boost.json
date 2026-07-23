@@ -1,7 +1,11 @@
 {
     "agents": [
         "codex",
-        "copilot"
+        "copilot",
+        "gemini",
+        "kiro",
+        "opencode",
+        "claude_code"
     ],
     "cloud": false,
     "guidelines": true,

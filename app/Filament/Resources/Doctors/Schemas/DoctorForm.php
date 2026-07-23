@@ -81,8 +81,7 @@ class DoctorForm
                     ->description('Drag the pin or use your current location. Coordinates are saved automatically.')
                     ->components([
                         LocationMapField::make('location')
-                            ->label('Map')
-                            ->columnSpanFull(),
+                            ->height(300),
                     ]),
 
                 Section::make('Profile photo')

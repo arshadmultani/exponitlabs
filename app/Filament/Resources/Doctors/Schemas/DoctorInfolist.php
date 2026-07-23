@@ -23,7 +23,7 @@ class DoctorInfolist
                             ->disk('public')
                             ->circular()
                             ->imageHeight(96)
-                            ->defaultImageUrl(fn (Doctor $r) => 'https://ui-avatars.com/api/?name='.urlencode($r->name).'&background=random')
+                            ->defaultImageUrl(fn (?Doctor $r) => $r ? 'https://ui-avatars.com/api/?name='.urlencode($r->name).'&background=random' : null)
                             ->columnSpan(1),
 
                         TextEntry::make('name')
