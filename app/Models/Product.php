@@ -131,4 +131,9 @@ class Product extends Model
     {
         return $query->where('is_featured', true);
     }
+
+    public function dcrProducts()
+    {
+        return $this->hasMany(DCRProduct::class);
+    }
 }

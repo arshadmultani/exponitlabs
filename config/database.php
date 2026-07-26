@@ -35,7 +35,7 @@ return [
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
-            'database' => env('DB_DATABASE', database_path('database.sqlite')),
+            'database' => env('DB_DATABASE', (defined('PEST') || defined('PHPUNIT_COMPOSER_INSTALL') || (function_exists('app') && app()->runningUnitTests()) || (($_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? null) === 'testing') || str_contains($_SERVER['argv'][0] ?? '', 'pest') || str_contains($_SERVER['argv'][0] ?? '', 'phpunit') || str_contains(implode(' ', $_SERVER['argv'] ?? []), 'test')) ? database_path('testing.sqlite') : database_path('database.sqlite')),
             'prefix' => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
             'busy_timeout' => null,
