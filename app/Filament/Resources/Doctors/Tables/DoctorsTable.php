@@ -15,6 +15,11 @@ class DoctorsTable
     {
         return $table
             ->defaultSort('id', 'desc')
+            ->paginated([
+                50, 100, 150, 200,
+            ])
+            ->defaultSort('name', 'asc')
+            ->extremePaginationLinks()
             ->columns([
                 // ImageColumn::make('profile_photo')
                 //     ->label('Photo')
@@ -29,13 +34,9 @@ class DoctorsTable
                     ->badge()
                     ->toggleable()
                     ->searchable(),
-                TextColumn::make('specialty')
-                    ->toggleable()
-                    ->searchable(),
 
                 TextColumn::make('town')
                     ->toggleable(),
-
                 // IconColumn::make('has_microsite')
                 //     ->label('Website')
                 //     ->state(fn ($record) => $record->microsite()->exists())
@@ -51,7 +52,8 @@ class DoctorsTable
                 TextColumn::make('created_at')
                     ->dateTime('M d, Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Added On')
+                    ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->recordActions([
                 ViewAction::make(),

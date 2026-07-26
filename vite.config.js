@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/css/ar.css',
                 'resources/js/ar.js',
                 'resources/js/ar-compiler.js',
+                'resources/css/filament/console/theme.css',
             ],
             refresh: true,
             fonts: [

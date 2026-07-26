@@ -1,0 +1,17 @@
+@import "../../../../vendor/filament/filament/resources/css/theme.css";
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+.fi-main {
+    @apply p-3;
+}
+.fi-section-content {
+    @apply p-4;
+}
+.fi-ta-header {
+    @apply px-4 py-3;
+}
+.fi-fo-component-ctn {
+    @apply gap-3;
+}
