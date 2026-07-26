@@ -39,6 +39,8 @@ class DCRResource extends Resource
 
     protected static ?string $pluralModelLabel = 'DCR';
 
+    protected static ?string $slug = 'dcrs';
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::Newspaper;
 
     public static function form(Schema $schema): Schema
@@ -196,9 +198,9 @@ class DCRResource extends Resource
                 //
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
+                ViewAction::make()->label(''),
+                EditAction::make()->label(''),
+                DeleteAction::make()->label(''),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

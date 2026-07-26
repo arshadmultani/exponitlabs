@@ -15,6 +15,9 @@ class ManageDCRS extends ManageRecords
     {
         return [
             CreateAction::make()
+                ->label('DCR')
+                ->icon('heroicon-o-plus')
+                ->outlined()
                 ->after(function (DCR $record, array $data): void {
                     if (! empty($data['products']) && is_array($data['products'])) {
                         foreach ($data['products'] as $productId => $quantity) {
