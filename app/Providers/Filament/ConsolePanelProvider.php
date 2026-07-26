@@ -51,7 +51,7 @@ class ConsolePanelProvider extends PanelProvider
             ->brandLogo(fn () => view('filament.admin.logo'))
             ->brandLogoHeight('1.5rem')
             ->favicon(asset('images/logo.svg'))
-            ->font('Poppins')
+            ->font('Inter')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
 

@@ -2,23 +2,26 @@
 
 namespace App\Filament\Resources\Areas;
 
-use App\Filament\Resources\Areas\Pages\CreateArea;
+use UnitEnum;
+use BackedEnum;
+use App\Models\Area;
+use Filament\Tables\Table;
+use Filament\Schemas\Schema;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
 use App\Filament\Resources\Areas\Pages\EditArea;
 use App\Filament\Resources\Areas\Pages\ListAreas;
+use App\Filament\Resources\Areas\Pages\CreateArea;
 use App\Filament\Resources\Areas\Schemas\AreaForm;
 use App\Filament\Resources\Areas\Tables\AreasTable;
-use App\Models\Area;
-use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
 
 class AreaResource extends Resource
 {
     protected static ?string $model = Area::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMapPin;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Geography';
 
     protected static ?string $recordTitleAttribute = 'name';
 

@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Doctors\Tables;
 
 use Filament\Tables\Table;
 use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
@@ -31,23 +30,13 @@ class DoctorsTable
                     ->sortable(),
                 TextColumn::make('area.name')
                     ->label('Area')
-                    ->badge()
                     ->toggleable()
+                    ->default('NA')
                     ->searchable(),
 
-                TextColumn::make('town')
-                    ->toggleable(),
-                // IconColumn::make('has_microsite')
-                //     ->label('Website')
-                //     ->state(fn ($record) => $record->microsite()->exists())
-                //     ->boolean(),
-
-                // TextColumn::make('status')
-                //     ->badge()
-                //     ->colors([
-                //         'success' => 'active',
-                //         'gray' => 'inactive',
-                //     ]),
+                TextColumn::make('area.headquarter.name')
+                    ->toggleable()
+                    ->limit(50),
 
                 TextColumn::make('created_at')
                     ->dateTime('M d, Y')
@@ -56,8 +45,7 @@ class DoctorsTable
                     ->toggleable(isToggledHiddenByDefault: false),
             ])
             ->recordActions([
-                ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()->label(''),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

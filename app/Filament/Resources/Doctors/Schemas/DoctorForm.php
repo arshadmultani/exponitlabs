@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Doctors\Schemas;
 
-use App\Filament\Forms\Components\LocationMapField;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
+use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use App\Filament\Forms\Components\LocationMapField;
 
 class DoctorForm
 {
@@ -52,9 +52,15 @@ class DoctorForm
                             ->label('Area')
                             ->relationship('area', 'name')
                             ->searchable()
+                            ->required()
                             ->preload()
                             ->createOptionForm([
                                 TextInput::make('name')->required()->maxLength(255),
+                                Select::make('headquarter_id')
+                                    ->label('Headquarter')
+                                    ->relationship('headquarter', 'name')
+                                    ->searchable()
+                                    ->preload(),
                             ]),
                     ]),
 

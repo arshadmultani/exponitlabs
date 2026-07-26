@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources\Areas\Pages;
 
-use App\Filament\Resources\Areas\AreaResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\Areas\AreaResource;
 
 class EditArea extends EditRecord
 {
@@ -15,5 +15,10 @@ class EditArea extends EditRecord
         return [
             DeleteAction::make(),
         ];
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
     }
 }

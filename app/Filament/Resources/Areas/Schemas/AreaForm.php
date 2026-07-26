@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources\Areas\Schemas;
 
-use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 
 class AreaForm
 {
@@ -19,6 +20,11 @@ class AreaForm
                     ->helperText('Leave blank to generate from the name.')
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
+                Select::make('headquarter_id')
+                    ->relationship('headquarter', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required(),
             ]);
     }
 }
