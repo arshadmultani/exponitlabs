@@ -13,16 +13,47 @@ export async function syncMasterData() {
     
     const data = await response.json();
     
+    // On full master sync, preserve pending outbox doctors and clear stale cached master tables
+    if (!lastSync) {
+      const pendingDocs = await db.doctor_outbox.where('sync_status').equals('pending').toArray();
+      await db.doctors.clear();
+      if (pendingDocs.length > 0) {
+        await db.doctors.bulkPut(pendingDocs);
+      }
+
+      if (data.areas && data.areas.length > 0) {
+        await db.areas.clear();
+      }
+      if (data.headquarters && data.headquarters.length > 0) {
+        await db.headquarters.clear();
+      }
+      if (data.products && data.products.length > 0) {
+        await db.products.clear();
+      }
+      if (data.promotional_inputs && data.promotional_inputs.length > 0) {
+        await db.promotional_inputs.clear();
+      }
+    }
+
     if (data.doctors && data.doctors.length > 0) {
-      const docsToPut = data.doctors.map(doc => ({
-        ...doc,
-        sync_status: 'synced'
-      }));
-      await db.doctors.bulkPut(docsToPut);
+      const docMap = new Map();
+      data.doctors.forEach(doc => {
+        if (doc.uuid) {
+          docMap.set(doc.uuid, {
+            ...doc,
+            sync_status: 'synced'
+          });
+        }
+      });
+      await db.doctors.bulkPut(Array.from(docMap.values()));
     }
 
     if (data.areas && data.areas.length > 0) {
       await db.areas.bulkPut(data.areas);
+    }
+
+    if (data.headquarters && data.headquarters.length > 0) {
+      await db.headquarters.bulkPut(data.headquarters);
     }
     
     if (data.products && data.products.length > 0) {

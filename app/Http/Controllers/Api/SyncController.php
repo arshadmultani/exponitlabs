@@ -8,6 +8,7 @@ use App\Models\DCR;
 use App\Models\DCRProduct;
 use App\Models\DCRPromotionalInput;
 use App\Models\Doctor;
+use App\Models\Headquarter;
 use App\Models\Product;
 use App\Models\PromotionalInput;
 use Illuminate\Http\JsonResponse;
@@ -60,7 +61,8 @@ class SyncController extends Controller
             return $doc;
         });
 
-        $areas = Area::get(['id', 'name', 'slug']);
+        $areas = Area::get(['id', 'name', 'slug', 'headquarter_id']);
+        $headquarters = Headquarter::get(['id', 'name']);
 
         $products = $productsQuery->get([
             'id',
@@ -104,6 +106,7 @@ class SyncController extends Controller
             'server_time' => now()->toIso8601String(),
             'doctors' => $doctors,
             'areas' => $areas,
+            'headquarters' => $headquarters,
             'products' => $products,
             'promotional_inputs' => $promotionalInputs,
             'visit_history' => $recentDcrs,

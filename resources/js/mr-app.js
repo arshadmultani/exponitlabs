@@ -185,9 +185,13 @@ export function registerMrComponents(Alpine) {
   // Offline Doctor Directory Component
   Alpine.data('doctorListApp', () => ({
     doctors: [],
+    areas: [],
+    headquarters: [],
     search: '',
-    specialtyFilter: '',
-    specialties: [],
+    hqFilter: '',
+    areaFilter: '',
+    areaNames: [],
+    hqNames: [],
 
     async init() {
       await this.loadDoctors();
@@ -203,12 +207,61 @@ export function registerMrComponents(Alpine) {
     },
 
     async loadDoctors() {
-      this.doctors = await db.doctors.toArray();
-      const set = new Set();
-      this.doctors.forEach(d => {
-        if (d.specialty) set.add(d.specialty);
+      const rawDocs = await db.doctors.toArray();
+      const areasList = await db.areas.toArray();
+      const hqList = await db.headquarters.toArray();
+
+      this.areas = areasList;
+      this.headquarters = hqList;
+
+      const areaMap = new Map(areasList.map(a => [a.id, a]));
+      const hqMap = new Map(hqList.map(h => [h.id, h.name]));
+
+      const areaSet = new Set();
+      const docMap = new Map();
+
+      rawDocs.forEach(d => {
+        const key = d.uuid || (d.id ? 'id_' + d.id : null) || d.name;
+        if (!key || docMap.has(key)) return;
+
+        const areaObj = areaMap.get(d.area_id);
+        const areaName = areaObj ? areaObj.name : (d.town || '');
+        const hqId = areaObj ? areaObj.headquarter_id : null;
+        const hqName = hqId ? (hqMap.get(hqId) || '') : '';
+
+        if (areaName) areaSet.add(areaName);
+
+        docMap.set(key, {
+          ...d,
+          area_name: areaName,
+          hq_name: hqName
+        });
       });
-      this.specialties = Array.from(set);
+
+      this.doctors = Array.from(docMap.values());
+      this.areaNames = Array.from(areaSet).sort();
+      this.hqNames = hqList.map(h => h.name).sort();
+    },
+
+    get visibleAreaNames() {
+      if (!this.hqFilter) {
+        return this.areaNames;
+      }
+      const hqObj = this.headquarters.find(h => h.name === this.hqFilter);
+      if (!hqObj) return this.areaNames;
+
+      const validAreaNames = new Set(
+        this.areas
+          .filter(a => a.headquarter_id === hqObj.id)
+          .map(a => a.name)
+      );
+
+      return this.areaNames.filter(name => validAreaNames.has(name));
+    },
+
+    setHqFilter(hq) {
+      this.hqFilter = hq;
+      this.areaFilter = '';
     },
 
     get filteredDoctors() {
@@ -216,14 +269,17 @@ export function registerMrComponents(Alpine) {
       return this.doctors.filter(doc => {
         const matchesQuery = !q || 
           (doc.name && doc.name.toLowerCase().includes(q)) ||
+          (doc.area_name && doc.area_name.toLowerCase().includes(q)) ||
+          (doc.hq_name && doc.hq_name.toLowerCase().includes(q)) ||
           (doc.specialty && doc.specialty.toLowerCase().includes(q)) ||
           (doc.town && doc.town.toLowerCase().includes(q)) ||
           (doc.address && doc.address.toLowerCase().includes(q)) ||
           (doc.phone && doc.phone.includes(q));
 
-        const matchesSpecialty = !this.specialtyFilter || doc.specialty === this.specialtyFilter;
+        const matchesHq = !this.hqFilter || doc.hq_name === this.hqFilter;
+        const matchesArea = !this.areaFilter || doc.area_name === this.areaFilter;
 
-        return matchesQuery && matchesSpecialty;
+        return matchesQuery && matchesHq && matchesArea;
       });
     }
   }));
