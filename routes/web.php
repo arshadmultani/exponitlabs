@@ -1,11 +1,14 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ArController;
-use Spatie\Honeypot\ProtectAgainstSpam;
-use App\Http\Controllers\PageController;
 use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\MicrositeController;
+use App\Http\Controllers\MR\MRAuthController;
+use App\Http\Controllers\MR\MRDcrController;
+use App\Http\Controllers\MR\MRDoctorController;
+use App\Http\Controllers\PageController;
+use Illuminate\Support\Facades\Route;
+use Spatie\Honeypot\ProtectAgainstSpam;
 
 // Public marketing website. Filament admin lives at /console, so "/" is ours.
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -48,4 +51,17 @@ Route::get('/dr/{slug}', [MicrositeController::class, 'show'])->name('microsite.
 Route::middleware('auth:web')->prefix('insights')->name('insights.')->group(function () {
     Route::get('/', [InsightsController::class, 'index'])->name('index');
     Route::get('/data', [InsightsController::class, 'data'])->name('data');
+});
+
+// MR Field App Auth Routes
+Route::get('/mr/login', [MRAuthController::class, 'showLogin'])->name('mr.login');
+Route::post('/mr/login', [MRAuthController::class, 'login'])->name('mr.login.submit');
+Route::post('/mr/logout', [MRAuthController::class, 'logout'])->name('mr.logout');
+
+// MR Offline-First Field App Routes
+Route::middleware('auth:web')->prefix('mr')->name('mr.')->group(function () {
+    Route::get('/dcr', [MRDcrController::class, 'index'])->name('dcr');
+    Route::get('/doctors', [MRDoctorController::class, 'index'])->name('doctors.index');
+    Route::get('/doctors/create', [MRDoctorController::class, 'create'])->name('doctors.create');
+    Route::get('/doctors/{uuid}', [MRDoctorController::class, 'show'])->name('doctors.show');
 });

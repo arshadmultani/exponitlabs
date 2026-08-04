@@ -11,9 +11,14 @@ class DCR extends Model
     use HasFactory;
 
     protected $fillable = [
+        'uuid',
         'date',
         'doctor_id',
         'remarks',
+    ];
+
+    protected $casts = [
+        'date' => 'date',
     ];
 
     public function doctor()

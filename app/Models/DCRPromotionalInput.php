@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class DCRPromotionalInput extends Model
 {
     protected $fillable = [
+        'dcr_id',
         'promotional_input_id',
         'quantity',
     ];

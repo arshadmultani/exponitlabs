@@ -1,7 +1,14 @@
 {
-  "_controller-mGt1s8dJ-kGkltNYp.js": {
-    "file": "assets/controller-mGt1s8dJ-kGkltNYp.js",
-    "name": "controller-mGt1s8dJ"
+  "_chunk-CTwcfK67.js": {
+    "file": "assets/chunk-CTwcfK67.js",
+    "name": "chunk"
+  },
+  "_controller-mGt1s8dJ-OkocqS4l.js": {
+    "file": "assets/controller-mGt1s8dJ-OkocqS4l.js",
+    "name": "controller-mGt1s8dJ",
+    "imports": [
+      "_chunk-CTwcfK67.js"
+    ]
   },
   "_dm-sans-400-normal-BjWJ59Pq.woff": {
     "file": "assets/dm-sans-400-normal-BjWJ59Pq.woff",
@@ -104,16 +111,16 @@
     "src": "_sora-700-normal-Oc7uZIYt.woff"
   },
   "node_modules/mind-ar/dist/mindar-image.prod.js": {
-    "file": "assets/mindar-image.prod-BSXfxmUi.js",
+    "file": "assets/mindar-image.prod-unmeMmgS.js",
     "name": "mindar-image.prod",
     "src": "node_modules/mind-ar/dist/mindar-image.prod.js",
     "isDynamicEntry": true,
     "imports": [
-      "_controller-mGt1s8dJ-kGkltNYp.js"
+      "_controller-mGt1s8dJ-OkocqS4l.js"
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-De3Mx1zP.css",
+    "file": "assets/app-TUm-NPzd.css",
     "name": "app",
     "names": [
       "app.css"
@@ -131,7 +138,7 @@
     "isEntry": true
   },
   "resources/css/filament/console/theme.css": {
-    "file": "assets/theme-qWTYcmPC.css",
+    "file": "assets/theme-ClUKKloE.css",
     "name": "theme",
     "names": [
       "theme.css"
@@ -140,13 +147,16 @@
     "isEntry": true
   },
   "resources/js/app.js": {
-    "file": "assets/app-C2wk3co_.js",
+    "file": "assets/app-BGevNB_2.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_chunk-CTwcfK67.js"
+    ]
   },
   "resources/js/ar-compiler.js": {
-    "file": "assets/ar-compiler-D-py7MXo.js",
+    "file": "assets/ar-compiler-9btyehEN.js",
     "name": "ar-compiler",
     "src": "resources/js/ar-compiler.js",
     "isEntry": true,
@@ -155,12 +165,12 @@
     ]
   },
   "resources/js/ar.js": {
-    "file": "assets/ar-BzNKw0QT.js",
+    "file": "assets/ar-9WL3ZKg-.js",
     "name": "ar",
     "src": "resources/js/ar.js",
     "isEntry": true,
     "imports": [
-      "_controller-mGt1s8dJ-kGkltNYp.js"
+      "_controller-mGt1s8dJ-OkocqS4l.js"
     ]
   }
 }
