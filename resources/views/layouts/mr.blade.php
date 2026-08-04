@@ -9,6 +9,10 @@
 
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="apple-touch-icon" href="/icon-192.png">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -70,12 +74,21 @@
     <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 py-2 shadow-lg">
         <div class="max-w-xl mx-auto flex items-center justify-around">
             <a href="{{ route('mr.dcr') }}"
-                class="flex flex-col items-center py-1 px-3 text-xs font-medium transition-colors {{ request()->routeIs('mr.dcr') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
+                class="flex flex-col items-center py-1 px-2.5 text-xs font-medium transition-colors {{ request()->routeIs('mr.dcr') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
                 <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
-                <span>DCR Entry</span>
+                <span>Fill DCR</span>
+            </a>
+
+            <a href="{{ route('mr.dcrs.index') }}"
+                class="flex flex-col items-center py-1 px-2.5 text-xs font-medium transition-colors {{ request()->routeIs('mr.dcrs.index') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
+                <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>DCR Logs</span>
             </a>
 
             <a href="{{ route('mr.doctors.index') }}"

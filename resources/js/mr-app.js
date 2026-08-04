@@ -491,4 +491,105 @@ export function registerMrComponents(Alpine) {
       }, 800);
     }
   }));
+
+  // Offline DCR History Directory Component
+  Alpine.data('dcrListApp', () => ({
+    dcrs: [],
+    search: '',
+    dateFilter: new Date().toISOString().split('T')[0],
+    availableDates: [],
+
+    async init() {
+      await this.loadDcrs();
+
+      if (this.dcrs.length === 0 && navigator.onLine) {
+        await runFullSync();
+        await this.loadDcrs();
+      }
+
+      window.addEventListener('mr-sync-completed', async () => {
+        await this.loadDcrs();
+      });
+    },
+
+    async loadDcrs() {
+      const historyVisits = await db.visit_history.toArray();
+      const outboxDcrs = await db.dcr_outbox.toArray();
+
+      const combinedMap = new Map();
+
+      // Load server visit history first
+      historyVisits.forEach(v => {
+        const key = v.uuid || (v.id ? 'id_' + v.id : null);
+        if (key) {
+          combinedMap.set(key, {
+            key: key,
+            date: v.date,
+            doctor_name: v.doctor_name || 'Doctor',
+            remarks: v.remarks || '',
+            status: 'synced',
+            products_count: (v.products ? v.products.length : 0),
+            inputs_count: (v.inputs ? v.inputs.length : 0)
+          });
+        }
+      });
+
+      // Load local outbox DCRs (which override or add pending DCRs)
+      outboxDcrs.forEach(o => {
+        const key = o.client_uuid;
+        combinedMap.set(key, {
+          key: key,
+          date: o.date,
+          doctor_name: o.doctor_name || 'Doctor',
+          remarks: o.remarks || '',
+          status: o.status || 'pending',
+          products_count: (o.products ? o.products.length : 0),
+          inputs_count: (o.promotional_inputs ? o.promotional_inputs.length : 0)
+        });
+      });
+
+      this.dcrs = Array.from(combinedMap.values()).sort((a, b) => (b.date > a.date ? 1 : -1));
+
+      // Build date filter list (Today + recent backdates)
+      const todayStr = new Date().toISOString().split('T')[0];
+      const dateSet = new Set([todayStr]);
+
+      for (let i = 1; i <= 14; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dateSet.add(d.toISOString().split('T')[0]);
+      }
+
+      this.dcrs.forEach(d => {
+        if (d.date) dateSet.add(d.date);
+      });
+
+      this.availableDates = Array.from(dateSet).sort((a, b) => (b > a ? 1 : -1));
+    },
+
+    formatDateLabel(dateStr) {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      if (dateStr === todayStr) return 'Today (' + dateStr + ')';
+      if (dateStr === yesterdayStr) return 'Yesterday (' + dateStr + ')';
+      return dateStr;
+    },
+
+    get filteredDcrs() {
+      const q = this.search.toLowerCase().trim();
+      return this.dcrs.filter(dcr => {
+        const matchesQuery = !q || 
+          (dcr.doctor_name && dcr.doctor_name.toLowerCase().includes(q)) ||
+          (dcr.remarks && dcr.remarks.toLowerCase().includes(q)) ||
+          (dcr.date && dcr.date.includes(q));
+
+        const matchesDate = !this.dateFilter || dcr.date === this.dateFilter;
+
+        return matchesQuery && matchesDate;
+      });
+    }
+  }));
 }

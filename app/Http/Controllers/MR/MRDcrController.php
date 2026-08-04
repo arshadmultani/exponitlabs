@@ -11,4 +11,9 @@ class MRDcrController extends Controller
     {
         return view('mr.dcr');
     }
+
+    public function history(): View
+    {
+        return view('mr.dcrs.index');
+    }
 }

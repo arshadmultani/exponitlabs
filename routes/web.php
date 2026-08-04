@@ -61,6 +61,7 @@ Route::post('/mr/logout', [MRAuthController::class, 'logout'])->name('mr.logout'
 // MR Offline-First Field App Routes
 Route::middleware('auth:web')->prefix('mr')->name('mr.')->group(function () {
     Route::get('/dcr', [MRDcrController::class, 'index'])->name('dcr');
+    Route::get('/dcrs', [MRDcrController::class, 'history'])->name('dcrs.index');
     Route::get('/doctors', [MRDoctorController::class, 'index'])->name('doctors.index');
     Route::get('/doctors/create', [MRDoctorController::class, 'create'])->name('doctors.create');
     Route::get('/doctors/{uuid}', [MRDoctorController::class, 'show'])->name('doctors.show');
