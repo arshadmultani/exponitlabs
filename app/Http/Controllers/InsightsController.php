@@ -95,10 +95,10 @@ class InsightsController extends Controller
             ],
             'trend' => $trend,
             'top' => [
-                'molecule' => $this->topBy($db, ['molecule_desc'], $whereSql, $bindings, $universe),
-                'brand' => $this->topBy($db, ['brands', 'company'], $whereSql, $bindings, $universe),
-                'company' => $this->topBy($db, ['company', 'indian_mnc'], $whereSql, $bindings, $universe),
-                'group' => $this->topBy($db, ['supergroup'], $whereSql, $bindings, $universe),
+                'molecule' => $this->topBy($db, ['molecule_desc'], $whereSql, $bindings, $universe, 10),
+                'brand' => $this->topBy($db, ['brands', 'company'], $whereSql, $bindings, $universe, 50),
+                'company' => $this->topBy($db, ['company', 'indian_mnc'], $whereSql, $bindings, $universe, 10),
+                'group' => $this->topBy($db, ['supergroup'], $whereSql, $bindings, $universe, 10),
             ],
             'packs' => $db->select(
                 "SELECT molecule_desc, brands, pack_desc, company, mat_value,
@@ -110,7 +110,7 @@ class InsightsController extends Controller
     }
 
     /** Top-N rollup for a set of dimension columns over the filtered universe. */
-    private function topBy($db, array $dims, string $whereSql, array $bindings, float $universe): array
+    private function topBy($db, array $dims, string $whereSql, array $bindings, float $universe, int $limit = 10): array
     {
         $sel = implode(', ', array_map(fn ($d) => "\"{$d}\"", $dims));
         $rows = $db->select(
@@ -119,7 +119,7 @@ class InsightsController extends Controller
              FROM packs {$whereSql}
              GROUP BY {$sel}
              ORDER BY mat DESC
-             LIMIT 12",
+             LIMIT {$limit}",
             $bindings
         );
 

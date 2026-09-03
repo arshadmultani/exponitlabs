@@ -1,6 +1,7 @@
 <?php
 
 use App\Filament\Resources\DCRS\Pages\ManageDCRS;
+use App\Models\Area;
 use App\Models\DCR;
 use App\Models\DCRProduct;
 use App\Models\DCRPromotionalInput;
@@ -62,4 +63,31 @@ test('it displays dcr details in view action infolist', function () {
     Livewire::test(ManageDCRS::class)
         ->mountTableAction('view', $dcr)
         ->assertHasNoTableActionErrors();
+});
+
+test('it displays doctor area and town below doctor name in table and select options', function () {
+    $user = User::factory()->create();
+    $area = Area::create(['name' => 'Downtown Hub']);
+    $doctorWithBoth = Doctor::factory()->create([
+        'name' => 'Dr. Jane Doe',
+        'area_id' => $area->id,
+        'town' => 'Metropolis',
+    ]);
+    $doctorWithTownOnly = Doctor::factory()->create([
+        'name' => 'Dr. John Smith',
+        'area_id' => null,
+        'town' => 'Gotham',
+    ]);
+    $dcr1 = DCR::factory()->create(['doctor_id' => $doctorWithBoth->id]);
+    $dcr2 = DCR::factory()->create(['doctor_id' => $doctorWithTownOnly->id]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ManageDCRS::class)
+        ->assertCanSeeTableRecords([$dcr1, $dcr2])
+        ->assertSee('Downtown Hub, Metropolis')
+        ->assertSee('Gotham')
+        ->mountAction('create')
+        ->assertSee('Downtown Hub, Metropolis')
+        ->assertSee('Gotham');
 });

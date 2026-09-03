@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DCRS;
 
 use App\Filament\Resources\DCRS\Pages\ManageDCRS;
 use App\Models\DCR;
+use App\Models\Doctor;
 use App\Models\Product;
 use App\Models\PromotionalInput;
 use BackedEnum;
@@ -28,6 +29,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DCRResource extends Resource
 {
@@ -53,7 +55,17 @@ class DCRResource extends Resource
                     ->default(now()->toDateString()),
                 Select::make('doctor_id')
                     ->label('Doctor')
-                    ->relationship('doctor', 'name')
+                    ->relationship(
+                        name: 'doctor',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn (Builder $query) => $query->with('area'),
+                    )
+                    ->getOptionLabelFromRecordUsing(function (Doctor $record): string {
+                        $location = collect([$record->area?->name, $record->town])->filter(fn ($v) => filled($v))->implode(', ');
+
+                        return '<div>'.e($record->name).'</div>'.($location ? '<div class="text-xs text-gray-500 dark:text-gray-400">'.e($location).'</div>' : '');
+                    })
+                    ->allowHtml()
                     ->searchable()
                     ->preload()
                     ->required(),
@@ -187,12 +199,15 @@ class DCRResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['doctor.area']))
+            ->defaultSort('date', 'desc')
             ->columns([
                 TextColumn::make('date')
                     ->label('Date')
                     ->date(),
                 TextColumn::make('doctor.name')
-                    ->label('Doctor'),
+                    ->label('Doctor')
+                    ->description(fn (DCR $record): ?string => collect([$record->doctor?->area?->name, $record->doctor?->town])->filter(fn ($v) => filled($v))->implode(', ') ?: null),
             ])
             ->filters([
                 //

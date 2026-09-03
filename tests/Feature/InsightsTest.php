@@ -54,4 +54,5 @@ it('returns sliced KPIs + trend + top lists as JSON', function () {
     ]);
 
     expect($res->json('kpi.packs'))->toBeGreaterThan(0);
+    expect(count($res->json('top.brand')))->toBe(50);
 });

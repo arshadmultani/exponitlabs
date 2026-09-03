@@ -141,29 +141,67 @@
             {{-- Top-N tables --}}
             <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <template x-for="block in topBlocks" :key="block.key">
-                    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                        <h3 class="mb-3 text-sm font-semibold text-ink" x-text="block.title"></h3>
-                        <div class="overflow-x-auto">
-                            <div class="w-max min-w-full space-y-1.5">
-                                <template x-for="(row,i) in data.top[block.key]" :key="i">
-                                    <div class="relative min-w-full rounded-md px-2 py-1.5">
-                                        <div class="absolute inset-y-0 left-0 rounded-md bg-brand/10"
-                                            :style="`width:${barWidth(row.mat, block.key)}%`"></div>
-                                        <div class="relative flex items-center justify-between gap-6 text-sm">
-                                            <div class="whitespace-nowrap">
-                                                <div class="font-medium text-ink" x-text="row.label"></div>
-                                                <div class="text-[11px] text-muted" x-text="row.sub"></div>
-                                            </div>
-                                            <div class="flex shrink-0 items-center gap-3 whitespace-nowrap">
-                                                <span class="font-semibold text-ink" x-text="fmt(row.mat)"></span>
-                                                <span class="w-12 text-right text-xs" :class="growthClass(row.growth)"
-                                                    x-text="row.growth===null?'—':(row.growth>0?'+':'')+row.growth+'%'"></span>
+                    <div class="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div>
+                            <div class="mb-3 flex items-center justify-between">
+                                <h3 class="text-sm font-semibold text-ink" x-text="block.title"></h3>
+                                <span x-show="data.top[block.key]?.length > pageSize" class="text-xs text-muted"
+                                    x-text="`(${data.top[block.key]?.length} total)`"></span>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <div class="w-max min-w-full space-y-1.5">
+                                    <template x-for="(row,i) in pagedRows(block.key)" :key="row.label + '-' + i">
+                                        <div class="relative min-w-full rounded-md px-2 py-1.5">
+                                            <div class="absolute inset-y-0 left-0 rounded-md bg-brand/10"
+                                                :style="`width:${barWidth(row.mat, block.key)}%`"></div>
+                                            <div class="relative flex items-center justify-between gap-6 text-sm">
+                                                <div class="whitespace-nowrap">
+                                                    <div class="font-medium text-ink" x-text="row.label"></div>
+                                                    <div class="text-[11px] text-muted" x-text="row.sub"></div>
+                                                </div>
+                                                <div class="flex shrink-0 items-center gap-3 whitespace-nowrap">
+                                                    <span class="font-semibold text-ink" x-text="fmt(row.mat)"></span>
+                                                    <span class="w-12 text-right text-xs" :class="growthClass(row.growth)"
+                                                        x-text="row.growth===null?'—':(row.growth>0?'+':'')+row.growth+'%'"></span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </template>
+                                    <p x-show="!data.top[block.key]?.length" class="py-4 text-center text-sm text-muted">No
+                                        data.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Pagination footer inside the card --}}
+                        <div x-show="totalPages(block.key) > 1"
+                            class="mt-3 flex items-center justify-between border-t border-slate-100 pt-2.5 text-xs text-muted">
+                            <div>
+                                Showing <span class="font-medium text-ink" x-text="pageStart(block.key)"></span>–<span
+                                    class="font-medium text-ink" x-text="pageEnd(block.key)"></span> of <span
+                                    class="font-medium text-ink" x-text="data.top[block.key]?.length"></span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <button type="button" @click="prevPage(block.key)" :disabled="page[block.key] === 1"
+                                    class="flex h-6 w-6 items-center justify-center rounded text-slate-500 hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-30"
+                                    title="Previous page">
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <template x-for="p in totalPages(block.key)" :key="p">
+                                    <button type="button" @click="setPage(block.key, p)"
+                                        class="flex h-6 w-6 items-center justify-center rounded text-xs font-medium transition-colors"
+                                        :class="page[block.key] === p ? 'bg-ink text-white font-semibold' : 'text-slate-600 hover:bg-slate-100'"
+                                        x-text="p"></button>
                                 </template>
-                                <p x-show="!data.top[block.key]?.length" class="py-4 text-center text-sm text-muted">No
-                                    data.</p>
+                                <button type="button" @click="nextPage(block.key)" :disabled="page[block.key] === totalPages(block.key)"
+                                    class="flex h-6 w-6 items-center justify-center rounded text-slate-500 hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-30"
+                                    title="Next page">
+                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -220,6 +258,13 @@
                     indian_mnc: '',
                     q: ''
                 },
+                pageSize: 10,
+                page: {
+                    molecule: 1,
+                    brand: 1,
+                    company: 1,
+                    group: 1,
+                },
                 data: {
                     kpi: {
                         mat: 0,
@@ -256,6 +301,45 @@
                 ],
                 hoverIndex: null,
 
+                resetPages() {
+                    this.page = {
+                        molecule: 1,
+                        brand: 1,
+                        company: 1,
+                        group: 1,
+                    };
+                },
+                pagedRows(key) {
+                    const list = this.data.top[key] || [];
+                    const pg = this.page[key] || 1;
+                    const start = (pg - 1) * this.pageSize;
+                    return list.slice(start, start + this.pageSize);
+                },
+                totalPages(key) {
+                    const total = this.data.top[key]?.length || 0;
+                    return Math.ceil(total / this.pageSize);
+                },
+                pageStart(key) {
+                    const total = this.data.top[key]?.length || 0;
+                    if (!total) return 0;
+                    const pg = this.page[key] || 1;
+                    return (pg - 1) * this.pageSize + 1;
+                },
+                pageEnd(key) {
+                    const total = this.data.top[key]?.length || 0;
+                    const pg = this.page[key] || 1;
+                    return Math.min(pg * this.pageSize, total);
+                },
+                setPage(key, p) {
+                    this.page[key] = Math.max(1, Math.min(p, this.totalPages(key)));
+                },
+                prevPage(key) {
+                    if (this.page[key] > 1) this.page[key]--;
+                },
+                nextPage(key) {
+                    if (this.page[key] < this.totalPages(key)) this.page[key]++;
+                },
+
                 groupsForSupergroup() {
                     const sg = this.filters.supergroup;
                     return this.allGroups
@@ -272,6 +356,7 @@
                     try {
                         const res = await fetch(this.dataUrl + '?' + params.toString());
                         this.data = await res.json();
+                        this.resetPages();
                     } finally {
                         this.loading = false;
                     }
@@ -285,6 +370,7 @@
                         indian_mnc: '',
                         q: ''
                     };
+                    this.resetPages();
                     this.load();
                 },
 
