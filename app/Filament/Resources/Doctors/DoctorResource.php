@@ -39,6 +39,13 @@ class DoctorResource extends Resource
         return DoctorsTable::configure($table);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\DcrsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [

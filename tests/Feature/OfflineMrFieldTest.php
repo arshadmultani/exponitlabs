@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\DCR;
 use App\Models\Doctor;
 use App\Models\Product;
 use App\Models\PromotionalInput;
@@ -17,6 +18,26 @@ it('renders MR field app web routes', function () {
     $this->get('/mr/doctors')->assertStatus(200);
     $this->get('/mr/doctors/create')->assertStatus(200);
     $this->get('/mr/doctors/'.Str::uuid())->assertStatus(200);
+});
+
+it('renders doctor show page with doctor details and past DCRs in MR field app', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $doctor = Doctor::factory()->create([
+        'uuid' => (string) Str::uuid(),
+        'name' => 'Dr. Meera Patel',
+        'specialty' => 'Pediatrician',
+    ]);
+    DCR::factory()->create([
+        'doctor_id' => $doctor->id,
+        'remarks' => 'Routine monthly visit notes',
+    ]);
+
+    $response = $this->get('/mr/doctors/'.$doctor->uuid);
+    $response->assertOk()
+        ->assertSee('Dr. Meera Patel')
+        ->assertSee('Routine monthly visit notes');
 });
 
 it('downloads master data payload via API', function () {

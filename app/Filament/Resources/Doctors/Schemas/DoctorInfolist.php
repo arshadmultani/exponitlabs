@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Doctors\Schemas;
 
+use App\Models\DCRProduct;
 use App\Models\Doctor;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -35,7 +36,8 @@ class DoctorInfolist
 
                         TextEntry::make('status')
                             ->badge()
-                            ->colors(['success' => 'active', 'gray' => 'inactive']),
+                            ->formatStateUsing(fn ($state) => ucfirst($state))
+                            ->colors(['success' => 'Active', 'gray' => 'Inactive']),
 
                         TextEntry::make('practice_since')
                             ->label('Practising since')
@@ -45,6 +47,11 @@ class DoctorInfolist
                         TextEntry::make('experience')
                             ->label('Experience')
                             ->state(fn (Doctor $r) => $r->experienceYears() ? $r->experienceYears().' yr+' : '—'),
+
+                        TextEntry::make('created_at')
+                            ->label('Added on')
+                            ->dateTime('M d, Y')
+                            ->placeholder('—'),
                     ]),
 
                 Section::make('Contact & area')
@@ -52,7 +59,8 @@ class DoctorInfolist
                     ->components([
                         TextEntry::make('phone')->placeholder('—')->copyable(),
                         TextEntry::make('email')->label('Email')->placeholder('—')->copyable(),
-                        TextEntry::make('area.name')->label('Area')->badge()->placeholder('—'),
+                        TextEntry::make('area.name')->label('Area')->badge()->color('primary')->placeholder('—'),
+                        TextEntry::make('area.headquarter.name')->label('Headquarter')->badge()->color('info')->placeholder('—'),
                         TextEntry::make('town')->placeholder('—'),
                         TextEntry::make('clinic_name')->label('Clinic')->placeholder('—'),
                         TextEntry::make('address')->placeholder('—')->columnSpanFull(),
@@ -71,6 +79,34 @@ class DoctorInfolist
                                 : null)
                             ->openUrlInNewTab()
                             ->color('primary'),
+                    ]),
+
+                Section::make('DCR & Visit Summary')
+                    ->columns(4)
+                    ->components([
+                        TextEntry::make('total_visits')
+                            ->label('Total DCRs / Visits')
+                            ->state(fn (Doctor $r) => $r->dcrs()->count())
+                            ->badge()
+                            ->color('primary'),
+
+                        TextEntry::make('last_visit')
+                            ->label('Last Visited Date')
+                            ->state(fn (Doctor $r) => $r->dcrs()->latest('date')->value('date')?->format('M d, Y') ?? 'Never visited'),
+
+                        TextEntry::make('first_visit')
+                            ->label('First Visited Date')
+                            ->state(fn (Doctor $r) => $r->dcrs()->oldest('date')->value('date')?->format('M d, Y') ?? '—'),
+
+                        TextEntry::make('total_samples')
+                            ->label('Total Samples Distributed')
+                            ->state(function (Doctor $r) {
+                                $dcrIds = $r->dcrs()->pluck('id');
+
+                                return DCRProduct::whereIn('dcr_id', $dcrIds)->sum('quantity') ?: 0;
+                            })
+                            ->badge()
+                            ->color('success'),
                     ]),
             ]);
     }

@@ -105,6 +105,11 @@ class Doctor extends Model
         return $this->hasMany(Showcase::class);
     }
 
+    public function dcrs(): HasMany
+    {
+        return $this->hasMany(DCR::class);
+    }
+
     public function isActive(): bool
     {
         return $this->status === 'active';

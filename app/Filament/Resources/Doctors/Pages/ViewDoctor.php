@@ -30,6 +30,12 @@ class ViewDoctor extends ViewRecord
 
     public function getSubheading(): ?string
     {
-        return implode(', ', array_filter([$this->record->town, $this->record->area?->name])) ?: null;
+        return implode(' • ', array_filter([
+            $this->record->specialty,
+            $this->record->clinic_name,
+            $this->record->town,
+            $this->record->area?->name,
+            $this->record->area?->headquarter?->name,
+        ])) ?: null;
     }
 }

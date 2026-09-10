@@ -207,6 +207,7 @@ class DCRResource extends Resource
                     ->date(),
                 TextColumn::make('doctor.name')
                     ->label('Doctor')
+                    ->searchable()
                     ->description(fn (DCR $record): ?string => collect([$record->doctor?->area?->name, $record->doctor?->town])->filter(fn ($v) => filled($v))->implode(', ') ?: null),
             ])
             ->filters([

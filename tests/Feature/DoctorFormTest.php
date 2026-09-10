@@ -2,6 +2,7 @@
 
 use App\Filament\Resources\Doctors\Pages\CreateDoctor;
 use App\Filament\Resources\Doctors\Pages\EditDoctor;
+use App\Models\Area;
 use App\Models\Doctor;
 use App\Models\User;
 use Livewire\Livewire;
@@ -14,12 +15,14 @@ beforeEach(function () {
 });
 
 it('creates a doctor with location data', function () {
+    $area = Area::create(['name' => fake()->city()]);
     $geoJson = Doctor::pointGeoJson(19.0760, 72.8777);
 
     Livewire::test(CreateDoctor::class)
         ->fillForm([
             'name' => 'Dr. Test Location',
             'status' => 'active',
+            'area_id' => $area->id,
             'location' => $geoJson,
         ])
         ->call('create')
@@ -36,6 +39,7 @@ it('creates a doctor with location data', function () {
 });
 
 it('creates a doctor with high precision lat long coordinates', function () {
+    $area = Area::create(['name' => fake()->city()]);
     $lat = 19.40152145075214;
     $lng = 72.84219908221823;
     $geoJson = Doctor::pointGeoJson($lat, $lng);
@@ -44,6 +48,7 @@ it('creates a doctor with high precision lat long coordinates', function () {
         ->fillForm([
             'name' => 'Dr. High Precision',
             'status' => 'active',
+            'area_id' => $area->id,
             'location' => $geoJson,
         ])
         ->call('create')
@@ -56,9 +61,11 @@ it('creates a doctor with high precision lat long coordinates', function () {
 });
 
 it('edits a doctor location data', function () {
+    $area = Area::create(['name' => fake()->city()]);
     $doctor = Doctor::create([
         'name' => 'Dr. Edit Location',
         'status' => 'active',
+        'area_id' => $area->id,
         'location' => Doctor::pointGeoJson(19.0, 72.0),
     ]);
 
@@ -66,6 +73,7 @@ it('edits a doctor location data', function () {
 
     Livewire::test(EditDoctor::class, ['record' => $doctor->id])
         ->fillForm([
+            'area_id' => $area->id,
             'location' => $newGeoJson,
         ])
         ->call('save')

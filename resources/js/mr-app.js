@@ -285,20 +285,25 @@ export function registerMrComponents(Alpine) {
   }));
 
   // Offline Doctor Detail Component
-  Alpine.data('doctorShowApp', (doctorUuid) => ({
+  Alpine.data('doctorShowApp', (doctorUuid, serverDoctor = null) => ({
     uuid: doctorUuid,
-    doctor: null,
-    history: [],
+    doctor: serverDoctor,
+    history: serverDoctor?.dcrs || [],
     pendingDcrs: [],
 
     async init() {
       if (!this.uuid) return;
-      this.doctor = await db.doctors.where('uuid').equals(this.uuid).first();
+      const localDoc = await db.doctors.where('uuid').equals(this.uuid).first();
+      if (localDoc) {
+        this.doctor = localDoc;
+      }
       
       const pastVisits = await db.visit_history.where('doctor_uuid').equals(this.uuid).toArray();
       const queuedDcrs = await db.dcr_outbox.where('doctor_uuid').equals(this.uuid).toArray();
 
-      this.history = pastVisits || [];
+      if (pastVisits && pastVisits.length > 0) {
+        this.history = pastVisits;
+      }
       this.pendingDcrs = queuedDcrs || [];
     }
   }));
