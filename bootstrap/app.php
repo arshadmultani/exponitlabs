@@ -16,10 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Redirect unauthenticated MR field app visitors to /mr/login
+        // Redirect unauthenticated ELOS field app visitors to /elos/login
         $middleware->redirectGuestsTo(function (Request $request) {
-            if ($request->is('mr*') || $request->is('api*')) {
-                return route('mr.login');
+            if ($request->is('elos*') || $request->is('mr*') || $request->is('api*')) {
+                return route('elos.login');
             }
 
             return '/';

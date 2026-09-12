@@ -3,32 +3,50 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'MR Field Portal') - Exponit Labs</title>
 
+    <!-- Progressive Web App (PWA) Manifest & Standalone Meta -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#2563eb">
+    <meta name="theme-color" content="#0F2A44">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Exponit MR">
     <link rel="apple-touch-icon" href="/icon-192.png">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body
-    class="bg-slate-50 text-slate-900 min-h-screen pb-24 font-sans antialiased selection:bg-blue-600 selection:text-white">
+    class="bg-slate-50 text-slate-900 min-h-screen pb-24 font-sans antialiased selection:bg-teal-600 selection:text-white">
 
     <!-- Header Status & Sync Bar -->
-    <header class="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-3 shadow-sm" x-data="syncBarApp">
-        <div class="max-w-xl mx-auto flex items-center justify-between">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 shadow-sm" x-data="syncBarApp">
+        <div class="max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-2">
-                <span class="font-semibold text-slate-900 text-sm tracking-tight">ELOS App</span>
+                <span class="font-bold text-slate-900 text-sm tracking-tight flex items-center gap-1.5">
+                    <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
+                    Exponit MR Force
+                </span>
             </div>
 
-            <!-- Sync & Network Pill + Logout -->
+            <!-- Sync, Install on Tablet & User Actions -->
             <div class="flex items-center space-x-2">
+                <!-- Tablet Install Prompt Button -->
+                <template x-if="canInstall">
+                    <button @click="installApp()"
+                        class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-teal-600 hover:bg-teal-700 text-white shadow-sm transition-all animate-bounce">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span>Install on Tablet</span>
+                    </button>
+                </template>
+
+                <!-- Sync & Network Pill -->
                 <button @click="autoSync()" :disabled="isSyncing || !isOnline"
                     class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium transition-all shadow-sm"
                     :class="{
@@ -51,7 +69,8 @@
                     </template>
                 </button>
 
-                <form method="POST" action="{{ route('mr.logout') }}" class="inline">
+                <!-- Logout Form -->
+                <form method="POST" action="{{ route('elos.logout') }}" class="inline">
                     @csrf
                     <button type="submit" title="Sign Out"
                         class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition-colors">
@@ -65,16 +84,16 @@
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="max-w-xl mx-auto px-4 pt-4">
+    <!-- Main Content Area: Responsive container up to 6xl for Tablets -->
+    <main class="max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 pt-4">
         @yield('content')
     </main>
 
-    <!-- Mobile Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-200 py-2 shadow-lg">
-        <div class="max-w-xl mx-auto flex items-center justify-around">
-            <a href="{{ route('mr.dcr') }}"
-                class="flex flex-col items-center py-1 px-2.5 text-xs font-medium transition-colors {{ request()->routeIs('mr.dcr') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
+    <!-- Tablet / Mobile Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t border-slate-200 py-2 shadow-lg">
+        <div class="max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto flex items-center justify-around">
+            <a href="{{ route('elos.dcr') }}"
+                class="flex flex-col items-center py-1 px-2.5 text-xs font-medium transition-colors {{ request()->routeIs('elos.dcr') ? 'text-teal-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
                 <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -82,8 +101,8 @@
                 <span>Fill DCR</span>
             </a>
 
-            <a href="{{ route('mr.dcrs.index') }}"
-                class="flex flex-col items-center py-1 px-2.5 text-xs font-medium transition-colors {{ request()->routeIs('mr.dcrs.index') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
+            <a href="{{ route('elos.dcrs.index') }}"
+                class="flex flex-col items-center py-1 px-2.5 text-xs font-medium transition-colors {{ request()->routeIs('elos.dcrs.index') ? 'text-teal-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
                 <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -91,8 +110,8 @@
                 <span>DCR Logs</span>
             </a>
 
-            <a href="{{ route('mr.doctors.index') }}"
-                class="flex flex-col items-center py-1 px-3 text-xs font-medium transition-colors {{ request()->routeIs('mr.doctors.index') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
+            <a href="{{ route('elos.doctors.index') }}"
+                class="flex flex-col items-center py-1 px-3 text-xs font-medium transition-colors {{ request()->routeIs('elos.doctors.index') ? 'text-teal-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
                 <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
@@ -100,8 +119,8 @@
                 <span>Doctors</span>
             </a>
 
-            <a href="{{ route('mr.doctors.create') }}"
-                class="flex flex-col items-center py-1 px-3 text-xs font-medium transition-colors {{ request()->routeIs('mr.doctors.create') ? 'text-blue-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
+            <a href="{{ route('elos.doctors.create') }}"
+                class="flex flex-col items-center py-1 px-3 text-xs font-medium transition-colors {{ request()->routeIs('elos.doctors.create') ? 'text-teal-600 font-bold' : 'text-slate-500 hover:text-slate-900' }}">
                 <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />

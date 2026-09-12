@@ -20,7 +20,7 @@
                 <h1 class="text-lg font-bold text-slate-900 tracking-tight">Add New Doctor</h1>
                 <p class="text-xs text-slate-500">Offline doctor creation</p>
             </div>
-            <a href="{{ route('mr.doctors.index') }}" class="text-xs font-medium text-slate-500 hover:text-slate-900">Cancel</a>
+            <a href="{{ route('elos.doctors.index') }}" class="text-xs font-medium text-slate-500 hover:text-slate-900">Cancel</a>
         </div>
 
         <form @submit.prevent="saveDoctor()" class="space-y-4">

@@ -10,17 +10,17 @@ use Illuminate\Support\Str;
 
 uses(RefreshDatabase::class);
 
-it('renders MR field app web routes', function () {
+it('renders ELOS field app web routes', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
-    $this->get('/mr/dcr')->assertStatus(200);
-    $this->get('/mr/doctors')->assertStatus(200);
-    $this->get('/mr/doctors/create')->assertStatus(200);
-    $this->get('/mr/doctors/'.Str::uuid())->assertStatus(200);
+    $this->get('/elos/dcr')->assertStatus(200);
+    $this->get('/elos/doctors')->assertStatus(200);
+    $this->get('/elos/doctors/create')->assertStatus(200);
+    $this->get('/elos/doctors/'.Str::uuid())->assertStatus(200);
 });
 
-it('renders doctor show page with doctor details and past DCRs in MR field app', function () {
+it('renders doctor show page with doctor details and past DCRs in ELOS field app', function () {
     $user = User::factory()->create();
     $this->actingAs($user);
 
@@ -34,7 +34,7 @@ it('renders doctor show page with doctor details and past DCRs in MR field app',
         'remarks' => 'Routine monthly visit notes',
     ]);
 
-    $response = $this->get('/mr/doctors/'.$doctor->uuid);
+    $response = $this->get('/elos/doctors/'.$doctor->uuid);
     $response->assertOk()
         ->assertSee('Dr. Meera Patel')
         ->assertSee('Routine monthly visit notes');

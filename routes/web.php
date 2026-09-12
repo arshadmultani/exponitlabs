@@ -53,13 +53,13 @@ Route::middleware('auth:web')->prefix('insights')->name('insights.')->group(func
     Route::get('/data', [InsightsController::class, 'data'])->name('data');
 });
 
-// MR Field App Auth Routes
-Route::get('/mr/login', [MRAuthController::class, 'showLogin'])->name('mr.login');
-Route::post('/mr/login', [MRAuthController::class, 'login'])->name('mr.login.submit');
-Route::post('/mr/logout', [MRAuthController::class, 'logout'])->name('mr.logout');
+// ELOS Field App Auth Routes
+Route::get('/elos/login', [MRAuthController::class, 'showLogin'])->name('elos.login');
+Route::post('/elos/login', [MRAuthController::class, 'login'])->name('elos.login.submit');
+Route::post('/elos/logout', [MRAuthController::class, 'logout'])->name('elos.logout');
 
-// MR Offline-First Field App Routes
-Route::middleware('auth:web')->prefix('mr')->name('mr.')->group(function () {
+// ELOS Offline-First Field App Routes
+Route::middleware('auth:web')->prefix('elos')->name('elos.')->group(function () {
     Route::get('/dcr', [MRDcrController::class, 'index'])->name('dcr');
     Route::get('/dcrs', [MRDcrController::class, 'history'])->name('dcrs.index');
     Route::get('/doctors', [MRDoctorController::class, 'index'])->name('doctors.index');

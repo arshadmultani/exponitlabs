@@ -6,13 +6,13 @@
 <div x-data="doctorShowApp('{{ $uuid }}', {{ \Illuminate\Support\Js::from($doctor) }})" class="space-y-4">
     <!-- Back Button & Quick Actions -->
     <div class="flex items-center justify-between">
-        <a href="{{ route('mr.doctors.index') }}" class="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900">
+        <a href="{{ route('elos.doctors.index') }}" class="inline-flex items-center text-xs font-semibold text-slate-500 hover:text-slate-900">
             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
             </svg>
             Back to Directory
         </a>
-        <a href="{{ route('mr.dcr') }}" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white shadow-sm transition-all">
+        <a href="{{ route('elos.dcr') }}" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white shadow-sm transition-all">
             + Fill DCR
         </a>
     </div>

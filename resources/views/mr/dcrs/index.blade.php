@@ -10,7 +10,7 @@
             <h1 class="text-lg font-bold text-slate-900 tracking-tight">DCR Logs</h1>
             <p class="text-xs text-slate-500">Daily visit entry history</p>
         </div>
-        <a href="{{ route('mr.dcr') }}" 
+        <a href="{{ route('elos.dcr') }}" 
            class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white shadow-sm transition-all flex items-center space-x-1">
             <span>+ Fill DCR</span>
         </a>
@@ -104,7 +104,7 @@
         <template x-if="filteredDcrs.length === 0">
             <div class="text-center py-10 bg-white border border-slate-200 rounded-2xl space-y-2">
                 <p class="text-sm text-slate-500">No DCR entries found for the selected date.</p>
-                <a href="{{ route('mr.dcr') }}" class="inline-block text-xs font-semibold text-blue-600 hover:underline">
+                <a href="{{ route('elos.dcr') }}" class="inline-block text-xs font-semibold text-blue-600 hover:underline">
                     + Fill New DCR Entry Now
                 </a>
             </div>

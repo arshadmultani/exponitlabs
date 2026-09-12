@@ -33,7 +33,7 @@
         @endif
 
         <!-- Form -->
-        <form method="POST" action="{{ route('mr.login.submit') }}" class="space-y-4">
+        <form method="POST" action="{{ route('elos.login.submit') }}" class="space-y-4">
             @csrf
 
             <div>

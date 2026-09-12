@@ -9,8 +9,21 @@ export function registerMrComponents(Alpine) {
     lastSyncTime: null,
     pendingDoctorsCount: 0,
     pendingDcrsCount: 0,
+    canInstall: false,
+    deferredPrompt: null,
 
     async init() {
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        this.deferredPrompt = e;
+        this.canInstall = true;
+      });
+
+      window.addEventListener('appinstalled', () => {
+        this.canInstall = false;
+        this.deferredPrompt = null;
+      });
+
       window.addEventListener('online', () => {
         this.isOnline = true;
         this.autoSync();
@@ -46,6 +59,16 @@ export function registerMrComponents(Alpine) {
         this.lastSyncTime = res.time || new Date().toLocaleTimeString();
         await this.refreshCounts();
       }
+    },
+
+    async installApp() {
+      if (!this.deferredPrompt) return;
+      this.deferredPrompt.prompt();
+      const choiceResult = await this.deferredPrompt.userChoice;
+      if (choiceResult && choiceResult.outcome === 'accepted') {
+        this.canInstall = false;
+      }
+      this.deferredPrompt = null;
     }
   }));
 
@@ -492,7 +515,7 @@ export function registerMrComponents(Alpine) {
       }
 
       setTimeout(() => {
-        window.location.href = '/mr/dcr';
+        window.location.href = '/elos/dcr';
       }, 800);
     }
   }));

@@ -10,7 +10,7 @@
                 <h1 class="text-lg font-bold text-slate-900 tracking-tight">Doctor List</h1>
                 <p class="text-xs text-slate-500">Offline directory by Area</p>
             </div>
-            <a href="{{ route('mr.doctors.create') }}"
+            <a href="{{ route('elos.doctors.create') }}"
                 class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white shadow-sm transition-all flex items-center space-x-1">
                 <span>+ Add Doctor</span>
             </a>
@@ -79,7 +79,7 @@
         <!-- Doctor Cards List -->
         <div class="space-y-2.5">
             <template x-for="doc in filteredDoctors" :key="doc.uuid">
-                <a :href="'/mr/doctors/' + doc.uuid"
+                <a :href="'/elos/doctors/' + doc.uuid"
                     class="block bg-white border border-slate-200 hover:border-slate-300 rounded-xl p-3.5 shadow-sm transition-all">
                     <div class="flex items-start justify-between">
                         <div>
@@ -117,7 +117,7 @@
             <template x-if="filteredDoctors.length === 0">
                 <div class="text-center py-10 bg-white border border-slate-200 rounded-2xl">
                     <p class="text-sm text-slate-500">No doctors found matching search criteria.</p>
-                    <a href="{{ route('mr.doctors.create') }}"
+                    <a href="{{ route('elos.doctors.create') }}"
                         class="inline-block mt-3 text-xs font-semibold text-blue-600 hover:underline">
                         + Add New Doctor Now
                     </a>

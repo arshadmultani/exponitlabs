@@ -1,27 +1,27 @@
 {
-  "name": "Exponit MR Field App",
-  "short_name": "MR Field",
-  "start_url": "/mr/dcr",
-  "display": "standalone",
-  "display_override": [
-    "standalone",
-    "minimal-ui"
-  ],
-  "background_color": "#f8fafc",
-  "theme_color": "#2563eb",
-  "orientation": "portrait",
-  "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+    "name": "ELOS",
+    "short_name": "ELOS",
+    "description": "Exponit Labs Operating System for Field Force",
+    "start_url": "/elos/dcr",
+    "scope": "/elos/",
+    "display": "standalone",
+    "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+    "background_color": "#FAFBFC",
+    "theme_color": "#0F2A44",
+    "orientation": "any",
+    "categories": ["medical", "business", "productivity"],
+    "icons": [
+        {
+            "src": "/elos-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/elos-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
 }

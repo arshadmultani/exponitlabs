@@ -36,7 +36,7 @@
             <div class="relative" @click.outside="showDoctorDropdown = false">
                 <div class="flex items-center justify-between mb-1.5">
                     <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider">Select Doctor *</label>
-                    <a href="{{ route('mr.doctors.create') }}" class="text-xs font-medium text-blue-600 hover:text-blue-700">+ Add New Doctor</a>
+                    <a href="{{ route('elos.doctors.create') }}" class="text-xs font-medium text-blue-600 hover:text-blue-700">+ Add New Doctor</a>
                 </div>
 
                 <div class="relative">
@@ -78,14 +78,14 @@
                     <template x-if="doctors.length === 0">
                         <div class="px-3.5 py-3 text-center text-xs text-slate-500">
                             <span>No doctors in local DB yet.</span>
-                            <a href="{{ route('mr.doctors.create') }}" class="block mt-1 font-semibold text-blue-600 hover:underline">+ Add Doctor Now</a>
+                            <a href="{{ route('elos.doctors.create') }}" class="block mt-1 font-semibold text-blue-600 hover:underline">+ Add Doctor Now</a>
                         </div>
                     </template>
 
                     <template x-if="doctors.length > 0 && filteredDoctorsList.length === 0">
                         <div class="px-3.5 py-3 text-center text-xs text-slate-500">
                             <span x-text="'No doctor matching &quot;' + doctorQuery + '&quot;'"></span>
-                            <a href="{{ route('mr.doctors.create') }}" class="block mt-1 font-semibold text-blue-600 hover:underline">+ Add New Doctor</a>
+                            <a href="{{ route('elos.doctors.create') }}" class="block mt-1 font-semibold text-blue-600 hover:underline">+ Add New Doctor</a>
                         </div>
                     </template>
                 </div>

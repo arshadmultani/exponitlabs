@@ -13,7 +13,7 @@ class MRAuthController extends Controller
     public function showLogin(): View|RedirectResponse
     {
         if (Auth::check()) {
-            return redirect()->route('mr.dcr');
+            return redirect()->route('elos.dcr');
         }
 
         return view('mr.auth.login');
@@ -29,7 +29,7 @@ class MRAuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('mr.dcr'));
+            return redirect()->intended(route('elos.dcr'));
         }
 
         return back()->withErrors([
@@ -43,6 +43,6 @@ class MRAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('mr.login');
+        return redirect()->route('elos.login');
     }
 }
