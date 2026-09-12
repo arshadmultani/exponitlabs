@@ -53,7 +53,8 @@ Route::middleware('auth:web')->prefix('insights')->name('insights.')->group(func
     Route::get('/data', [InsightsController::class, 'data'])->name('data');
 });
 
-// ELOS Field App Auth Routes
+// ELOS Field App Entry & Auth Routes
+Route::get('/elos', fn () => redirect()->route('elos.dcr'))->name('elos');
 Route::get('/elos/login', [MRAuthController::class, 'showLogin'])->name('elos.login');
 Route::post('/elos/login', [MRAuthController::class, 'login'])->name('elos.login.submit');
 Route::post('/elos/logout', [MRAuthController::class, 'logout'])->name('elos.logout');
