@@ -407,3 +407,58 @@ livewire(ListUsers::class)
   - `$view`: `protected string` (not `protected static string`) on `Page` and `Widget` classes
 
 </laravel-boost-guidelines>
+
+<flutter-guidelines>
+=== flutter foundation rules ===
+
+# Flutter & Dart Guidelines
+
+These guidelines ensure that all mobile code written in this repository follows the latest official Flutter & Dart best practices.
+
+## Foundational Context
+- Dart: >= 3.3 (Sound Null Safety, Pattern Matching, Records)
+- Flutter: Latest stable (Impeller graphics engine)
+- Directory: All mobile code lives under `/mobile`
+- Architecture: Offline-First Clean Architecture (MVVM + Repository Pattern)
+- State Management: `flutter_riverpod` (v2.6+)
+- Local Database: `drift` (type-safe SQLite) + `sqlite3_flutter_libs`
+- Networking: `dio` (with Sanctum bearer token interceptor and retry policy)
+- Routing: `go_router` (declarative routing)
+
+## Skills Activation
+Activate the relevant skill whenever working in `/mobile`:
+- `flutter-apply-architecture-best-practices`: Enforce strict Separation of Concerns (UI, Domain, Data layers).
+- `flutter-build-responsive-layout`: Build adaptive layouts for tablets (16:9 stage) and phones.
+- `flutter-implement-json-serialization`: Type-safe JSON serialization matching Laravel API DTOs.
+- `flutter-setup-declarative-routing`: GoRouter setup, guards, and redirection.
+- `flutter-add-widget-test`: Widget and component-level testing.
+- `dart-add-unit-test`: Repository, ViewModel, and DAO unit testing.
+- `dart-run-static-analysis`: Static analysis with `flutter analyze`.
+- `flutter_a11y_agent`: Accessibility compliance for clinical tablet interfaces.
+
+## Coding Conventions
+1. **Immutability & Const**:
+   - Always use `const` constructors for widgets whenever possible.
+   - Use `final` for all class fields and local variables where re-assignment is not required.
+   - Use `freezed` or Dart 3 records for immutable data transfer objects.
+2. **Modern Dart 3.x**:
+   - Use switch expressions and pattern matching for state representation:
+     ```dart
+     final badge = switch (status) {
+       SyncStatus.synced => const SyncedBadge(),
+       SyncStatus.pending => const PendingBadge(),
+       SyncStatus.failed => const FailedBadge(),
+     };
+     ```
+   - Use constructor property promotion and avoid empty constructor bodies.
+3. **Separation of Concerns**:
+   - Never call HTTP APIs or database queries directly inside `Widget.build()`.
+   - All external operations must go through a Repository injected into a ViewModel / Riverpod Provider.
+4. **Offline-First & Outbox Queue**:
+   - UI writes directly to local Drift SQLite and returns immediately (< 1ms).
+   - Pending changes are logged to the `sync_outbox` table with `status = 'pending'`.
+   - The sync worker uploads pending batches to Laravel (`/api/v1/sync/...`) when network is detected.
+5. **Quality & Formatting**:
+   - Run `dart format .` and `flutter analyze` inside `/mobile` before finalizing mobile code changes.
+   - Every ViewModel and Repository must have accompanying unit tests.
+</flutter-guidelines>
