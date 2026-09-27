@@ -6,6 +6,7 @@ use App\Http\Controllers\MicrositeController;
 use App\Http\Controllers\MR\MRAuthController;
 use App\Http\Controllers\MR\MRDcrController;
 use App\Http\Controllers\MR\MRDoctorController;
+use App\Http\Controllers\MR\MRPresentationController;
 use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Honeypot\ProtectAgainstSpam;
@@ -66,4 +67,5 @@ Route::middleware('auth:web')->prefix('elos')->name('elos.')->group(function () 
     Route::get('/doctors', [MRDoctorController::class, 'index'])->name('doctors.index');
     Route::get('/doctors/create', [MRDoctorController::class, 'create'])->name('doctors.create');
     Route::get('/doctors/{uuid}', [MRDoctorController::class, 'show'])->name('doctors.show');
+    Route::get('/presentation', [MRPresentationController::class, 'index'])->name('presentation');
 });

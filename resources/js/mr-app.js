@@ -1,5 +1,6 @@
 import { db } from './offline-db.js';
 import { runFullSync } from './sync-engine.js';
+import { Telestrator } from './telestrator.js';
 
 export function registerMrComponents(Alpine) {
   // Navigation & Sync Bar state
@@ -618,6 +619,160 @@ export function registerMrComponents(Alpine) {
 
         return matchesQuery && matchesDate;
       });
+    }
+  }));
+
+  // 16:9 Presentation Stage & Telestrator Component
+  Alpine.data('presentationApp', (totalSlidesCount = 5) => ({
+    currentSlide: 0,
+    totalSlides: totalSlidesCount,
+    isFullscreen: false,
+    showControls: true,
+    controlsTimeout: null,
+    
+    // Telestrator State
+    telestrator: null,
+    isTelestratorActive: false,
+    activeTool: 'pen', // 'pen' | 'highlighter' | 'eraser'
+    activeColor: '#1FB6AA',
+    colors: ['#1FB6AA', '#EF4444', '#F59E0B', '#3B82F6', '#FFFFFF', '#0F2A44'],
+
+    // Touch Swipe Gesture Tracking
+    touchStartX: 0,
+    touchEndX: 0,
+
+    init() {
+      // Initialize Telestrator after DOM mounts
+      this.$nextTick(() => {
+        const canvas = document.getElementById('telestrator-canvas');
+        if (canvas) {
+          this.telestrator = new Telestrator(canvas);
+        }
+      });
+
+      // Keyboard navigation
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+          this.nextSlide();
+        } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+          this.prevSlide();
+        } else if (e.key === 'f' || e.key === 'F') {
+          this.toggleFullscreen();
+        } else if (e.key === 't' || e.key === 'T') {
+          this.toggleTelestrator();
+        }
+      });
+
+      // Fullscreen change listener
+      document.addEventListener('fullscreenchange', () => {
+        this.isFullscreen = !!document.fullscreenElement;
+        if (this.telestrator) {
+          setTimeout(() => this.telestrator.resize(), 150);
+        }
+      });
+
+      this.resetControlsTimer();
+    },
+
+    nextSlide() {
+      if (this.currentSlide < this.totalSlides - 1) {
+        this.goToSlide(this.currentSlide + 1);
+      }
+    },
+
+    prevSlide() {
+      if (this.currentSlide > 0) {
+        this.goToSlide(this.currentSlide - 1);
+      }
+    },
+
+    goToSlide(index) {
+      if (index < 0 || index >= this.totalSlides) return;
+      if (this.telestrator) {
+        this.telestrator.saveForSlide(this.currentSlide);
+      }
+      this.currentSlide = index;
+      if (this.telestrator) {
+        this.telestrator.loadForSlide(index);
+      }
+      this.resetControlsTimer();
+    },
+
+    // Touch gesture swipe handlers
+    handleTouchStart(e) {
+      this.touchStartX = e.changedTouches[0].screenX;
+    },
+
+    handleTouchEnd(e) {
+      if (this.isTelestratorActive) return; // Don't slide while drawing
+      this.touchEndX = e.changedTouches[0].screenX;
+      const diff = this.touchStartX - this.touchEndX;
+      if (Math.abs(diff) > 45) {
+        if (diff > 0) {
+          this.nextSlide();
+        } else {
+          this.prevSlide();
+        }
+      }
+    },
+
+    toggleTelestrator() {
+      if (!this.telestrator) return;
+      this.isTelestratorActive = !this.isTelestratorActive;
+      this.telestrator.toggle(this.isTelestratorActive);
+      this.showControls = true;
+    },
+
+    setTool(tool) {
+      this.activeTool = tool;
+      if (this.telestrator) {
+        this.telestrator.setTool(tool);
+        if (!this.isTelestratorActive) {
+          this.toggleTelestrator();
+        }
+      }
+    },
+
+    setColor(color) {
+      this.activeColor = color;
+      if (this.telestrator) {
+        this.telestrator.setColor(color);
+        if (this.activeTool === 'eraser') {
+          this.setTool('pen');
+        }
+      }
+    },
+
+    clearDrawing() {
+      if (this.telestrator) {
+        this.telestrator.clear();
+      }
+    },
+
+    undoDrawing() {
+      if (this.telestrator) {
+        this.telestrator.undo();
+      }
+    },
+
+    toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    },
+
+    resetControlsTimer() {
+      this.showControls = true;
+      clearTimeout(this.controlsTimeout);
+      this.controlsTimeout = setTimeout(() => {
+        if (!this.isTelestratorActive) {
+          this.showControls = false;
+        }
+      }, 4000);
     }
   }));
 }

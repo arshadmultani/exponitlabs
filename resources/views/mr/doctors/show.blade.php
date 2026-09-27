@@ -12,9 +12,18 @@
             </svg>
             Back to Directory
         </a>
-        <a href="{{ route('elos.dcr') }}" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white shadow-sm transition-all">
-            + Fill DCR
-        </a>
+        <div class="flex items-center space-x-2">
+            <a :href="'{{ route('elos.presentation') }}?doctor=' + doctorUuid"
+               class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-xs font-semibold text-white shadow-sm transition-all flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <span>Detailing Aid</span>
+            </a>
+            <a href="{{ route('elos.dcr') }}" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-xs font-semibold text-white shadow-sm transition-all">
+                + Fill DCR
+            </a>
+        </div>
     </div>
 
     <!-- Doctor Header Card -->

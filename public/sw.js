@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const STATIC_CACHE_NAME = `elos-static-${CACHE_VERSION}`;
 const PAGES_CACHE_NAME = `elos-pages-${CACHE_VERSION}`;
 
@@ -12,6 +12,7 @@ const PRECACHE_ASSETS = [
   '/elos',
   '/elos/login',
   '/elos/dcr',
+  '/elos/presentation',
   '/elos/doctors',
   '/elos/doctors/create',
   '/elos/dcrs',

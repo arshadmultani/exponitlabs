@@ -18,6 +18,29 @@ it('renders ELOS field app web routes', function () {
     $this->get('/elos/doctors')->assertStatus(200);
     $this->get('/elos/doctors/create')->assertStatus(200);
     $this->get('/elos/doctors/'.Str::uuid())->assertStatus(200);
+    $this->get('/elos/presentation')->assertStatus(200);
+});
+
+it('renders ELOS 16:9 presentation stage with detailing HUD and telestrator', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $doctor = Doctor::factory()->create([
+        'name' => 'Dr. Rajesh Sharma',
+        'specialty' => 'Cardiologist',
+    ]);
+
+    $response = $this->get('/elos/presentation?doctor='.$doctor->uuid);
+
+    $response->assertOk()
+        ->assertSee('CardioGuard')
+        ->assertSee('Dr. Rajesh Sharma')
+        ->assertSee('telestrator-canvas')
+        ->assertSee('presentationApp');
+});
+
+it('redirects unauthenticated users trying to access elos presentation', function () {
+    $this->get('/elos/presentation')->assertRedirect('/elos/login');
 });
 
 it('renders doctor show page with doctor details and past DCRs in ELOS field app', function () {
