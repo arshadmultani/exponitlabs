@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#090d16">
     <title>Exponit Draw | Offline Doctor Toys</title>
     <link rel="stylesheet" href="{{ asset('lab/draw/css/draw.css') }}">
 </head>
+
 <body>
     <div class="app-viewport">
         <!-- 1. LANDING SCREEN -->
@@ -91,14 +94,18 @@
             </div>
         </section>
 
-        <!-- Feedback Toast -->
-        <div id="ui-toast" class="ui-toast hidden"></div>
+        {{-- <!-- Feedback Toast -->
+        <div id="ui-toast" class="ui-toast hidden"></div> --}}
 
         <!-- Debug Diagnostics Overlay -->
         <div id="debug-overlay" class="hidden"></div>
     </div>
 
+    <!-- Local Bundled TensorFlow.js Runtime (Zero CDN dependency) -->
+    <script src="{{ asset('lab/draw/js/tf.min.js') }}"></script>
+
     <!-- ES Module App Entrypoint -->
     <script type="module" src="{{ asset('lab/draw/js/app.js') }}"></script>
 </body>
+
 </html>

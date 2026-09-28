@@ -4,7 +4,7 @@
 
 import { sound } from './audio.js';
 import { DrawingCanvas } from './canvas.js';
-import { MockClassifier } from './classifier.js';
+import { createClassifier } from './classifier.js';
 import { DebugPanel } from './debug.js';
 import { GameEngine, GameState } from './game.js';
 
@@ -68,6 +68,9 @@ class UIController {
                     this.promptText.textContent = data.challenge.label;
                 }
                 this.drawingScreen?.classList.remove('hidden');
+                if (this.onDrawingReady) {
+                    this.onDrawingReady();
+                }
                 this.updateLivePrediction({
                     copy: "I'M WATCHING...",
                     emoji: '✏️',
@@ -117,15 +120,28 @@ class UIController {
     }
 
     renderResultScreen({ challenge, lastPrediction }) {
-        const isCorrect = lastPrediction?.isCorrect;
-        const guess = lastPrediction?.guess || challenge.label;
-        const emoji = lastPrediction?.emoji || challenge.emoji;
-        const confidence = lastPrediction?.confidence || 85;
+        // Case 1: Empty canvas / time ran out without drawing
+        if (!lastPrediction || lastPrediction.status === 'empty' || !lastPrediction.guess) {
+            this.resultStatus.textContent = "TIME'S UP!";
+            this.resultStatus.className = "result-title text-curious";
+            this.resultSubtitle.textContent = "You didn't draw anything! Tap below to try.";
+            if (this.resultEmoji) this.resultEmoji.textContent = '⏱️';
+            if (this.resultGuess) this.resultGuess.textContent = challenge?.label || '';
+            if (this.resultMeta) {
+                this.resultMeta.textContent = `Challenge was: ${challenge?.label || ''}`;
+            }
+            return;
+        }
+
+        const isCorrect = lastPrediction.isCorrect;
+        const guess = lastPrediction.guess;
+        const emoji = lastPrediction.emoji || challenge.emoji;
+        const confidence = lastPrediction.confidence || 0;
 
         if (isCorrect) {
             this.resultStatus.textContent = "I GOT IT!";
             this.resultStatus.className = "result-title text-success";
-            this.resultSubtitle.textContent = "Nice drawing! You couldn't fool me.";
+            this.resultSubtitle.textContent = `I recognized your ${challenge.label}!`;
         } else {
             this.resultStatus.textContent = "YOU GOT ME.";
             this.resultStatus.className = "result-title text-curious";
@@ -164,7 +180,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const debug = new DebugPanel(debugElement);
     const ui = new UIController();
-    const classifier = new MockClassifier();
+    const classifier = await createClassifier();
+
+    debug.update({
+        classifier: classifier.type === 'tfjs' ? `TFJS (${classifier.backend})` : 'MockClassifier'
+    });
 
     const canvas = new DrawingCanvas(canvasElement, (stats) => {
         debug.update({
@@ -176,6 +196,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const game = new GameEngine({ canvas, classifier, debug, ui });
     await game.init();
+
+    ui.onDrawingReady = () => {
+        requestAnimationFrame(() => {
+            canvas.resize();
+        });
+    };
 
     // Button Bindings
     document.getElementById('btn-start-game')?.addEventListener('click', () => {

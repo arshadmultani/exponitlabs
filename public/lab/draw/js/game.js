@@ -111,6 +111,7 @@ export class GameEngine {
     beginDrawingPhase() {
         this.roundStartTime = Date.now();
         this.setState(GameState.DRAWING);
+        this.canvas.resize();
         this.startTimer();
         this.startInferenceLoop();
     }
@@ -154,7 +155,7 @@ export class GameEngine {
             this.isInferenceRunning = true;
             try {
                 const prediction = await this.classifier.predict({
-                    canvas: this.canvas.canvas,
+                    canvas: this.canvas,
                     strokes: this.canvas.strokes,
                     timeRemaining: this.timeRemainingSec,
                     strokeCount: this.canvas.strokes.length,
@@ -204,20 +205,37 @@ export class GameEngine {
         clearInterval(this.timerInterval);
         clearInterval(this.inferenceInterval);
 
-        if (this.canvas.isEmpty()) {
+        const isEmpty = this.canvas.isEmpty();
+
+        if (isEmpty) {
             if (!isTimeOut) {
                 this.ui.showToast('Draw something first!');
                 this.startTimer();
                 this.startInferenceLoop();
                 return;
             }
+
+            // Time expired without drawing
+            this.roundDurationMs = Date.now() - this.roundStartTime;
+            this.lastPrediction = {
+                status: 'empty',
+                copy: "TIME'S UP!",
+                guess: null,
+                emoji: '⏱️',
+                confidence: 0,
+                isCorrect: false,
+                rawPredictions: []
+            };
+            this.setState(GameState.RESULT);
+            sound.fail();
+            return;
         }
 
         this.roundDurationMs = Date.now() - this.roundStartTime;
 
-        // Final inference pass
+        // Final inference pass on actual drawing
         const finalPrediction = await this.classifier.predict({
-            canvas: this.canvas.canvas,
+            canvas: this.canvas,
             strokes: this.canvas.strokes,
             timeRemaining: 0,
             strokeCount: this.canvas.strokes.length,

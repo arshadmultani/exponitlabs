@@ -2,11 +2,11 @@
  * High-DPI Smooth Pointer & Stylus Canvas for Exponit Draw
  * 
  * Features:
- * - High-DPI crisp rendering
- * - Stylus (pen), touch, and mouse support
- * - Quadratic Bezier curve smoothing for natural pen feel
+ * - High-DPI crisp rendering with ResizeObserver
+ * - Stylus (pen), touch, and mouse support with pressure sensitivity
+ * - Smooth round-capped strokes with zero latency
  * - Normalized stroke capture (0 -> 1 coordinates, timestamps, pressure)
- * - Bounding box calculation & rasterization helper for AI preprocessing
+ * - Robust bounding box calculation & 28x28 centered rasterization for AI
  */
 
 export class DrawingCanvas {
@@ -16,7 +16,7 @@ export class DrawingCanvas {
         this.onStrokeUpdate = onStrokeUpdate;
 
         // Stroke storage
-        this.strokes = []; // Array of { points: [{x, y, t, p}] }
+        this.strokes = []; // Array of { points: [{x, y, t, p}], pointerType }
         this.currentStroke = null;
         this.lastPoint = null;
         this.isDrawing = false;
@@ -26,8 +26,10 @@ export class DrawingCanvas {
         this.strokeColor = '#0f172a'; // Deep slate
         this.baseLineWidth = 5.0;
 
-        // Bounding box cache
-        this.bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+        // Dimensions
+        this.width = 0;
+        this.height = 0;
+        this.dpr = window.devicePixelRatio || 1;
         this.pointCount = 0;
 
         this.init();
@@ -37,6 +39,17 @@ export class DrawingCanvas {
         this.resize();
         window.addEventListener('resize', () => this.resize());
 
+        // Observe element size changes (e.g. when unhidden from display:none)
+        if (window.ResizeObserver) {
+            this.resizeObserver = new ResizeObserver(() => {
+                this.resize();
+            });
+            this.resizeObserver.observe(this.canvas);
+            if (this.canvas.parentElement) {
+                this.resizeObserver.observe(this.canvas.parentElement);
+            }
+        }
+
         // Attach Pointer Events
         this.canvas.addEventListener('pointerdown', (e) => this.handlePointerDown(e));
         this.canvas.addEventListener('pointermove', (e) => this.handlePointerMove(e));
@@ -44,7 +57,7 @@ export class DrawingCanvas {
         this.canvas.addEventListener('pointercancel', (e) => this.handlePointerUp(e));
         this.canvas.addEventListener('pointerleave', (e) => this.handlePointerUp(e));
 
-        // Prevent context menu on long press
+        // Prevent context menu
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
     }
 
@@ -52,36 +65,68 @@ export class DrawingCanvas {
         const dpr = window.devicePixelRatio || 1;
         const rect = this.canvas.getBoundingClientRect();
 
-        if (rect.width === 0 || rect.height === 0) return;
+        const width = Math.round(rect.width || this.canvas.clientWidth || (this.canvas.parentElement ? this.canvas.parentElement.clientWidth : 0));
+        const height = Math.round(rect.height || this.canvas.clientHeight || (this.canvas.parentElement ? this.canvas.parentElement.clientHeight : 0));
 
-        // Set backing store dimensions
-        this.canvas.width = Math.round(rect.width * dpr);
-        this.canvas.height = Math.round(rect.height * dpr);
+        if (width === 0 || height === 0) return;
 
-        // Normalize coordinate system
-        this.ctx.scale(dpr, dpr);
+        // If dimensions haven't changed, don't re-scale
+        if (this.width === width && this.height === height && this.dpr === dpr) {
+            return;
+        }
 
         this.dpr = dpr;
-        this.width = rect.width;
-        this.height = rect.height;
+        this.width = width;
+        this.height = height;
+
+        // Set backing store dimensions
+        this.canvas.width = Math.round(width * dpr);
+        this.canvas.height = Math.round(height * dpr);
+
+        // Reset transform and scale for DPR
+        this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+        this.ctx.scale(dpr, dpr);
 
         this.redrawAll();
+    }
+
+    getCanvasWidth() {
+        if (!this.width || this.width === 0) {
+            this.resize();
+        }
+        return this.width || this.canvas.clientWidth || 800;
+    }
+
+    getCanvasHeight() {
+        if (!this.height || this.height === 0) {
+            this.resize();
+        }
+        return this.height || this.canvas.clientHeight || 500;
     }
 
     handlePointerDown(e) {
         if (e.button !== 0 && e.pointerType === 'mouse') return;
 
+        // Ensure canvas geometry is fresh
+        const canvasW = this.getCanvasWidth();
+        const canvasH = this.getCanvasHeight();
+
         this.isDrawing = true;
         this.lastPointerType = e.pointerType;
-        this.canvas.setPointerCapture(e.pointerId);
+        try {
+            this.canvas.setPointerCapture(e.pointerId);
+        } catch (_) {}
 
         const pos = this.getCanvasPosition(e);
         const pressure = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
 
+        const normX = Math.max(0, Math.min(1, pos.x / canvasW));
+        const normY = Math.max(0, Math.min(1, pos.y / canvasH));
+
         this.currentStroke = {
             points: [{
-                x: pos.x / this.width,
-                y: pos.y / this.height,
+                x: normX,
+                y: normY,
                 t: Date.now(),
                 p: pressure
             }],
@@ -89,51 +134,57 @@ export class DrawingCanvas {
         };
         this.strokes.push(this.currentStroke);
         this.pointCount++;
-
-        this.updateBounds(pos.x, pos.y);
         this.lastPoint = pos;
 
         // Draw start dot
+        const dotRadius = Math.max(2.0, (this.baseLineWidth * (0.6 + pressure * 0.8)) / 2);
         this.ctx.beginPath();
-        this.ctx.arc(pos.x, pos.y, (this.baseLineWidth * pressure) / 2, 0, Math.PI * 2);
+        this.ctx.arc(pos.x, pos.y, dotRadius, 0, Math.PI * 2);
         this.ctx.fillStyle = this.strokeColor;
         this.ctx.fill();
+
+        if (this.onStrokeUpdate) {
+            this.onStrokeUpdate({
+                strokeCount: this.strokes.length,
+                pointCount: this.pointCount
+            });
+        }
     }
 
     handlePointerMove(e) {
-        if (!this.isDrawing || !this.currentStroke) return;
+        if (!this.isDrawing || !this.currentStroke || !this.lastPoint) return;
+
+        const canvasW = this.getCanvasWidth();
+        const canvasH = this.getCanvasHeight();
 
         const currentPos = this.getCanvasPosition(e);
         const pressure = (e.pressure && e.pressure > 0) ? e.pressure : 0.5;
 
-        // Filter tiny micro-movements
+        // Filter tiny micro-jitter (less than 1.5px)
         const dist = Math.hypot(currentPos.x - this.lastPoint.x, currentPos.y - this.lastPoint.y);
-        if (dist < 2) return;
+        if (dist < 1.5) return;
 
         // Record normalized point
+        const normX = Math.max(0, Math.min(1, currentPos.x / canvasW));
+        const normY = Math.max(0, Math.min(1, currentPos.y / canvasH));
+
         this.currentStroke.points.push({
-            x: currentPos.x / this.width,
-            y: currentPos.y / this.height,
+            x: normX,
+            y: normY,
             t: Date.now(),
             p: pressure
         });
         this.pointCount++;
-        this.updateBounds(currentPos.x, currentPos.y);
 
-        // Smooth Bezier Curve Drawing
+        // Render solid round-capped smooth line
         this.ctx.beginPath();
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         this.ctx.strokeStyle = this.strokeColor;
-        this.ctx.lineWidth = Math.max(3.0, this.baseLineWidth * (0.6 + pressure * 0.8));
-
-        const midPoint = {
-            x: (this.lastPoint.x + currentPos.x) / 2,
-            y: (this.lastPoint.y + currentPos.y) / 2
-        };
+        this.ctx.lineWidth = Math.max(3.5, this.baseLineWidth * (0.6 + pressure * 0.8));
 
         this.ctx.moveTo(this.lastPoint.x, this.lastPoint.y);
-        this.ctx.quadraticCurveTo(this.lastPoint.x, this.lastPoint.y, midPoint.x, midPoint.y);
+        this.ctx.lineTo(currentPos.x, currentPos.y);
         this.ctx.stroke();
 
         this.lastPoint = currentPos;
@@ -141,8 +192,7 @@ export class DrawingCanvas {
         if (this.onStrokeUpdate) {
             this.onStrokeUpdate({
                 strokeCount: this.strokes.length,
-                pointCount: this.pointCount,
-                bounds: this.bounds
+                pointCount: this.pointCount
             });
         }
     }
@@ -159,8 +209,7 @@ export class DrawingCanvas {
         if (this.onStrokeUpdate) {
             this.onStrokeUpdate({
                 strokeCount: this.strokes.length,
-                pointCount: this.pointCount,
-                bounds: this.bounds
+                pointCount: this.pointCount
             });
         }
     }
@@ -168,51 +217,42 @@ export class DrawingCanvas {
     getCanvasPosition(e) {
         const rect = this.canvas.getBoundingClientRect();
         return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
+            x: Math.max(0, Math.min(rect.width, e.clientX - rect.left)),
+            y: Math.max(0, Math.min(rect.height, e.clientY - rect.top))
         };
     }
 
-    updateBounds(x, y) {
-        this.bounds.minX = Math.min(this.bounds.minX, x);
-        this.bounds.minY = Math.min(this.bounds.minY, y);
-        this.bounds.maxX = Math.max(this.bounds.maxX, x);
-        this.bounds.maxY = Math.max(this.bounds.maxY, y);
-    }
-
     redrawAll() {
-        this.ctx.clearRect(0, 0, this.width, this.height);
+        const w = this.getCanvasWidth();
+        const h = this.getCanvasHeight();
 
+        this.ctx.clearRect(0, 0, w, h);
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
         this.ctx.strokeStyle = this.strokeColor;
 
         for (const stroke of this.strokes) {
-            if (stroke.points.length === 0) continue;
+            if (!stroke.points || stroke.points.length === 0) continue;
 
-            const pts = stroke.points.map(p => ({
-                x: p.x * this.width,
-                y: p.y * this.height,
-                p: p.p || 0.5
-            }));
+            const pts = stroke.points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+            if (pts.length === 0) continue;
 
             if (pts.length === 1) {
+                const pressure = pts[0].p || 0.5;
+                const dotRadius = Math.max(2.0, (this.baseLineWidth * (0.6 + pressure * 0.8)) / 2);
                 this.ctx.beginPath();
-                this.ctx.arc(pts[0].x, pts[0].y, (this.baseLineWidth * pts[0].p) / 2, 0, Math.PI * 2);
+                this.ctx.arc(pts[0].x * w, pts[0].y * h, dotRadius, 0, Math.PI * 2);
                 this.ctx.fillStyle = this.strokeColor;
                 this.ctx.fill();
                 continue;
             }
 
             for (let i = 1; i < pts.length; i++) {
+                const pressure = pts[i].p || 0.5;
                 this.ctx.beginPath();
-                this.ctx.lineWidth = Math.max(3.0, this.baseLineWidth * (0.6 + pts[i].p * 0.8));
-                this.ctx.moveTo(pts[i - 1].x, pts[i - 1].y);
-                const mid = {
-                    x: (pts[i - 1].x + pts[i].x) / 2,
-                    y: (pts[i - 1].y + pts[i].y) / 2
-                };
-                this.ctx.quadraticCurveTo(pts[i - 1].x, pts[i - 1].y, mid.x, mid.y);
+                this.ctx.lineWidth = Math.max(3.5, this.baseLineWidth * (0.6 + pressure * 0.8));
+                this.ctx.moveTo(pts[i - 1].x * w, pts[i - 1].y * h);
+                this.ctx.lineTo(pts[i].x * w, pts[i].y * h);
                 this.ctx.stroke();
             }
         }
@@ -223,40 +263,64 @@ export class DrawingCanvas {
         this.currentStroke = null;
         this.lastPoint = null;
         this.pointCount = 0;
-        this.bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
-        this.ctx.clearRect(0, 0, this.width, this.height);
+        const w = this.getCanvasWidth();
+        const h = this.getCanvasHeight();
+        this.ctx.clearRect(0, 0, w, h);
 
         if (this.onStrokeUpdate) {
             this.onStrokeUpdate({
                 strokeCount: 0,
-                pointCount: 0,
-                bounds: this.bounds
+                pointCount: 0
             });
         }
     }
 
     isEmpty() {
-        return this.strokes.length === 0 || this.pointCount < 5;
+        return !this.strokes || this.strokes.length === 0 || this.pointCount < 5;
     }
 
     /**
-     * Extracts normalized centered bitmap crop ready for AI model input (28x28 or 64x64)
+     * Preprocesses canvas into 28x28 centered bitmap for TensorFlow.js
+     * Format: Inverted (black background 0.0, white stroke 1.0)
      */
-    getNormalizedImageData(size = 28) {
+    getPreprocessedCanvas(size = 28) {
         if (this.isEmpty()) return null;
+
+        const w = this.getCanvasWidth();
+        const h = this.getCanvasHeight();
+
+        // 1. Calculate bounding box directly from points
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        let validPointCount = 0;
+
+        for (const stroke of this.strokes) {
+            for (const p of stroke.points) {
+                if (Number.isFinite(p.x) && Number.isFinite(p.y)) {
+                    const px = p.x * w;
+                    const py = p.y * h;
+                    minX = Math.min(minX, px);
+                    minY = Math.min(minY, py);
+                    maxX = Math.max(maxX, px);
+                    maxY = Math.max(maxY, py);
+                    validPointCount++;
+                }
+            }
+        }
+
+        if (validPointCount < 5 || minX === Infinity) return null;
 
         const offscreen = document.createElement('canvas');
         offscreen.width = size;
         offscreen.height = size;
         const offCtx = offscreen.getContext('2d');
 
-        // Black background, white drawing (standard QuickDraw format)
+        // Black background
         offCtx.fillStyle = '#000000';
         offCtx.fillRect(0, 0, size, size);
 
-        const pad = 4;
-        const drawW = this.bounds.maxX - this.bounds.minX;
-        const drawH = this.bounds.maxY - this.bounds.minY;
+        const pad = 3;
+        const drawW = Math.max(1, maxX - minX);
+        const drawH = Math.max(1, maxY - minY);
         const maxDim = Math.max(drawW, drawH, 10);
         const scale = (size - pad * 2) / maxDim;
 
@@ -264,25 +328,38 @@ export class DrawingCanvas {
         const offsetY = (size - drawH * scale) / 2;
 
         offCtx.save();
-        offCtx.translate(offsetX - this.bounds.minX * scale, offsetY - this.bounds.minY * scale);
+        offCtx.translate(offsetX - minX * scale, offsetY - minY * scale);
         offCtx.scale(scale, scale);
 
         offCtx.lineCap = 'round';
         offCtx.lineJoin = 'round';
         offCtx.strokeStyle = '#ffffff';
-        offCtx.lineWidth = 14 / scale; // Normalized line thickness for 28x28
+        offCtx.lineWidth = Math.max(1.8 / scale, 2.2 / scale);
 
         for (const stroke of this.strokes) {
-            if (stroke.points.length < 2) continue;
+            const pts = stroke.points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+            if (pts.length === 0) continue;
+
+            const startX = pts[0].x * w;
+            const startY = pts[0].y * h;
+
+            if (pts.length === 1) {
+                offCtx.beginPath();
+                offCtx.arc(startX, startY, offCtx.lineWidth / 2, 0, Math.PI * 2);
+                offCtx.fillStyle = '#ffffff';
+                offCtx.fill();
+                continue;
+            }
+
             offCtx.beginPath();
-            offCtx.moveTo(stroke.points[0].x * this.width, stroke.points[0].y * this.height);
-            for (let i = 1; i < stroke.points.length; i++) {
-                offCtx.lineTo(stroke.points[i].x * this.width, stroke.points[i].y * this.height);
+            offCtx.moveTo(startX, startY);
+            for (let i = 1; i < pts.length; i++) {
+                offCtx.lineTo(pts[i].x * w, pts[i].y * h);
             }
             offCtx.stroke();
         }
         offCtx.restore();
 
-        return offCtx.getImageData(0, 0, size, size);
+        return offscreen;
     }
 }
