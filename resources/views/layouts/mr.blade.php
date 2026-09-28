@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'MR Field Portal') - Exponit Labs</title>
 
@@ -23,12 +24,13 @@
     class="bg-slate-50 text-slate-900 min-h-screen pb-24 font-sans antialiased selection:bg-teal-600 selection:text-white">
 
     <!-- Header Status & Sync Bar -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 shadow-sm" x-data="syncBarApp">
+    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 px-4 py-3 shadow-sm"
+        x-data="syncBarApp">
         <div class="max-w-xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-2">
                 <span class="font-bold text-slate-900 text-sm tracking-tight flex items-center gap-1.5">
                     <span class="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
-                    Exponit MR Force
+                    Exponit Labs
                 </span>
             </div>
 
