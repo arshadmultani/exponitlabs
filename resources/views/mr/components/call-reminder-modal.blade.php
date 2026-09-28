@@ -26,7 +26,7 @@
                     </div>
                     <div>
                         <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                            <span>WhatsApp Call Reminder</span>
+                            <span>WhatsApp Reminder</span>
                         </h2>
                         <p class="text-xs text-slate-400">
                             <span
@@ -66,7 +66,8 @@
             <div
                 class="px-5 py-4 bg-white border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
                 <div class="text-xs text-slate-600 flex items-center gap-2">
-                    <span class="w-2.5 h-2.5 rounded-full" :class="isValidPhone ? 'bg-emerald-500' : 'bg-amber-400'"></span>
+                    <span class="w-2.5 h-2.5 rounded-full"
+                        :class="isValidPhone ? 'bg-emerald-500' : 'bg-amber-400'"></span>
                     <span x-show="isValidPhone && sendMode === 'both'">
                         Card + Text Mode • Deliver both visual card & message together
                     </span>
@@ -85,11 +86,14 @@
                     </button>
 
                     <!-- Secondary Direct Chat (Text Only) Button when in 'both' mode -->
-                    <button type="button" x-show="sendMode === 'both'" @click="sendWhatsAppReminder('text_only')" :disabled="!isValidPhone"
+                    <button type="button" x-show="sendMode === 'both'" @click="sendWhatsAppReminder('text_only')"
+                        :disabled="!isValidPhone"
                         class="hidden sm:inline-flex px-3.5 py-2.5 rounded-xl border border-emerald-300 text-emerald-800 hover:bg-emerald-50 text-xs font-bold transition-colors items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Open Dr. chat directly without image card">
-                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                         </svg>
                         <span>Direct Chat (Text Only)</span>
                     </button>
