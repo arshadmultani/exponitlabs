@@ -7,6 +7,7 @@ import { DrawingCanvas } from './canvas.js';
 import { createClassifier } from './classifier.js';
 import { DebugPanel } from './debug.js';
 import { GameEngine, GameState } from './game.js';
+import { initPWA } from './pwa.js';
 
 class UIController {
     constructor() {
@@ -202,6 +203,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             canvas.resize();
         });
     };
+
+    // Initialize dedicated PWA service worker with /lab/draw scope
+    initPWA((status) => {
+        debug.update(status);
+    });
 
     // Button Bindings
     document.getElementById('btn-start-game')?.addEventListener('click', () => {

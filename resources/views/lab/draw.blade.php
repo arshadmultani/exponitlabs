@@ -7,8 +7,11 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Exponit Draw">
     <meta name="theme-color" content="#090d16">
     <title>Exponit Draw | Offline Doctor Toys</title>
+    <link rel="manifest" href="{{ asset('lab/draw/manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ asset('lab/draw/assets/icons/icon-192.png') }}">
     <link rel="stylesheet" href="{{ asset('lab/draw/css/draw.css') }}">
 </head>
 

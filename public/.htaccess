@@ -29,6 +29,11 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
+# MIME type for PWA Web Manifest
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+</IfModule>
+
 # Long-lived caching for hashed, immutable build assets + fonts/images.
 # Vite fingerprints filenames, so a far-future cache is safe.
 <IfModule mod_expires.c>

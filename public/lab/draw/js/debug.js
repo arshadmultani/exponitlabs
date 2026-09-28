@@ -17,7 +17,10 @@ export class DebugPanel {
             points: 0,
             dpr: window.devicePixelRatio || 1,
             viewport: `${window.innerWidth}x${window.innerHeight}`,
-            online: navigator.onLine ? 'YES' : 'NO'
+            online: navigator.onLine ? 'YES' : 'NO',
+            swStatus: 'CHECKING',
+            offlineReady: 'NO',
+            cacheVersion: 'v1'
         };
 
         if (this.isVisible) {
@@ -77,6 +80,8 @@ export class DebugPanel {
                     <div><span>Points:</span> <b>${this.metrics.points}</b></div>
                     <div><span>Display:</span> <b>${this.metrics.viewport} (${this.metrics.dpr}x)</b></div>
                     <div><span>Online:</span> <b class="${this.metrics.online === 'YES' ? 'text-green' : 'text-rose'}">${this.metrics.online}</b></div>
+                    <div><span>SW State:</span> <b>${this.metrics.swStatus}</b></div>
+                    <div><span>Offline:</span> <b class="${this.metrics.offlineReady.includes('YES') ? 'text-green' : 'text-amber'}">${this.metrics.offlineReady}</b></div>
                 </div>
             </div>
         `;
