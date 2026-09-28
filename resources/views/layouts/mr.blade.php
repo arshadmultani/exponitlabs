@@ -138,6 +138,17 @@
             </a>
         </div>
     </nav>
+
+    <!-- Global Call Reminder Modal -->
+    @include('mr.components.call-reminder-modal')
+
+    <script>
+        window.currentMR = {
+            id: {{ auth()->id() ?? 'null' }},
+            name: "{{ addslashes(auth()->user()?->name ?? 'Representative') }}",
+            email: "{{ addslashes(auth()->user()?->email ?? '') }}"
+        };
+    </script>
 </body>
 
 </html>

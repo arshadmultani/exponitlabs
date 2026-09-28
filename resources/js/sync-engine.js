@@ -141,15 +141,47 @@ export async function syncPendingDcrs() {
   }
 }
 
+export async function syncPendingReminders() {
+  try {
+    const pending = await db.reminder_logs.where('sync_status').equals('pending').toArray();
+    if (!pending || pending.length === 0) return true;
+
+    const response = await fetch('/api/v1/sync/reminders-batch', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+      },
+      body: JSON.stringify({ reminders: pending })
+    });
+
+    if (!response.ok) return false;
+
+    const resData = await response.json();
+    if (resData.success) {
+      const ids = pending.map(p => p.id);
+      for (const id of ids) {
+        await db.reminder_logs.update(id, { sync_status: 'synced' });
+      }
+    }
+    return true;
+  } catch (err) {
+    console.warn('[SyncEngine] Reminder logs sync failed:', err);
+    return false;
+  }
+}
+
 export async function runFullSync() {
   if (!navigator.onLine) return { success: false, reason: 'offline' };
   
   const docSuccess = await syncPendingDoctors();
   const dcrSuccess = await syncPendingDcrs();
+  const remSuccess = await syncPendingReminders();
   const masterSuccess = await syncMasterData();
 
   return {
-    success: docSuccess && dcrSuccess && masterSuccess,
+    success: docSuccess && dcrSuccess && remSuccess && masterSuccess,
     time: new Date().toLocaleTimeString()
   };
 }
+

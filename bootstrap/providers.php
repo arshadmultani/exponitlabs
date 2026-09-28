@@ -1,6 +1,9 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\Filament\ConsolePanelProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\Filament\ConsolePanelProvider::class,
+    AppServiceProvider::class,
+    ConsolePanelProvider::class,
 ];

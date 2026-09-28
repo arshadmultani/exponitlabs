@@ -88,7 +88,31 @@ class Doctor extends Model
         return $this->belongsTo(Headquarter::class);
     }
 
-    protected $appends = ['profile_photo_url'];
+    protected $appends = ['profile_photo_url', 'whatsapp_number'];
+
+    public function getWhatsappNumberAttribute(): ?string
+    {
+        if (! $this->phone) {
+            return null;
+        }
+
+        $digits = preg_replace('/\D/', '', $this->phone);
+        if (str_starts_with($digits, '0091')) {
+            $digits = substr($digits, 4);
+        } elseif (str_starts_with($digits, '091')) {
+            $digits = substr($digits, 3);
+        } elseif (str_starts_with($digits, '0') && strlen($digits) === 11) {
+            $digits = substr($digits, 1);
+        } elseif (str_starts_with($digits, '91') && strlen($digits) === 12) {
+            $digits = substr($digits, 2);
+        }
+
+        if (strlen($digits) === 10) {
+            return '91'.$digits;
+        }
+
+        return $digits;
+    }
 
     public function microsite(): HasOne
     {

@@ -43,6 +43,7 @@ class SyncController extends Controller
             'phone',
             'specialty',
             'qualification',
+            'profile_photo',
             'town',
             'area_id',
             'address',
@@ -58,6 +59,9 @@ class SyncController extends Controller
                 $doc->saveQuietly();
             }
 
+            $doc->profile_photo_url = $doc->profile_photo_url;
+            $doc->whatsapp_number = $doc->whatsapp_number;
+
             return $doc;
         });
 
@@ -67,9 +71,17 @@ class SyncController extends Controller
         $products = $productsQuery->get([
             'id',
             'name',
+            'composition',
+            'strength',
+            'packaging',
+            'image_path',
             'therapeutic_area_id',
             'updated_at',
-        ]);
+        ])->map(function ($product) {
+            $product->image_url = $product->imageUrl();
+
+            return $product;
+        });
 
         $promotionalInputs = $inputsQuery->get([
             'id',
@@ -91,6 +103,7 @@ class SyncController extends Controller
                     'doctor_uuid' => $dcr->doctor?->uuid,
                     'doctor_name' => $dcr->doctor?->name,
                     'remarks' => $dcr->remarks,
+                    'reminder_sent_at' => $dcr->reminder_sent_at?->toIso8601String(),
                     'products' => $dcr->sampleProducts->map(fn ($p) => [
                         'product_id' => $p->product_id,
                         'quantity' => $p->quantity,
@@ -198,6 +211,7 @@ class SyncController extends Controller
             'dcrs.*.promotional_inputs' => 'nullable|array',
             'dcrs.*.promotional_inputs.*.promotional_input_id' => 'required|integer',
             'dcrs.*.promotional_inputs.*.quantity' => 'required|integer|min:1',
+            'dcrs.*.reminder_sent_at' => 'nullable|date',
         ]);
 
         $syncedUuids = [];
@@ -217,13 +231,19 @@ class SyncController extends Controller
                     continue;
                 }
 
+                $dcrPayload = [
+                    'date' => $item['date'],
+                    'doctor_id' => $doctorId,
+                    'remarks' => $item['remarks'] ?? null,
+                ];
+
+                if (! empty($item['reminder_sent_at'])) {
+                    $dcrPayload['reminder_sent_at'] = $item['reminder_sent_at'];
+                }
+
                 $dcr = DCR::updateOrCreate(
                     ['uuid' => $item['client_uuid']],
-                    [
-                        'date' => $item['date'],
-                        'doctor_id' => $doctorId,
-                        'remarks' => $item['remarks'] ?? null,
-                    ]
+                    $dcrPayload
                 );
 
                 if (! empty($item['products'])) {
@@ -255,6 +275,51 @@ class SyncController extends Controller
         return response()->json([
             'success' => true,
             'synced_uuids' => $syncedUuids,
+        ]);
+    }
+
+    /**
+     * Upload reminder logs and update DCR reminder timestamps.
+     */
+    public function syncReminders(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'reminders' => 'required|array',
+            'reminders.*.dcr_client_uuid' => 'nullable|string',
+            'reminders.*.doctor_uuid' => 'nullable|string',
+            'reminders.*.doctor_id' => 'nullable|integer',
+            'reminders.*.visit_date' => 'nullable|date_format:Y-m-d',
+            'reminders.*.sent_at' => 'required|date',
+        ]);
+
+        $updatedCount = 0;
+
+        DB::transaction(function () use ($validated, &$updatedCount) {
+            foreach ($validated['reminders'] as $rem) {
+                $dcr = null;
+                if (! empty($rem['dcr_client_uuid'])) {
+                    $dcr = DCR::where('uuid', $rem['dcr_client_uuid'])->first();
+                }
+
+                if (! $dcr && ! empty($rem['doctor_uuid']) && ! empty($rem['visit_date'])) {
+                    $doctor = Doctor::where('uuid', $rem['doctor_uuid'])->first();
+                    if ($doctor) {
+                        $dcr = DCR::where('doctor_id', $doctor->id)
+                            ->where('date', $rem['visit_date'])
+                            ->first();
+                    }
+                }
+
+                if ($dcr) {
+                    $dcr->update(['reminder_sent_at' => $rem['sent_at']]);
+                    $updatedCount++;
+                }
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'updated_count' => $updatedCount,
         ]);
     }
 }

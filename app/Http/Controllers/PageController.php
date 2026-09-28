@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\TherapeuticArea;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Spatie\DiscordAlerts\Facades\DiscordAlert;
 
 class PageController extends Controller
@@ -152,7 +153,7 @@ class PageController extends Controller
             DiscordAlert::message(
                 "📨 New contact enquiry from **{$submission->name}** ({$submission->email})\n"
                 .($submission->organization ? "Org: {$submission->organization}\n" : '')
-                .">>> ".\Illuminate\Support\Str::limit($submission->message, 400)
+                .'>>> '.Str::limit($submission->message, 400)
             );
         } catch (\Throwable $e) {
             Log::warning('Contact Discord alert failed: '.$e->getMessage());

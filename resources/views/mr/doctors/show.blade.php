@@ -13,6 +13,13 @@
             Back to Directory
         </a>
         <div class="flex items-center space-x-2">
+            <button type="button" @click="openReminder()"
+               class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold text-white shadow-sm transition-all flex items-center space-x-1">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2m.01 1.67c4.56 0 8.25 3.69 8.25 8.24 0 2.2-.86 4.28-2.42 5.84l-.59.59-.35.35c-1.49 1.49-3.48 2.31-5.58 2.31-1.42 0-2.82-.36-4.06-1.05l-.29-.16-3.11.82.83-3.04-.19-.31c-.76-1.28-1.17-2.74-1.17-4.25 0-4.55 3.69-8.24 8.24-8.24m4.52 11.53c-.25-.12-1.47-.72-1.7-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.79.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.02-.38.11-.5.11-.11.25-.29.37-.43.12-.14.17-.25.25-.41.08-.17.04-.31-.02-.43s-.56-1.34-.76-1.84c-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.23.25-.87.85-.87 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.25 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.07.15-1.18-.06-.11-.23-.17-.48-.29z"/>
+                </svg>
+                <span>WhatsApp Reminder</span>
+            </button>
             <a :href="'{{ route('elos.presentation') }}?doctor=' + doctorUuid"
                class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-xs font-semibold text-white shadow-sm transition-all flex items-center space-x-1">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,6 +100,18 @@
                         <span x-text="(doctor.address ? doctor.address + ', ' : '') + (doctor.town || '')"></span>
                     </div>
                 </template>
+
+                <template x-if="latestReminderSentAt">
+                    <div class="flex items-center space-x-2 pt-1 border-t border-slate-100">
+                        <span class="text-slate-500 font-semibold w-24">Last Reminder:</span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <svg class="w-3 h-3 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span x-text="'Sent ' + formatSentTime(latestReminderSentAt)"></span>
+                        </span>
+                    </div>
+                </template>
             </div>
         </div>
     </template>
@@ -110,8 +129,15 @@
                 <template x-for="dcr in pendingDcrs" :key="dcr.client_uuid">
                     <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs space-y-1">
                         <div class="flex items-center justify-between font-semibold text-amber-900">
-                            <span x-text="'Visit Date: ' + dcr.date"></span>
-                            <span>Pending Sync</span>
+                            <span x-text="'Visit Date: ' + formatDate(dcr.date)"></span>
+                            <div class="flex items-center space-x-2">
+                                <template x-if="dcr.reminder_sent_at">
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                                        ✓ Reminder Sent
+                                    </span>
+                                </template>
+                                <span>Pending Sync</span>
+                            </div>
                         </div>
                         <p class="text-slate-700" x-text="dcr.remarks || 'No remarks added.'"></p>
                     </div>
@@ -126,7 +152,12 @@
                 <template x-for="v in history" :key="v.id || v.uuid || v.client_uuid">
                     <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1.5">
                         <div class="flex items-center justify-between font-semibold text-slate-900">
-                            <span x-text="'Visit Date: ' + (v.date || '').slice(0, 10)"></span>
+                            <span x-text="'Visit Date: ' + formatDate(v.date)"></span>
+                            <template x-if="v.reminder_sent_at">
+                                <span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                                    ✓ Reminder Sent
+                                </span>
+                            </template>
                         </div>
                         <p class="text-slate-600" x-text="v.remarks || 'Visited doctor.'"></p>
 

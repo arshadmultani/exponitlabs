@@ -12,4 +12,5 @@ Route::prefix('v1/sync')->group(function () {
     Route::get('/master-data', [SyncController::class, 'masterData']);
     Route::post('/doctors-batch', [SyncController::class, 'syncDoctors']);
     Route::post('/dcr-batch', [SyncController::class, 'syncDcrs']);
+    Route::post('/reminders-batch', [SyncController::class, 'syncReminders']);
 });
