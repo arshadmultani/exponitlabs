@@ -69,3 +69,6 @@ Route::middleware('auth:web')->prefix('elos')->name('elos.')->group(function () 
     Route::get('/doctors/{uuid}', [MRDoctorController::class, 'show'])->name('doctors.show');
     Route::get('/presentation', [MRPresentationController::class, 'index'])->name('presentation');
 });
+
+// Exponit Lab — Offline interactive toys & experiments (standalone, public)
+Route::view('/lab/draw', 'lab.draw')->name('lab.draw');
