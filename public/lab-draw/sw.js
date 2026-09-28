@@ -9,20 +9,21 @@ const CACHE_NAME = `lab-draw-cache-${CACHE_VERSION}`;
 
 const PRECACHE_ASSETS = [
     '/lab/draw',
-    '/lab/draw/manifest.webmanifest',
-    '/lab/draw/css/draw.css',
-    '/lab/draw/js/app.js',
-    '/lab/draw/js/audio.js',
-    '/lab/draw/js/canvas.js',
-    '/lab/draw/js/classifier.js',
-    '/lab/draw/js/debug.js',
-    '/lab/draw/js/game.js',
-    '/lab/draw/js/tf.min.js',
-    '/lab/draw/model/model.json',
-    '/lab/draw/model/group1-shard1of1.bin',
-    '/lab/draw/model/class_names.txt',
-    '/lab/draw/assets/icons/icon-192.png',
-    '/lab/draw/assets/icons/icon-512.png'
+    '/lab-draw/manifest.webmanifest',
+    '/lab-draw/css/draw.css',
+    '/lab-draw/js/app.js',
+    '/lab-draw/js/audio.js',
+    '/lab-draw/js/canvas.js',
+    '/lab-draw/js/classifier.js',
+    '/lab-draw/js/debug.js',
+    '/lab-draw/js/game.js',
+    '/lab-draw/js/pwa.js',
+    '/lab-draw/js/tf.min.js',
+    '/lab-draw/model/model.json',
+    '/lab-draw/model/group1-shard1of1.bin',
+    '/lab-draw/model/class_names.txt',
+    '/lab-draw/assets/icons/icon-192.png',
+    '/lab-draw/assets/icons/icon-512.png'
 ];
 
 // Install: Precache all essential offline assets
@@ -66,8 +67,8 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(request.url);
 
-    // Only intercept requests for the /lab/draw scope
-    if (!url.pathname.startsWith('/lab/draw')) {
+    // Intercept requests for /lab/draw page and /lab-draw/ static assets
+    if (!url.pathname.startsWith('/lab/draw') && !url.pathname.startsWith('/lab-draw/')) {
         return;
     }
 

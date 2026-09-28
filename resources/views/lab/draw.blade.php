@@ -10,9 +10,9 @@
     <meta name="apple-mobile-web-app-title" content="Exponit Draw">
     <meta name="theme-color" content="#090d16">
     <title>Exponit Draw | Offline Doctor Toys</title>
-    <link rel="manifest" href="{{ asset('lab/draw/manifest.webmanifest') }}">
-    <link rel="apple-touch-icon" href="{{ asset('lab/draw/assets/icons/icon-192.png') }}">
-    <link rel="stylesheet" href="{{ asset('lab/draw/css/draw.css') }}">
+    <link rel="manifest" href="{{ asset('lab-draw/manifest.webmanifest') }}">
+    <link rel="apple-touch-icon" href="{{ asset('lab-draw/assets/icons/icon-192.png') }}">
+    <link rel="stylesheet" href="{{ asset('lab-draw/css/draw.css') }}">
 </head>
 
 <body>
@@ -105,10 +105,10 @@
     </div>
 
     <!-- Local Bundled TensorFlow.js Runtime (Zero CDN dependency) -->
-    <script src="{{ asset('lab/draw/js/tf.min.js') }}"></script>
+    <script src="{{ asset('lab-draw/js/tf.min.js') }}"></script>
 
     <!-- ES Module App Entrypoint -->
-    <script type="module" src="{{ asset('lab/draw/js/app.js') }}"></script>
+    <script type="module" src="{{ asset('lab-draw/js/app.js') }}"></script>
 </body>
 
 </html>

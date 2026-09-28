@@ -64,8 +64,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 2. Never intercept API sync routes, Filament admin console, or standalone Lab routes
-  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/console/') || url.pathname.startsWith('/lab/')) {
+  // 2. Never intercept API sync routes, Filament admin console, or standalone Lab routes/assets
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/console/') || url.pathname.startsWith('/lab')) {
     return;
   }
 

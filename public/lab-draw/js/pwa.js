@@ -7,13 +7,13 @@ const CACHE_NAME = 'lab-draw-cache-v1';
 
 const CRITICAL_OFFLINE_URLS = [
     '/lab/draw',
-    '/lab/draw/css/draw.css',
-    '/lab/draw/js/app.js',
-    '/lab/draw/js/tf.min.js',
-    '/lab/draw/model/model.json',
-    '/lab/draw/model/group1-shard1of1.bin',
-    '/lab/draw/model/class_names.txt',
-    '/lab/draw/manifest.webmanifest'
+    '/lab-draw/css/draw.css',
+    '/lab-draw/js/app.js',
+    '/lab-draw/js/tf.min.js',
+    '/lab-draw/model/model.json',
+    '/lab-draw/model/group1-shard1of1.bin',
+    '/lab-draw/model/class_names.txt',
+    '/lab-draw/manifest.webmanifest'
 ];
 
 export async function isOfflineReady() {
@@ -51,7 +51,7 @@ export async function initPWA(onStatusUpdate = null) {
 
     try {
         // Register dedicated service worker with explicit /lab/draw scope
-        const registration = await navigator.serviceWorker.register('/lab/draw-sw.js', {
+        const registration = await navigator.serviceWorker.register('/lab-draw/sw.js', {
             scope: '/lab/draw'
         });
 

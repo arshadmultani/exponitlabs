@@ -73,8 +73,8 @@ Route::middleware('auth:web')->prefix('elos')->name('elos.')->group(function () 
 // Exponit Lab — Offline interactive toys & experiments (standalone, public)
 Route::view('/lab/draw', 'lab.draw')->name('lab.draw');
 
-Route::get('/lab/draw/sw.js', function () {
-    return response()->file(public_path('lab/draw/sw.js'), [
+Route::get('/lab-draw/sw.js', function () {
+    return response()->file(public_path('lab-draw/sw.js'), [
         'Content-Type' => 'application/javascript',
         'Service-Worker-Allowed' => '/lab/draw',
         'Cache-Control' => 'no-cache, no-store, must-revalidate',
@@ -82,7 +82,7 @@ Route::get('/lab/draw/sw.js', function () {
 });
 
 Route::get('/lab/draw-sw.js', function () {
-    return response()->file(public_path('lab/draw-sw.js'), [
+    return response()->file(public_path('lab-draw/sw.js'), [
         'Content-Type' => 'application/javascript',
         'Service-Worker-Allowed' => '/lab/draw',
         'Cache-Control' => 'no-cache, no-store, must-revalidate',

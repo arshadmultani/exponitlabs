@@ -114,7 +114,7 @@ export class TensorFlowJSClassifier extends Classifier {
         await tf.ready();
 
         // 2. Fetch class names
-        const classRes = await fetch('/lab/draw/model/class_names.txt');
+        const classRes = await fetch('/lab-draw/model/class_names.txt');
         if (!classRes.ok) {
             throw new Error(`Failed to load class_names.txt: ${classRes.status}`);
         }
@@ -122,7 +122,7 @@ export class TensorFlowJSClassifier extends Classifier {
         this.classes = text.trim().split(/\r?\n/).map(s => s.trim());
 
         // 3. Load Layers Model
-        this.model = await tf.loadLayersModel('/lab/draw/model/model.json');
+        this.model = await tf.loadLayersModel('/lab-draw/model/model.json');
 
         // 4. Warm up model with dummy tensor to avoid initial UI freeze
         tf.tidy(() => {
