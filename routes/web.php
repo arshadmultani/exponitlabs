@@ -8,6 +8,7 @@ use App\Http\Controllers\MR\MRDcrController;
 use App\Http\Controllers\MR\MRDoctorController;
 use App\Http\Controllers\MR\MRPresentationController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\QrRedirectController;
 use Illuminate\Support\Facades\Route;
 use Spatie\Honeypot\ProtectAgainstSpam;
 
@@ -88,3 +89,8 @@ Route::get('/lab/draw-sw.js', function () {
         'Cache-Control' => 'no-cache, no-store, must-revalidate',
     ]);
 });
+
+// Dynamic QR code redirection, preview & download
+Route::get('/q/{code}', [QrRedirectController::class, 'redirect'])->name('qr.redirect');
+Route::get('/q/{code}/preview', [QrRedirectController::class, 'preview'])->name('qr.preview');
+Route::get('/q/{code}/download/{format?}', [QrRedirectController::class, 'download'])->name('qr.download');
