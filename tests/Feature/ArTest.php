@@ -1,10 +1,12 @@
 <?php
 
+use App\Ai\Agents\DoctorNameExtractorAgent;
 use App\Filament\Resources\ArCreatives\Pages\EditArCreative;
 use App\Models\ArCreative;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Ai\Ai;
 use Livewire\Livewire;
 
 // Put the marker + video on a faked disk so Filament's FileUpload fields hydrate
@@ -165,4 +167,47 @@ it('allows publishing a trackable, ready creative', function () {
         ->assertHasNoFormErrors();
 
     expect($creative->fresh()->status)->toBe('published');
+});
+
+it('recognizes a doctor name from an AR snapshot', function () {
+    Ai::fakeAgent(DoctorNameExtractorAgent::class, [
+        ['name' => 'Sharma', 'confidence' => 0.95],
+    ]);
+
+    $creative = makeReadyCreative();
+
+    $this->post(route('ar.recognize-doctor', $creative), [
+        'image' => 'data:image/jpeg;base64,'.base64_encode('fake-image-bytes'),
+    ])
+        ->assertOk()
+        ->assertJson([
+            'ok' => true,
+            'name' => 'Sharma',
+            'confidence' => 0.95,
+        ]);
+});
+
+it('handles null doctor name gracefully', function () {
+    Ai::fakeAgent(DoctorNameExtractorAgent::class, [
+        ['name' => null, 'confidence' => 0.2],
+    ]);
+
+    $creative = makeReadyCreative();
+
+    $this->post(route('ar.recognize-doctor', $creative), [
+        'image' => base64_encode('fake-image-bytes'),
+    ])
+        ->assertOk()
+        ->assertJson([
+            'ok' => true,
+            'name' => null,
+            'confidence' => 0.2,
+        ]);
+});
+
+it('validates image parameter on recognize-doctor endpoint', function () {
+    $creative = makeReadyCreative();
+
+    $this->post(route('ar.recognize-doctor', $creative), [])
+        ->assertSessionHasErrors('image');
 });

@@ -38,6 +38,7 @@ Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
 // Public augmented-reality viewer.
 // The QR code printed on a creative points here; only published creatives are visible.
 Route::get('/ar/{creative}', [ArController::class, 'show'])->name('ar.show');
+Route::post('/ar/{creative}/recognize-doctor', [ArController::class, 'recognizeDoctor'])->name('ar.recognize-doctor');
 
 // Admin-only: receives the ".mind" tracking file compiled in the browser.
 Route::middleware('auth')

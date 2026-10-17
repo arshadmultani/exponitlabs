@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Ai\Agents\DoctorNameExtractorAgent;
 use App\Models\ArCreative;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Ai\Files\Image;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ArController extends Controller
@@ -62,5 +64,49 @@ class ArController extends Controller
             'ok' => true,
             'tracking_score' => $creative->tracking_score,
         ]);
+    }
+
+    /**
+     * Recognize the doctor's handwritten name from an AR camera snapshot.
+     */
+    public function recognizeDoctor(Request $request, ArCreative $creative)
+    {
+        $validated = $request->validate([
+            'image' => ['required', 'string'],
+        ]);
+
+        $rawBase64 = $validated['image'];
+
+        // Remove data URL prefix if present (e.g. data:image/jpeg;base64,)
+        $mime = 'image/jpeg';
+        if (str_contains($rawBase64, ',')) {
+            [$header, $rawBase64] = explode(',', $rawBase64, 2);
+            if (preg_match('/data:([^;]+);base64/', $header, $matches)) {
+                $mime = $matches[1];
+            }
+        }
+
+        try {
+            $response = DoctorNameExtractorAgent::make()->prompt(
+                'Extract the handwritten doctor name on this reminder card.',
+                attachments: [
+                    Image::fromBase64($rawBase64, $mime),
+                ],
+            );
+
+            return response()->json([
+                'ok' => true,
+                'name' => $response['name'] ?? null,
+                'confidence' => (float) ($response['confidence'] ?? 0),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'ok' => false,
+                'name' => null,
+                'message' => 'Could not recognize doctor name.',
+            ]);
+        }
     }
 }

@@ -15,17 +15,37 @@
         data-mind="{{ $creative->mindFileUrl() }}"
         data-video="{{ $creative->videoUrl() }}"
         data-play-mode="{{ $creative->play_mode }}"
-        data-marker-aspect="{{ $creative->markerAspectRatio() }}"></div>
+        data-marker-aspect="{{ $creative->markerAspectRatio() }}"
+        data-recognize-url="{{ route('ar.recognize-doctor', $creative) }}"
+        data-csrf="{{ csrf_token() }}"></div>
+
+    {{-- Floating Doctor Greeting badge --}}
+    <div id="ar-doctor-greeting" class="ar-badge hidden">
+        <span class="ar-badge-icon">👋</span>
+        <div class="ar-badge-text">
+            <div id="ar-greeting-title" class="ar-badge-title">Welcome Doctor</div>
+            <div id="ar-greeting-sub" class="ar-badge-sub">Exponit Labs Product Detailing</div>
+        </div>
+    </div>
+
+    {{-- Floating Product narration toast --}}
+    <div id="ar-product-toast" class="ar-product-toast hidden">
+        <div id="ar-product-name" class="ar-product-title">GASTRONIT-DSR</div>
+        <div id="ar-product-comp" class="ar-product-comp">Pantoprazole 40 mg + Domperidone 30 mg</div>
+    </div>
+
+    {{-- Interactive 3D Hint --}}
+    <div id="ar-3d-hint" class="ar-3d-hint hidden">👆 Drag 3D pack to rotate</div>
 
     {{-- Tap-to-start gate: required so phones allow the camera and video sound. --}}
     <div id="ar-start" class="overlay">
         <h1>{{ $creative->name }}</h1>
-        <p>Point your camera at the printed image to bring it to life. Tap below to begin.</p>
+        <p>Point your camera at the printed reminder card to begin the interactive audio & 3D product experience.</p>
         <button id="ar-start-button" class="btn" type="button">Start experience</button>
     </div>
 
     {{-- Scanning hint, shown once the camera is live and hidden while the video plays. --}}
-    <div id="ar-status" class="hidden">Point at the image…</div>
+    <div id="ar-status" class="hidden">Point camera at the reminder card…</div>
 
     {{-- Fallback for browsers that can't open the camera (e.g. in-app QR browsers). --}}
     <div id="ar-error" class="overlay hidden">
