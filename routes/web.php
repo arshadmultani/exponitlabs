@@ -35,6 +35,10 @@ Route::view('/pricing-calculator', 'pages.pricing-calculator')->name('pricing-ca
 // SEO: XML sitemap (DIY, no package).
 Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
 
+// LLM discovery (GEO: Generative Engine Optimization)
+Route::get('/llms.txt', [PageController::class, 'llmsTxt'])->name('llms.txt');
+Route::get('/llms-full.txt', [PageController::class, 'llmsFullTxt'])->name('llms-full.txt');
+
 // Public augmented-reality viewer.
 // The QR code printed on a creative points here; only published creatives are visible.
 Route::get('/ar/{creative}', [ArController::class, 'show'])->name('ar.show');

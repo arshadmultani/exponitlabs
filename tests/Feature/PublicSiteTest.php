@@ -163,12 +163,68 @@ it('serves the internal pricing calculator as a noindex page', function () {
         ->assertSee('noindex, nofollow', false);
 });
 
-it('ships robots.txt and llms.txt with the right content', function () {
+it('ships robots.txt, llms.txt, and llms-full.txt with the right content', function () {
     // Static files served by the webserver, not the Laravel router — assert on disk.
     expect(file_get_contents(public_path('robots.txt')))
         ->toContain('Sitemap:')
-        ->toContain('Disallow: /console');
+        ->toContain('Disallow: /console')
+        ->toContain('User-agent: GPTBot')
+        ->toContain('User-agent: OAI-SearchBot');
 
     expect(file_get_contents(public_path('llms.txt')))
-        ->toContain('Exponit Labs');
+        ->toContain('Exponit Labs')
+        ->toContain('## Core Therapeutic Areas')
+        ->toContain('## Product Directory');
+
+    expect(file_get_contents(public_path('llms-full.txt')))
+        ->toContain('## 1. Company Profile & Quality Standards')
+        ->toContain('## 2. Product Master Table')
+        ->toContain('Pharmaceutical Trade Pricing Reference (India: PTR, PTS & Schemes)');
+});
+
+it('serves dynamic /llms.txt and /llms-full.txt with active catalog data and excludes inactive products', function () {
+    $area = TherapeuticArea::factory()->create(['name' => 'Cardio Care']);
+    $activeProduct = Product::factory()->for($area, 'therapeuticArea')->create([
+        'name' => 'Cardionit-50',
+        'composition' => 'Atenolol 50mg',
+        'is_active' => true,
+    ]);
+    $inactiveProduct = Product::factory()->for($area, 'therapeuticArea')->create([
+        'name' => 'SecretMolecule-X',
+        'is_active' => false,
+    ]);
+
+    $this->get(route('llms.txt'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertSee('Cardionit-50')
+        ->assertSee('Atenolol 50mg')
+        ->assertDontSee('SecretMolecule-X');
+
+    $this->get(route('llms-full.txt'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertSee('Cardionit-50')
+        ->assertSee('PTR (Price to Retailer)')
+        ->assertDontSee('SecretMolecule-X');
+});
+
+it('includes the describedby link in the public layout head pointing to llms.txt', function () {
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('<link rel="describedby" type="text/plain" href="'.route('llms.txt').'">', false);
+});
+
+it('includes the pricing calculator in sitemap.xml', function () {
+    $this->get(route('sitemap'))
+        ->assertOk()
+        ->assertSee(route('pricing-calculator'), false);
+});
+
+it('generates llms.txt and llms-full.txt via artisan command', function () {
+    $this->artisan('seo:generate-llms')
+        ->assertSuccessful();
+
+    expect(file_exists(public_path('llms.txt')))->toBeTrue();
+    expect(file_exists(public_path('llms-full.txt')))->toBeTrue();
 });

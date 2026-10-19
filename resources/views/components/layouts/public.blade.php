@@ -19,6 +19,7 @@
     <meta name="robots" content="{{ $robots }}">
     <meta name="theme-color" content="#0F2A44">
     <link rel="canonical" href="{{ url()->current() }}">
+    <link rel="describedby" type="text/plain" href="{{ route('llms.txt') }}">
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Exponit Labs">

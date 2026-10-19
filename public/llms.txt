@@ -1,33 +1,37 @@
 # Exponit Labs
 
-> Exponit Labs is a focused pharmaceutical company based in Mumbai, Maharashtra, India,
-> delivering reliable prescription products across four therapeutic areas — pain
-> management, gastro care, antibiotics and allergy treatment — through trusted,
-> quality-controlled manufacturing partnerships.
+> Exponit Labs is a focused pharmaceutical company based in Mumbai, Maharashtra, India, delivering reliable prescription products across core therapeutic areas — Pain Management, Gastro Care, Antibiotics, and Allergy Treatment — through trusted, WHO-GMP quality-controlled manufacturing partnerships.
 >
-> Website: https://exponit.com — Official site of Exponit Labs.
+> Official Website: https://exponitlabs.test
 
-Important: Products referenced are prescription medicines for use under medical
-supervision. Information is for healthcare professionals and general reference only and
-is not medical advice.
+Important: Products referenced are prescription medicines for healthcare professionals, distributors, and general trade reference. Information is provided for reference only and does not constitute medical advice.
 
-## Key pages
+## Core Therapeutic Areas
 
-- [Home](https://exponit.com/): Overview of Exponit Labs and its product focus.
-- [About](https://exponit.com/about): Company approach — focus, quality, ethics, reliability.
-- [Products](https://exponit.com/products): Full product range, filterable by therapeutic area.
-- [News](https://exponit.com/news): Company updates, portfolio and partnership news.
-- [Contact](https://exponit.com/contact): Enquiries and partnership requests.
+- [Gastroenterology](https://exponitlabs.test/products?area=gastroenterology): Prescription formulations in Gastroenterology (2 active formulations)
+- [Pain](https://exponitlabs.test/products?area=pain): Prescription formulations in Pain (2 active formulations)
 
-## Therapeutic areas
+## Product Directory
 
-- Pain Management — analgesics and anti-inflammatory formulations.
-- Gastro Care — acidity, reflux and gut-health formulations.
-- Antibiotics — broad and targeted-spectrum antibacterials.
-- Allergy — antihistamines and respiratory-allergy relief.
+- [Gastronit-DSR](https://exponitlabs.test/products/gastronit-dsr): Pantoprazole+Domperidone | Pack: 10x10 | MRP: ₹120.00 | Therapeutic Area: Gastroenterology
+- [Rabonit](https://exponitlabs.test/products/rabonit): Rabeprazole+Domperidone | Therapeutic Area: Gastroenterology
+- [Acevonit-P](https://exponitlabs.test/products/acevonit-p): Aceclofenac+ Paracetamol | Pack: 10x10 | MRP: ₹70.00 | Therapeutic Area: Pain
+- [Acevonit-SP](https://exponitlabs.test/products/acevonit-sp): Aceclofenac+ Paracetamol+Serratiopeptidase | Pack: 10x10 | MRP: ₹110.00 | Therapeutic Area: Pain
 
-## Resources
+## Tools & Trade Resources
 
-- [Sitemap](https://exponit.com/sitemap.xml)
-- [Privacy Policy](https://exponit.com/privacy-policy)
-- [Terms & Conditions](https://exponit.com/terms)
+- [Pharma Pricing Calculator (PTR & PTS)](https://exponitlabs.test/pricing-calculator): Interactive trade calculation tool for Indian pharmaceuticals. Computes Price to Retailer (PTR), Price to Stockist (PTS), scheme adjustments (free goods), GST tax splits (5% / 12%), and retailer/stockist profit margins.
+- [Product Catalog](https://exponitlabs.test/products): Full catalog of prescription medicines with composition, strength, and packaging details.
+- [News & Company Updates](https://exponitlabs.test/news): Portfolio announcements, clinical notes, and partnership updates.
+- [Contact & PCD Franchise Inquiries](https://exponitlabs.test/contact): Trade inquiries for PCD pharma franchise, hospital supplies, stockist partnerships, and doctor sampling.
+
+## Key Information
+
+- [About Exponit Labs](https://exponitlabs.test/about): Corporate philosophy, quality assurance, WHO-GMP compliant manufacturing partners, and headquarters in Mumbai, India.
+- [XML Sitemap](https://exponitlabs.test/sitemap.xml): Full site index.
+- [Privacy Policy](https://exponitlabs.test/privacy-policy): Privacy and personal data processing policies.
+- [Terms & Conditions](https://exponitlabs.test/terms): Website terms of use.
+
+## Optional
+
+- [Full Knowledge Base](https://exponitlabs.test/llms-full.txt): Complete consolidated text reference of all products, detailed compositions, indications, PTR/PTS formulas, and company background in a single document.

@@ -6,6 +6,7 @@ use App\Models\ContactSubmission;
 use App\Models\NewsPost;
 use App\Models\Product;
 use App\Models\TherapeuticArea;
+use App\Support\LlmsTxt;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -96,6 +97,7 @@ class PageController extends Controller
             ['loc' => route('products.index'), 'priority' => '0.9', 'changefreq' => 'weekly'],
             ['loc' => route('news.index'), 'priority' => '0.7', 'changefreq' => 'weekly'],
             ['loc' => route('contact'), 'priority' => '0.5', 'changefreq' => 'yearly'],
+            ['loc' => route('pricing-calculator'), 'priority' => '0.7', 'changefreq' => 'monthly'],
             ['loc' => route('privacy'), 'priority' => '0.2', 'changefreq' => 'yearly'],
             ['loc' => route('terms'), 'priority' => '0.2', 'changefreq' => 'yearly'],
             ['loc' => route('refund'), 'priority' => '0.2', 'changefreq' => 'yearly'],
@@ -133,6 +135,20 @@ class PageController extends Controller
         $xml .= '</urlset>';
 
         return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
+    }
+
+    public function llmsTxt()
+    {
+        return response(LlmsTxt::generate(), 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
+    }
+
+    public function llmsFullTxt()
+    {
+        return response(LlmsTxt::generateFull(), 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
     }
 
     public function submitContact(Request $request)

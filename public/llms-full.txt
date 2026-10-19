@@ -1,41 +1,90 @@
-# Exponit Labs — Full Knowledge Context for AI Engines
+# Exponit Labs — Complete Knowledge Base & Product Compendium
 
-> Exponit Labs is a focused pharmaceutical company based in Mumbai, Maharashtra, India, dedicated to delivering a carefully curated portfolio of prescription pharmaceutical products across four key therapeutic areas: Pain Management, Gastro Care, Antibiotics, and Allergy Treatment.
+> Comprehensive reference document for Exponit Labs, Mumbai, India. Covers company profile, complete pharmaceutical product master, clinical indications, trade pricing mechanisms (PTR & PTS calculation), and distribution terms.
 
-## Company Overview
-- **Legal/Brand Name**: Exponit Labs (also known as Exponit, ExponitLabs)
-- **Domain**: https://exponit.com
+## 1. Company Profile & Quality Standards
+
+- **Company Name**: Exponit Labs
 - **Headquarters**: Mumbai, Maharashtra, India
-- **Email**: info@exponit.com
-- **Business Model**: Development and marketing of high-quality prescription formulations manufactured through WHO-GMP certified, quality-controlled pharmaceutical manufacturing partners in India.
+- **Core Focus**: Prescription pharmaceuticals across Pain Management, Gastro Care, Antibiotics, and Allergy Treatment.
+- **Manufacturing**: Collaborates exclusively with WHO-GMP compliant, state-of-the-art manufacturing facilities adhering to stringent quality control, validated stability testing, and DCGI approved formulations.
+- **Official Website**: https://exponitlabs.test
+- **Contact**: info@exponit.com | https://exponitlabs.test/contact
 
-## Therapeutic Portfolio & Focus Areas
+## 2. Product Master Table
 
-### 1. Pain Management & Analgesics
-Focusing on anti-inflammatory formulations, pain relievers, and muscle relaxant combinations tailored for medical prescription.
+| Brand Name | Generic Composition | Strength | Packaging | MRP (INR) | Therapeutic Area |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| [Gastronit-DSR](https://exponitlabs.test/products/gastronit-dsr) | Pantoprazole+Domperidone | As per formulation | 10x10 | ₹120.00 | Gastroenterology |
+| [Rabonit](https://exponitlabs.test/products/rabonit) | Rabeprazole+Domperidone | As per formulation | Strip/Bottle | Trade List | Gastroenterology |
+| [Acevonit-P](https://exponitlabs.test/products/acevonit-p) | Aceclofenac+ Paracetamol | As per formulation | 10x10 | ₹70.00 | Pain |
+| [Acevonit-SP](https://exponitlabs.test/products/acevonit-sp) | Aceclofenac+ Paracetamol+Serratiopeptidase | As per formulation | 10x10 | ₹110.00 | Pain |
 
-### 2. Gastro Care
-Formulations targeting gastroesophageal reflux (GERD), acidity, peptic ulcers, and gut-health management.
+## 3. Product Datasheets
 
-### 3. Antibiotics & Anti-infectives
-Broad and targeted spectrum antibacterial formulations for respiratory, systemic, and tissue infections under clinical guidance.
+### Gastronit-DSR
 
-### 4. Allergy & Respiratory Treatment
-Non-drowsy antihistamines, anti-allergic, and respiratory management options for seasonal and chronic allergic conditions.
+- **URL**: https://exponitlabs.test/products/gastronit-dsr
+- **Therapeutic Area**: Gastroenterology
+- **Category / Form**: Capsule
+- **Active Ingredients (Composition)**: Pantoprazole+Domperidone
+- **Packaging**: 10x10
+- **Maximum Retail Price (MRP)**: ₹120.00 (Inclusive of all taxes)
+- **Prescription Status**: Schedule prescription drug (for use under medical supervision).
 
-## Important Regulatory & Medical Disclaimer
-All products mentioned are prescription medicines (Rx) to be used exclusively under the supervision of a registered medical practitioner. The information contained herein and on exponit.com is for healthcare professionals and educational reference only, and does not constitute medical advice.
+### Rabonit
 
-## Key Pages & Navigation
-- **Home**: https://exponit.com/
-- **About Us**: https://exponit.com/about
-- **Products Index**: https://exponit.com/products
-- **Company News & Updates**: https://exponit.com/news
-- **Contact & Enquiries**: https://exponit.com/contact
-- **Sitemap**: https://exponit.com/sitemap.xml
-- **Privacy Policy**: https://exponit.com/privacy-policy
-- **Terms & Conditions**: https://exponit.com/terms
+- **URL**: https://exponitlabs.test/products/rabonit
+- **Therapeutic Area**: Gastroenterology
+- **Active Ingredients (Composition)**: Rabeprazole+Domperidone
+- **Prescription Status**: Schedule prescription drug (for use under medical supervision).
 
-## Contact Information
-- **General Enquiries & Partnerships**: info@exponit.com
-- **Website**: https://exponit.com
+### Acevonit-P
+
+- **URL**: https://exponitlabs.test/products/acevonit-p
+- **Therapeutic Area**: Pain
+- **Category / Form**: Tablet
+- **Active Ingredients (Composition)**: Aceclofenac+ Paracetamol
+- **Packaging**: 10x10
+- **Maximum Retail Price (MRP)**: ₹70.00 (Inclusive of all taxes)
+- **Prescription Status**: Schedule prescription drug (for use under medical supervision).
+
+### Acevonit-SP
+
+- **URL**: https://exponitlabs.test/products/acevonit-sp
+- **Therapeutic Area**: Pain
+- **Category / Form**: Tablet
+- **Active Ingredients (Composition)**: Aceclofenac+ Paracetamol+Serratiopeptidase
+- **Packaging**: 10x10
+- **Maximum Retail Price (MRP)**: ₹110.00 (Inclusive of all taxes)
+- **Prescription Status**: Schedule prescription drug (for use under medical supervision).
+
+## 4. Pharmaceutical Trade Pricing Reference (India: PTR, PTS & Schemes)
+
+Exponit Labs provides an interactive trade calculation tool at https://exponitlabs.test/pricing-calculator. Below is the standard mathematical reference used across the Indian pharmaceutical distribution ecosystem:
+
+### Pricing Definitions & Formulas
+1. **MRP (Maximum Retail Price)**: Maximum price printed on the pack inclusive of all taxes, including GST.
+2. **PTR (Price to Retailer)**: The price at which a stockist invoices the chemist / retail pharmacy, before GST.
+   - Formula without GST: `PTR = (MRP * (1 - Retailer Margin %)) / (1 + (GST % / 100))`
+   - Standard Indian trade practice provides 20% margin to retailers on price to retailer (or 16.67% to 20% depending on DPCO category).
+3. **PTS (Price to Stockist)**: The price at which the pharmaceutical manufacturer or C&F invoices the stockist / distributor, before GST.
+   - Formula: `PTS = PTR * (1 - Stockist Margin %)`
+   - Standard Indian trade practice provides 10% margin to stockists.
+4. **Scheme Adjustments (Free Goods)**:
+   - When promotional schemes apply (e.g. 10 + 1 free, or 10 + 2 free):
+   - `Effective PTR = PTR * (Paid Units / (Paid Units + Free Units))`
+   - `Effective PTS = PTS * (Paid Units / (Paid Units + Free Units))`
+5. **GST Invoice Calculation**:
+   - Pharma products in India are typically taxed at either 5% or 12% GST.
+   - For Intra-State Supply: CGST (half) + SGST (half).
+   - For Inter-State Supply: IGST (full).
+   - `Invoice Amount = Taxable Value + (Taxable Value * GST %)`.
+
+## 5. Commercial, Distribution & PCD Franchise
+
+Exponit Labs invites partnerships with pharmaceutical distributors, stockists, and PCD franchise partners across India:
+- **Monopoly Rights**: District-wise / territory-wise marketing exclusivity available for eligible partners.
+- **Promotional Support**: Product visual aids, MR bags, doctor samples, reminder cards, catch covers, and digital marketing collaterals.
+- **Supply Terms**: Transparent commercial billing, zero supply disruption, prompt dispatch from Mumbai logistics hubs.
+- **Inquiry Link**: Submit trade inquiries directly at https://exponitlabs.test/contact or via email at info@exponit.com.
