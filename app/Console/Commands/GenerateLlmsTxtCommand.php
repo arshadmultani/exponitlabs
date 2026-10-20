@@ -7,7 +7,7 @@ use Illuminate\Console\Attributes\Description;
 use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-#[Signature('seo:generate-llms')]
+#[Signature('seo:generate-llms {--dir= : Output directory (defaults to public_path())}')]
 #[Description('Generate static public/llms.txt and public/llms-full.txt files from the active catalog')]
 class GenerateLlmsTxtCommand extends Command
 {
@@ -16,11 +16,13 @@ class GenerateLlmsTxtCommand extends Command
      */
     public function handle(): int
     {
-        $this->components->info('Generating llms.txt and llms-full.txt files...');
+        $dir = $this->option('dir') ? (string) $this->option('dir') : public_path();
 
-        LlmsTxt::saveToDisk();
+        $this->components->info("Generating llms.txt and llms-full.txt files into {$dir}...");
 
-        $this->components->info('Successfully written public/llms.txt and public/llms-full.txt.');
+        LlmsTxt::saveToDisk($dir);
+
+        $this->components->info('Successfully written llms.txt and llms-full.txt.');
 
         return self::SUCCESS;
     }

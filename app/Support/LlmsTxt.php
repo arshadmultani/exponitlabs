@@ -234,15 +234,15 @@ class LlmsTxt
     }
 
     /**
-     * Persist llms.txt and llms-full.txt to the public directory for ultra-fast static webserver delivery.
+     * Persist llms.txt and llms-full.txt to disk for ultra-fast static webserver delivery.
      */
-    public static function saveToDisk(): void
+    public static function saveToDisk(?string $directory = null): void
     {
-        $publicDir = public_path();
+        $dir = $directory ?? public_path();
 
-        if (is_dir($publicDir)) {
-            file_put_contents($publicDir.'/llms.txt', static::generate());
-            file_put_contents($publicDir.'/llms-full.txt', static::generateFull());
+        if (is_dir($dir)) {
+            file_put_contents($dir.'/llms.txt', static::generate());
+            file_put_contents($dir.'/llms-full.txt', static::generateFull());
         }
     }
 }

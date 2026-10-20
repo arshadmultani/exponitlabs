@@ -222,11 +222,18 @@ it('includes the pricing calculator in sitemap.xml', function () {
 });
 
 it('generates llms.txt and llms-full.txt via artisan command', function () {
-    $this->artisan('seo:generate-llms')
+    $tempDir = sys_get_temp_dir().'/llms-test-'.uniqid();
+    mkdir($tempDir);
+
+    $this->artisan('seo:generate-llms', ['--dir' => $tempDir])
         ->assertSuccessful();
 
-    expect(file_exists(public_path('llms.txt')))->toBeTrue();
-    expect(file_exists(public_path('llms-full.txt')))->toBeTrue();
+    expect(file_exists($tempDir.'/llms.txt'))->toBeTrue();
+    expect(file_exists($tempDir.'/llms-full.txt'))->toBeTrue();
+
+    unlink($tempDir.'/llms.txt');
+    unlink($tempDir.'/llms-full.txt');
+    rmdir($tempDir);
 });
 
 it('serves product markdown twin with YAML frontmatter, specs table, and alternate link', function () {
