@@ -23,6 +23,8 @@ class LlmsTxt
         $out[] = '';
         $out[] = 'Important: Products referenced are prescription medicines for healthcare professionals, distributors, and general trade reference. Information is provided for reference only and does not constitute medical advice.';
         $out[] = '';
+        $out[] = 'Every public product, catalog, and reference page has a Markdown twin at the same URL with a .md suffix (content negotiation is also supported via Accept: text/markdown header).';
+        $out[] = '';
 
         // Core Therapeutic Areas
         $out[] = '## Core Therapeutic Areas';
@@ -61,6 +63,7 @@ class LlmsTxt
         if ($products->isNotEmpty()) {
             foreach ($products as $product) {
                 $productUrl = route('products.show', $product);
+                $mdUrl = route('products.show.md', $product);
                 $parts = [];
 
                 if ($product->composition) {
@@ -80,7 +83,7 @@ class LlmsTxt
                 }
 
                 $meta = implode(' | ', $parts);
-                $out[] = "- [{$product->name}]({$productUrl})".($meta ? ": {$meta}" : '');
+                $out[] = "- [{$product->name}]({$productUrl})".($meta ? ": {$meta}" : '')." ([Markdown Twin]({$mdUrl}))";
             }
         } else {
             $out[] = '- Full prescription catalog available at: '.route('products.index');
@@ -90,8 +93,8 @@ class LlmsTxt
         // Tools & Trade Resources
         $out[] = '## Tools & Trade Resources';
         $out[] = '';
-        $out[] = '- [Pharma Pricing Calculator (PTR & PTS)]('.route('pricing-calculator').'): Interactive trade calculation tool for Indian pharmaceuticals. Computes Price to Retailer (PTR), Price to Stockist (PTS), scheme adjustments (free goods), GST tax splits (5% / 12%), and retailer/stockist profit margins.';
-        $out[] = '- [Product Catalog]('.route('products.index').'): Full catalog of prescription medicines with composition, strength, and packaging details.';
+        $out[] = '- [Pharma Pricing Calculator (PTR & PTS)]('.route('pricing-calculator').') ([Markdown Twin]('.route('pricing-calculator.md').')): Interactive trade calculation tool for Indian pharmaceuticals. Computes Price to Retailer (PTR), Price to Stockist (PTS), scheme adjustments (free goods), GST tax splits (5% / 12%), and retailer/stockist profit margins.';
+        $out[] = '- [Product Catalog]('.route('products.index').') ([Markdown Twin]('.route('products.index.md').')): Full catalog of prescription medicines with composition, strength, and packaging details.';
         $out[] = '- [News & Company Updates]('.route('news.index').'): Portfolio announcements, clinical notes, and partnership updates.';
         $out[] = '- [Contact & PCD Franchise Inquiries]('.route('contact').'): Trade inquiries for PCD pharma franchise, hospital supplies, stockist partnerships, and doctor sampling.';
         $out[] = '';
@@ -99,7 +102,7 @@ class LlmsTxt
         // Key Information
         $out[] = '## Key Information';
         $out[] = '';
-        $out[] = '- [About Exponit Labs]('.route('about').'): Corporate philosophy, quality assurance, WHO-GMP compliant manufacturing partners, and headquarters in Mumbai, India.';
+        $out[] = '- [About Exponit Labs]('.route('about').') ([Markdown Twin]('.route('about.md').')): Corporate philosophy, quality assurance, WHO-GMP compliant manufacturing partners, and headquarters in Mumbai, India.';
         $out[] = '- [XML Sitemap]('.route('sitemap').'): Full site index.';
         $out[] = '- [Privacy Policy]('.route('privacy').'): Privacy and personal data processing policies.';
         $out[] = '- [Terms & Conditions]('.route('terms').'): Website terms of use.';

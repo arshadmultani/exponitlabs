@@ -14,9 +14,15 @@ use Spatie\Honeypot\ProtectAgainstSpam;
 
 // Public marketing website. Filament admin lives at /console, so "/" is ours.
 Route::get('/', [PageController::class, 'home'])->name('home');
+Route::get('/about.md', [PageController::class, 'aboutMd'])->name('about.md');
 Route::get('/about', [PageController::class, 'about'])->name('about');
+
+Route::get('/products.md', [PageController::class, 'productsMd'])->name('products.index.md');
 Route::get('/products', [PageController::class, 'products'])->name('products.index');
+
+Route::get('/products/{product:slug}.md', [PageController::class, 'productMd'])->name('products.show.md');
 Route::get('/products/{product:slug}', [PageController::class, 'product'])->name('products.show');
+
 Route::get('/news', [PageController::class, 'news'])->name('news.index');
 Route::get('/news/{post:slug}', [PageController::class, 'newsShow'])->name('news.show');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
@@ -29,8 +35,9 @@ Route::view('/privacy-policy', 'pages.legal.privacy')->name('privacy');
 Route::view('/terms', 'pages.legal.terms')->name('terms');
 Route::view('/refund-policy', 'pages.legal.refund')->name('refund');
 
-// PTR/PTS calculator
-Route::view('/pricing-calculator', 'pages.pricing-calculator')->name('pricing-calculator');
+// PTR/PTS calculator (with .md twin)
+Route::get('/pricing-calculator.md', [PageController::class, 'pricingCalculatorMd'])->name('pricing-calculator.md');
+Route::get('/pricing-calculator', [PageController::class, 'pricingCalculator'])->name('pricing-calculator');
 
 // SEO: XML sitemap (DIY, no package).
 Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');

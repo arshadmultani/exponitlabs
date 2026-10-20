@@ -1,6 +1,7 @@
 <x-layouts.public
     title="Exponit Labs — About Us"
-    description="Learn about Exponit Labs — our focus on quality, ethical practices and dependable pharmaceutical supply through trusted manufacturing partnerships in India.">
+    description="Learn about Exponit Labs — our focus on quality, ethical practices and dependable pharmaceutical supply through trusted manufacturing partnerships in India."
+    :alternate-markdown="route('about.md')">
 
     {{-- Page header --}}
     <section class="relative overflow-hidden brand-mesh">

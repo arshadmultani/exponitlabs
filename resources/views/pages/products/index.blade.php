@@ -1,6 +1,7 @@
 <x-layouts.public
     title="Exponit Labs — Products"
-    description="Explore the Exponit Labs pharmaceutical portfolio — prescription medicines in analgesics, gastro care, antibiotics and antihistamines, filterable by therapeutic area.">
+    description="Explore the Exponit Labs pharmaceutical portfolio — prescription medicines in analgesics, gastro care, antibiotics and antihistamines, filterable by therapeutic area."
+    :alternate-markdown="route('products.index.md', $activeSlug ? ['area' => $activeSlug] : [])">
 
     {{-- Page header --}}
     <section class="brand-mesh">

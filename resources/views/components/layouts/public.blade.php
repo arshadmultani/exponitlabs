@@ -3,6 +3,7 @@
     'description' => 'Exponit Labs is a Mumbai-based pharmaceutical company focused on prescription medicines in pain management, gastro care, antibiotics and allergy treatment.',
     'image' => null,
     'robots' => 'index, follow',
+    'alternateMarkdown' => null,
 ])
 
 @php $ogImage = $image ?? asset('og-image.png'); @endphp
@@ -20,6 +21,9 @@
     <meta name="theme-color" content="#0F2A44">
     <link rel="canonical" href="{{ url()->current() }}">
     <link rel="describedby" type="text/plain" href="{{ route('llms.txt') }}">
+    @if ($alternateMarkdown)
+        <link rel="alternate" type="text/markdown" href="{{ $alternateMarkdown }}">
+    @endif
 
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Exponit Labs">

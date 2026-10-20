@@ -7,6 +7,7 @@ use App\Models\NewsPost;
 use App\Models\Product;
 use App\Models\TherapeuticArea;
 use App\Support\LlmsTxt;
+use App\Support\MarkdownTwin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -23,15 +24,30 @@ class PageController extends Controller
         ]);
     }
 
-    public function about()
+    public function about(Request $request)
     {
+        if (str_contains($request->header('Accept', ''), 'text/markdown')) {
+            return $this->aboutMd();
+        }
+
         return view('pages.about', [
             'areas' => TherapeuticArea::active()->get(),
         ]);
     }
 
+    public function aboutMd()
+    {
+        return response(MarkdownTwin::about(), 200, [
+            'Content-Type' => 'text/markdown; charset=UTF-8',
+        ]);
+    }
+
     public function products(Request $request)
     {
+        if (str_contains($request->header('Accept', ''), 'text/markdown')) {
+            return $this->productsMd($request);
+        }
+
         $areas = TherapeuticArea::active()
             ->with(['products' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order')])
             ->get();
@@ -44,9 +60,20 @@ class PageController extends Controller
         ]);
     }
 
-    public function product(Product $product)
+    public function productsMd(Request $request)
+    {
+        return response(MarkdownTwin::products($request->query('area')), 200, [
+            'Content-Type' => 'text/markdown; charset=UTF-8',
+        ]);
+    }
+
+    public function product(Request $request, Product $product)
     {
         abort_unless($product->is_active, 404);
+
+        if (str_contains($request->header('Accept', ''), 'text/markdown')) {
+            return $this->productMd($product);
+        }
 
         $product->load('therapeuticArea');
 
@@ -59,6 +86,15 @@ class PageController extends Controller
         return view('pages.products.show', [
             'product' => $product,
             'related' => $related,
+        ]);
+    }
+
+    public function productMd(Product $product)
+    {
+        abort_unless($product->is_active, 404);
+
+        return response(MarkdownTwin::product($product), 200, [
+            'Content-Type' => 'text/markdown; charset=UTF-8',
         ]);
     }
 
@@ -148,6 +184,22 @@ class PageController extends Controller
     {
         return response(LlmsTxt::generateFull(), 200, [
             'Content-Type' => 'text/plain; charset=UTF-8',
+        ]);
+    }
+
+    public function pricingCalculator(Request $request)
+    {
+        if (str_contains($request->header('Accept', ''), 'text/markdown')) {
+            return $this->pricingCalculatorMd();
+        }
+
+        return view('pages.pricing-calculator');
+    }
+
+    public function pricingCalculatorMd()
+    {
+        return response(MarkdownTwin::pricingCalculator(), 200, [
+            'Content-Type' => 'text/markdown; charset=UTF-8',
         ]);
     }
 

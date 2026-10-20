@@ -1,7 +1,8 @@
 <x-layouts.public
     title="{{ $product->name }} — Exponit Labs"
     description="{{ $product->composition ? $product->name.' — '.$product->composition.', '.$product->strength.' '.$product->category : $product->name.' — '.$product->therapeuticArea->name.' prescription product by Exponit Labs. '.$product->strength.' '.$product->category }}"
-    :image="$product->imageUrl()">
+    :image="$product->imageUrl()"
+    :alternate-markdown="route('products.show.md', $product)">
 
     <x-slot:schema>
         {!! \App\Support\Seo::product($product)->toScript() !!}

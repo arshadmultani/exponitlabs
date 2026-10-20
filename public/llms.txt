@@ -2,9 +2,11 @@
 
 > Exponit Labs is a focused pharmaceutical company based in Mumbai, Maharashtra, India, delivering reliable prescription products across core therapeutic areas — Pain Management, Gastro Care, Antibiotics, and Allergy Treatment — through trusted, WHO-GMP quality-controlled manufacturing partnerships.
 >
-> Official Website: https://exponitlabs.com
+> Official Website: https://exponitlabs.test
 
 Important: Products referenced are prescription medicines for healthcare professionals, distributors, and general trade reference. Information is provided for reference only and does not constitute medical advice.
+
+Every public product, catalog, and reference page has a Markdown twin at the same URL with a .md suffix (content negotiation is also supported via Accept: text/markdown header).
 
 ## Core Therapeutic Areas
 
@@ -13,21 +15,21 @@ Important: Products referenced are prescription medicines for healthcare profess
 
 ## Product Directory
 
-- [Gastronit-DSR](https://exponitlabs.test/products/gastronit-dsr): Pantoprazole+Domperidone | Pack: 10x10 | MRP: ₹120.00 | Therapeutic Area: Gastroenterology
-- [Rabonit](https://exponitlabs.test/products/rabonit): Rabeprazole+Domperidone | Therapeutic Area: Gastroenterology
-- [Acevonit-P](https://exponitlabs.test/products/acevonit-p): Aceclofenac+ Paracetamol | Pack: 10x10 | MRP: ₹70.00 | Therapeutic Area: Pain
-- [Acevonit-SP](https://exponitlabs.test/products/acevonit-sp): Aceclofenac+ Paracetamol+Serratiopeptidase | Pack: 10x10 | MRP: ₹110.00 | Therapeutic Area: Pain
+- [Gastronit-DSR](https://exponitlabs.test/products/gastronit-dsr): Pantoprazole+Domperidone | Pack: 10x10 | MRP: ₹120.00 | Therapeutic Area: Gastroenterology ([Markdown Twin](https://exponitlabs.test/products/gastronit-dsr.md))
+- [Rabonit](https://exponitlabs.test/products/rabonit): Rabeprazole+Domperidone | Therapeutic Area: Gastroenterology ([Markdown Twin](https://exponitlabs.test/products/rabonit.md))
+- [Acevonit-P](https://exponitlabs.test/products/acevonit-p): Aceclofenac+ Paracetamol | Pack: 10x10 | MRP: ₹70.00 | Therapeutic Area: Pain ([Markdown Twin](https://exponitlabs.test/products/acevonit-p.md))
+- [Acevonit-SP](https://exponitlabs.test/products/acevonit-sp): Aceclofenac+ Paracetamol+Serratiopeptidase | Pack: 10x10 | MRP: ₹110.00 | Therapeutic Area: Pain ([Markdown Twin](https://exponitlabs.test/products/acevonit-sp.md))
 
 ## Tools & Trade Resources
 
-- [Pharma Pricing Calculator (PTR & PTS)](https://exponitlabs.test/pricing-calculator): Interactive trade calculation tool for Indian pharmaceuticals. Computes Price to Retailer (PTR), Price to Stockist (PTS), scheme adjustments (free goods), GST tax splits (5% / 12%), and retailer/stockist profit margins.
-- [Product Catalog](https://exponitlabs.test/products): Full catalog of prescription medicines with composition, strength, and packaging details.
+- [Pharma Pricing Calculator (PTR & PTS)](https://exponitlabs.test/pricing-calculator) ([Markdown Twin](https://exponitlabs.test/pricing-calculator.md)): Interactive trade calculation tool for Indian pharmaceuticals. Computes Price to Retailer (PTR), Price to Stockist (PTS), scheme adjustments (free goods), GST tax splits (5% / 12%), and retailer/stockist profit margins.
+- [Product Catalog](https://exponitlabs.test/products) ([Markdown Twin](https://exponitlabs.test/products.md)): Full catalog of prescription medicines with composition, strength, and packaging details.
 - [News & Company Updates](https://exponitlabs.test/news): Portfolio announcements, clinical notes, and partnership updates.
 - [Contact & PCD Franchise Inquiries](https://exponitlabs.test/contact): Trade inquiries for PCD pharma franchise, hospital supplies, stockist partnerships, and doctor sampling.
 
 ## Key Information
 
-- [About Exponit Labs](https://exponitlabs.test/about): Corporate philosophy, quality assurance, WHO-GMP compliant manufacturing partners, and headquarters in Mumbai, India.
+- [About Exponit Labs](https://exponitlabs.test/about) ([Markdown Twin](https://exponitlabs.test/about.md)): Corporate philosophy, quality assurance, WHO-GMP compliant manufacturing partners, and headquarters in Mumbai, India.
 - [XML Sitemap](https://exponitlabs.test/sitemap.xml): Full site index.
 - [Privacy Policy](https://exponitlabs.test/privacy-policy): Privacy and personal data processing policies.
 - [Terms & Conditions](https://exponitlabs.test/terms): Website terms of use.

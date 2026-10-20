@@ -228,3 +228,115 @@ it('generates llms.txt and llms-full.txt via artisan command', function () {
     expect(file_exists(public_path('llms.txt')))->toBeTrue();
     expect(file_exists(public_path('llms-full.txt')))->toBeTrue();
 });
+
+it('serves product markdown twin with YAML frontmatter, specs table, and alternate link', function () {
+    $area = TherapeuticArea::factory()->create(['name' => 'Pain Management']);
+    $activeProduct = Product::factory()->for($area, 'therapeuticArea')->create([
+        'name' => 'Acevo-Fast',
+        'composition' => 'Aceclofenac 100mg + Paracetamol 325mg',
+        'strength' => '100mg/325mg',
+        'packaging' => '10x10 Tablets',
+        'mrp' => 85.50,
+        'description' => 'Fast-acting anti-inflammatory analgesic.',
+        'is_active' => true,
+    ]);
+    $inactiveProduct = Product::factory()->for($area, 'therapeuticArea')->create([
+        'name' => 'HiddenProduct',
+        'is_active' => false,
+    ]);
+
+    // Test .md twin route
+    $this->get(route('products.show.md', $activeProduct))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
+        ->assertSee('type: pharmaceutical_product')
+        ->assertSee('slug: '.$activeProduct->slug)
+        ->assertSee('mrp: 85.50')
+        ->assertSee('Aceclofenac 100mg + Paracetamol 325mg')
+        ->assertSee('Fast-acting anti-inflammatory analgesic.');
+
+    // Inactive product 404s
+    $this->get(route('products.show.md', $inactiveProduct))
+        ->assertNotFound();
+
+    // HTML view includes alternate markdown link
+    $this->get(route('products.show', $activeProduct))
+        ->assertOk()
+        ->assertSee('<link rel="alternate" type="text/markdown" href="'.route('products.show.md', $activeProduct).'">', false);
+});
+
+it('serves products catalog markdown twin with area filtering and alternate link', function () {
+    $pain = TherapeuticArea::factory()->create(['name' => 'Pain Management']);
+    $gastro = TherapeuticArea::factory()->create(['name' => 'Gastro Care']);
+    $p1 = Product::factory()->for($pain, 'therapeuticArea')->create(['name' => 'PainRelief-X', 'is_active' => true]);
+    $p2 = Product::factory()->for($gastro, 'therapeuticArea')->create(['name' => 'GastroRelief-Y', 'is_active' => true]);
+
+    $this->get(route('products.index.md'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
+        ->assertSee('PainRelief-X')
+        ->assertSee('GastroRelief-Y');
+
+    $this->get(route('products.index.md', ['area' => $pain->slug]))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
+        ->assertSee('PainRelief-X')
+        ->assertDontSee('GastroRelief-Y');
+
+    $this->get(route('products.index'))
+        ->assertOk()
+        ->assertSee('<link rel="alternate" type="text/markdown" href="'.route('products.index.md').'">', false);
+});
+
+it('serves pricing calculator markdown twin and alternate link', function () {
+    $this->get(route('pricing-calculator.md'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
+        ->assertSee('type: pricing_calculator_reference')
+        ->assertSee('Price to Retailer (PTR)')
+        ->assertSee('Price to Stockist (PTS)')
+        ->assertSee('PTR = (MRP * (1 - (Retailer Margin % / 100)))');
+
+    $this->get(route('pricing-calculator'))
+        ->assertOk()
+        ->assertSee('<link rel="alternate" type="text/markdown" href="'.route('pricing-calculator.md').'">', false);
+});
+
+it('serves about markdown twin and alternate link', function () {
+    $this->get(route('about.md'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
+        ->assertSee('type: company_profile')
+        ->assertSee('WHO-GMP Manufacturing')
+        ->assertSee('DCGI Approved');
+
+    $this->get(route('about'))
+        ->assertOk()
+        ->assertSee('<link rel="alternate" type="text/markdown" href="'.route('about.md').'">', false);
+});
+
+it('supports content negotiation via Accept: text/markdown', function () {
+    $product = Product::factory()->create([
+        'name' => 'NegotiatedProduct',
+        'is_active' => true,
+    ]);
+
+    $this->withHeader('Accept', 'text/markdown')
+        ->get(route('products.show', $product))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
+        ->assertSee('type: pharmaceutical_product')
+        ->assertSee('NegotiatedProduct');
+
+    $this->withHeader('Accept', 'text/markdown')
+        ->get(route('pricing-calculator'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
+        ->assertSee('type: pricing_calculator_reference');
+
+    $this->withHeader('Accept', 'text/markdown')
+        ->get(route('about'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
+        ->assertSee('type: company_profile');
+});
