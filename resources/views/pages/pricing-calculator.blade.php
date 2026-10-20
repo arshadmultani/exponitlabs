@@ -3,6 +3,10 @@
     :alternate-markdown="route('pricing-calculator.md')">
     <robots="noindex, nofollow">
 
+    <x-slot:schema>
+        {!! \App\Support\Seo::pricingCalculator()->toScript() !!}
+    </x-slot:schema>
+
     <section class="py-12 lg:py-16" x-data="pharmaCalc()">
         <div class="mx-auto max-w-6xl px-6 lg:px-12">
             <x-site.section-heading eyebrow="PTR/PTS Tool" title="Pharma pricing calculator"

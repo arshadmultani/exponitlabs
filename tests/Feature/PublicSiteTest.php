@@ -340,3 +340,49 @@ it('supports content negotiation via Accept: text/markdown', function () {
         ->assertHeader('Content-Type', 'text/markdown; charset=UTF-8')
         ->assertSee('type: company_profile');
 });
+
+it('emits rich pharmaceutical Drug and Product structured data on product detail pages', function () {
+    $area = TherapeuticArea::factory()->create(['name' => 'Gastro Care']);
+    $product = Product::factory()->for($area, 'therapeuticArea')->create([
+        'name' => 'Gastronit-Max',
+        'composition' => 'Pantoprazole 40mg + Domperidone 30mg',
+        'category' => 'Capsule',
+        'mrp' => 145.00,
+        'description' => 'Indicated for GERD, reflux esophagitis, and acid peptic disorders.',
+        'is_active' => true,
+    ]);
+
+    $response = $this->get(route('products.show', $product))->assertOk();
+
+    // Verify Product schema with commercial offers
+    $response
+        ->assertSee('"@type":"Product"', false)
+        ->assertSee('"name":"Gastronit-Max"', false)
+        ->assertSee('"sku":"'.$product->slug.'"', false)
+        ->assertSee('"price":145', false)
+        ->assertSee('"priceCurrency":"INR"', false)
+        ->assertSee('"availability":"https://schema.org/InStock"', false);
+
+    // Verify Drug schema with clinical properties
+    $response
+        ->assertSee('"@type":"Drug"', false)
+        ->assertSee('"activeIngredient":"Pantoprazole 40mg + Domperidone 30mg"', false)
+        ->assertSee('"dosageForm":"Capsule"', false)
+        ->assertSee('"prescriptionStatus":"https://schema.org/PrescriptionOnly"', false)
+        ->assertSee('Schedule prescription drug', false);
+});
+
+it('emits MedicalBusiness additionalType on organization schema', function () {
+    $this->get(route('home'))
+        ->assertOk()
+        ->assertSee('"additionalType":["https://schema.org/MedicalBusiness","https://schema.org/Corporation"]', false)
+        ->assertSee('Pharmaceutical Manufacturing', false);
+});
+
+it('emits WebApplication schema on pricing calculator page', function () {
+    $this->get(route('pricing-calculator'))
+        ->assertOk()
+        ->assertSee('"@type":"WebApplication"', false)
+        ->assertSee('Pharmaceutical Trade Pricing Calculator (PTR & PTS)', false)
+        ->assertSee('BusinessApplication', false);
+});

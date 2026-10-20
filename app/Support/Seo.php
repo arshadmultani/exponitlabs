@@ -5,11 +5,13 @@ namespace App\Support;
 use App\Models\NewsPost;
 use App\Models\Product;
 use Spatie\SchemaOrg\BreadcrumbList;
+use Spatie\SchemaOrg\Drug;
 use Spatie\SchemaOrg\FAQPage;
 use Spatie\SchemaOrg\NewsArticle;
 use Spatie\SchemaOrg\Organization;
 use Spatie\SchemaOrg\Schema;
 use Spatie\SchemaOrg\SiteNavigationElement;
+use Spatie\SchemaOrg\WebApplication;
 use Spatie\SchemaOrg\WebPage;
 use Spatie\SchemaOrg\WebSite;
 
@@ -68,6 +70,7 @@ class Seo
     {
         return Schema::organization()
             ->setProperty('@id', url('/').'#organization')
+            ->additionalType(['https://schema.org/MedicalBusiness', 'https://schema.org/Corporation'])
             ->name(self::NAME)
             ->legalName(self::NAME)
             ->alternateName(['Exponit Labs', 'Exponit', 'ExponitLabs', 'Exponit Labs India', 'Exponit Labs Mumbai'])
@@ -75,7 +78,7 @@ class Seo
             ->logo(Schema::imageObject()->url(asset('images/logo.svg')))
             ->image(asset('og-image.png'))
             ->description(self::DESCRIPTION)
-            ->knowsAbout(self::AREAS)
+            ->knowsAbout(array_merge(self::AREAS, ['Pharmaceutical Manufacturing', 'WHO-GMP Standards', 'PCD Pharma Franchise', 'Drug Distribution']))
             ->email(self::EMAIL)
             ->sameAs(array_values(self::SOCIALS))
             ->contactPoint(
@@ -135,15 +138,19 @@ class Seo
             );
     }
 
-    /** Product detail structured data. */
+    /** Product detail structured data (Commercial & Search Console). */
     public static function product(Product $product): \Spatie\SchemaOrg\Product
     {
         $schema = Schema::product()
+            ->setProperty('@id', route('products.show', $product).'#product')
             ->name($product->name)
             ->url(route('products.show', $product))
-            ->category($product->therapeuticArea?->name)
+            ->sku($product->slug)
+            ->mpn($product->slug)
+            ->category($product->category ?: ($product->therapeuticArea?->name ?? 'Pharmaceutical'))
             ->brand(Schema::brand()->name(self::NAME))
-            ->manufacturer(Schema::organization()->setProperty('@id', url('/').'#organization'));
+            ->manufacturer(Schema::organization()->setProperty('@id', url('/').'#organization'))
+            ->countryOfOrigin(Schema::country()->name('India'));
 
         if ($product->description) {
             $schema->description($product->description);
@@ -157,7 +164,84 @@ class Seo
             $schema->image($product->imageUrl());
         }
 
+        if ($product->mrp !== null) {
+            $schema->offers(
+                Schema::offer()
+                    ->price((float) $product->mrp)
+                    ->priceCurrency('INR')
+                    ->availability('https://schema.org/InStock')
+                    ->url(route('products.show', $product))
+                    ->seller(Schema::organization()->setProperty('@id', url('/').'#organization'))
+            );
+        }
+
         return $schema;
+    }
+
+    /** Drug medical structured data for clinical accuracy & AI answer engines. */
+    public static function drug(Product $product): Drug
+    {
+        $schema = Schema::drug()
+            ->setProperty('@id', route('products.show', $product).'#drug')
+            ->name($product->name)
+            ->url(route('products.show', $product))
+            ->brand(Schema::brand()->name(self::NAME))
+            ->manufacturer(Schema::organization()->setProperty('@id', url('/').'#organization'))
+            ->prescriptionStatus('https://schema.org/PrescriptionOnly')
+            ->warning('Schedule prescription drug. To be used strictly under registered medical practitioner supervision.');
+
+        if ($product->therapeuticArea) {
+            $schema->drugClass(
+                Schema::drugClass()->name($product->therapeuticArea->name)
+            );
+        }
+
+        if ($product->category) {
+            $schema->dosageForm($product->category);
+        }
+
+        if ($product->composition) {
+            $schema->activeIngredient($product->composition);
+        }
+
+        if ($product->description) {
+            $schema->description($product->description);
+            $schema->clinicalPharmacology($product->description);
+        }
+
+        if ($product->imageUrl()) {
+            $schema->image($product->imageUrl());
+        }
+
+        if ($product->mrp !== null) {
+            $schema->offers(
+                Schema::offer()
+                    ->price((float) $product->mrp)
+                    ->priceCurrency('INR')
+                    ->availability('https://schema.org/InStock')
+                    ->url(route('products.show', $product))
+            );
+        }
+
+        return $schema;
+    }
+
+    /** Interactive tool structured data for the PTR/PTS pricing calculator. */
+    public static function pricingCalculator(): WebApplication
+    {
+        return Schema::webApplication()
+            ->name('Pharmaceutical Trade Pricing Calculator (PTR & PTS)')
+            ->url(route('pricing-calculator'))
+            ->applicationCategory('BusinessApplication')
+            ->operatingSystem('Any')
+            ->browserRequirements('Requires JavaScript. Requires HTML5.')
+            ->description('Free trade pricing tool for Indian pharmaceuticals — calculate Price to Retailer (PTR), Price to Stockist (PTS), deal scheme discounts, and GST invoice breakdowns.')
+            ->offers(
+                Schema::offer()
+                    ->price('0')
+                    ->priceCurrency('INR')
+            )
+            ->provider(Schema::organization()->setProperty('@id', url('/').'#organization'));
     }
 
     /** Breadcrumb trail for a product page. */

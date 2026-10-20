@@ -6,6 +6,7 @@
 
     <x-slot:schema>
         {!! \App\Support\Seo::product($product)->toScript() !!}
+        {!! \App\Support\Seo::drug($product)->toScript() !!}
         {!! \App\Support\Seo::productBreadcrumb($product)->toScript() !!}
     </x-slot:schema>
 
