@@ -141,8 +141,25 @@ class LlmsTxt
         $out[] = '- **Contact**: info@exponit.com | '.route('contact');
         $out[] = '';
 
-        // Section 2: Complete Product Master Table
-        $out[] = '## 2. Product Master Table';
+        // Section 2: Therapeutic Areas
+        $areas = TherapeuticArea::active()
+            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
+            ->orderBy('sort_order')
+            ->get();
+
+        if ($areas->isNotEmpty()) {
+            $out[] = '## 2. Therapeutic Areas & Clinical Divisions';
+            $out[] = '';
+            foreach ($areas as $area) {
+                $summary = $area->summary ?: 'Prescription formulations in '.$area->name;
+                $count = $area->products_count;
+                $out[] = "- **{$area->name}**: {$summary} ({$count} active ".($count === 1 ? 'formulation' : 'formulations').')';
+            }
+            $out[] = '';
+        }
+
+        // Section 3: Complete Product Master Table
+        $out[] = '## 3. Product Master Table';
         $out[] = '';
         $out[] = '| Brand Name | Generic Composition | Strength | Packaging | MRP (INR) | Therapeutic Area |';
         $out[] = '| :--- | :--- | :--- | :--- | :--- | :--- |';
@@ -165,8 +182,8 @@ class LlmsTxt
         }
         $out[] = '';
 
-        // Section 3: Detailed Product Datasheets
-        $out[] = '## 3. Product Datasheets';
+        // Section 4: Detailed Product Datasheets
+        $out[] = '## 4. Product Datasheets';
         $out[] = '';
 
         foreach ($products as $p) {
@@ -196,8 +213,8 @@ class LlmsTxt
             $out[] = '';
         }
 
-        // Section 4: Indian Pharmaceutical Trade Pricing Standards (PTR & PTS)
-        $out[] = '## 4. Pharmaceutical Trade Pricing Reference (India: PTR, PTS & Schemes)';
+        // Section 5: Indian Pharmaceutical Trade Pricing Standards (PTR & PTS)
+        $out[] = '## 5. Pharmaceutical Trade Pricing Reference (India: PTR, PTS & Schemes)';
         $out[] = '';
         $out[] = 'Exponit Labs provides an interactive trade calculation tool at '.route('pricing-calculator').'. Below is the standard mathematical reference used across the Indian pharmaceutical distribution ecosystem:';
         $out[] = '';
@@ -220,8 +237,8 @@ class LlmsTxt
         $out[] = '   - `Invoice Amount = Taxable Value + (Taxable Value * GST %)`.';
         $out[] = '';
 
-        // Section 5: Distribution & PCD Franchise Opportunities
-        $out[] = '## 5. Commercial, Distribution & PCD Franchise';
+        // Section 6: Distribution & PCD Franchise Opportunities
+        $out[] = '## 6. Commercial, Distribution & PCD Franchise';
         $out[] = '';
         $out[] = 'Exponit Labs invites partnerships with pharmaceutical distributors, stockists, and PCD franchise partners across India:';
         $out[] = '- **Monopoly Rights**: District-wise / territory-wise marketing exclusivity available for eligible partners.';
@@ -234,11 +251,16 @@ class LlmsTxt
     }
 
     /**
+     * Override directory for testing or custom output.
+     */
+    public static ?string $diskDirectory = null;
+
+    /**
      * Persist llms.txt and llms-full.txt to disk for ultra-fast static webserver delivery.
      */
     public static function saveToDisk(?string $directory = null): void
     {
-        $dir = $directory ?? public_path();
+        $dir = $directory ?? static::$diskDirectory ?? public_path();
 
         if (is_dir($dir)) {
             file_put_contents($dir.'/llms.txt', static::generate());

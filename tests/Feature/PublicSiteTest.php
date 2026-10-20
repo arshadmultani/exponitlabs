@@ -4,6 +4,9 @@ use App\Models\ContactSubmission;
 use App\Models\NewsPost;
 use App\Models\Product;
 use App\Models\TherapeuticArea;
+use App\Observers\ProductObserver;
+use App\Observers\TherapeuticAreaObserver;
+use App\Support\LlmsTxt;
 use Illuminate\Support\Facades\Http;
 
 it('renders the static public pages', function (string $routeName) {
@@ -178,7 +181,8 @@ it('ships robots.txt, llms.txt, and llms-full.txt with the right content', funct
 
     expect(file_get_contents(public_path('llms-full.txt')))
         ->toContain('## 1. Company Profile & Quality Standards')
-        ->toContain('## 2. Product Master Table')
+        ->toContain('## 2. Therapeutic Areas & Clinical Divisions')
+        ->toContain('## 3. Product Master Table')
         ->toContain('Pharmaceutical Trade Pricing Reference (India: PTR, PTS & Schemes)');
 });
 
@@ -392,4 +396,84 @@ it('emits WebApplication schema on pricing calculator page', function () {
         ->assertSee('"@type":"WebApplication"', false)
         ->assertSee('Pharmaceutical Trade Pricing Calculator (PTR & PTS)', false)
         ->assertSee('BusinessApplication', false);
+});
+
+it('automatically regenerates llms.txt when a product is created, edited, or deleted', function () {
+    $tempDir = sys_get_temp_dir().'/llms-product-observer-'.uniqid();
+    mkdir($tempDir);
+
+    LlmsTxt::$diskDirectory = $tempDir;
+    ProductObserver::$enabledInTests = true;
+
+    try {
+        $area = TherapeuticArea::factory()->create(['name' => 'Cardiology Care']);
+
+        // 1. Creation test (new product)
+        $product = Product::factory()->for($area, 'therapeuticArea')->create([
+            'name' => 'Cardio-Stab 50',
+            'mrp' => 210.00,
+            'is_active' => true,
+        ]);
+
+        expect(file_exists($tempDir.'/llms.txt'))->toBeTrue();
+        expect(file_get_contents($tempDir.'/llms.txt'))->toContain('Cardio-Stab 50');
+        expect(file_get_contents($tempDir.'/llms-full.txt'))->toContain('Cardio-Stab 50');
+
+        // 2. Edit test (update existing product)
+        $product->update([
+            'name' => 'Cardio-Stab 100 Ultra',
+            'mrp' => 350.00,
+        ]);
+
+        expect(file_get_contents($tempDir.'/llms.txt'))->toContain('Cardio-Stab 100 Ultra');
+        expect(file_get_contents($tempDir.'/llms.txt'))->not->toContain('Cardio-Stab 50');
+        expect(file_get_contents($tempDir.'/llms-full.txt'))->toContain('Cardio-Stab 100 Ultra');
+
+        // 3. Deletion test
+        $product->delete();
+
+        expect(file_get_contents($tempDir.'/llms.txt'))->not->toContain('Cardio-Stab 100 Ultra');
+    } finally {
+        LlmsTxt::$diskDirectory = null;
+        ProductObserver::$enabledInTests = false;
+
+        if (file_exists($tempDir.'/llms.txt')) {
+            unlink($tempDir.'/llms.txt');
+        }
+        if (file_exists($tempDir.'/llms-full.txt')) {
+            unlink($tempDir.'/llms-full.txt');
+        }
+        rmdir($tempDir);
+    }
+});
+
+it('automatically regenerates llms.txt when a therapeutic area is saved or updated', function () {
+    $tempDir = sys_get_temp_dir().'/llms-area-observer-'.uniqid();
+    mkdir($tempDir);
+
+    LlmsTxt::$diskDirectory = $tempDir;
+    TherapeuticAreaObserver::$enabledInTests = true;
+
+    try {
+        $area = TherapeuticArea::factory()->create([
+            'name' => 'Neurology Solutions',
+            'summary' => 'Formulations for nervous system and neurological care.',
+            'is_active' => true,
+        ]);
+
+        expect(file_exists($tempDir.'/llms.txt'))->toBeTrue();
+        expect(file_get_contents($tempDir.'/llms.txt'))->toContain('Neurology Solutions');
+        expect(file_get_contents($tempDir.'/llms-full.txt'))->toContain('Neurology Solutions');
+    } finally {
+        LlmsTxt::$diskDirectory = null;
+        TherapeuticAreaObserver::$enabledInTests = false;
+
+        if (file_exists($tempDir.'/llms.txt')) {
+            unlink($tempDir.'/llms.txt');
+        }
+        if (file_exists($tempDir.'/llms-full.txt')) {
+            unlink($tempDir.'/llms-full.txt');
+        }
+        rmdir($tempDir);
+    }
 });

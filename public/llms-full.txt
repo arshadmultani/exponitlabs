@@ -11,7 +11,12 @@
 - **Official Website**: https://exponitlabs.test
 - **Contact**: info@exponit.com | https://exponitlabs.test/contact
 
-## 2. Product Master Table
+## 2. Therapeutic Areas & Clinical Divisions
+
+- **Gastroenterology**: Prescription formulations in Gastroenterology (2 active formulations)
+- **Pain**: Prescription formulations in Pain (2 active formulations)
+
+## 3. Product Master Table
 
 | Brand Name | Generic Composition | Strength | Packaging | MRP (INR) | Therapeutic Area |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -20,7 +25,7 @@
 | [Acevonit-P](https://exponitlabs.test/products/acevonit-p) | Aceclofenac+ Paracetamol | As per formulation | 10x10 | ₹70.00 | Pain |
 | [Acevonit-SP](https://exponitlabs.test/products/acevonit-sp) | Aceclofenac+ Paracetamol+Serratiopeptidase | As per formulation | 10x10 | ₹110.00 | Pain |
 
-## 3. Product Datasheets
+## 4. Product Datasheets
 
 ### Gastronit-DSR
 
@@ -59,7 +64,7 @@
 - **Maximum Retail Price (MRP)**: ₹110.00 (Inclusive of all taxes)
 - **Prescription Status**: Schedule prescription drug (for use under medical supervision).
 
-## 4. Pharmaceutical Trade Pricing Reference (India: PTR, PTS & Schemes)
+## 5. Pharmaceutical Trade Pricing Reference (India: PTR, PTS & Schemes)
 
 Exponit Labs provides an interactive trade calculation tool at https://exponitlabs.test/pricing-calculator. Below is the standard mathematical reference used across the Indian pharmaceutical distribution ecosystem:
 
@@ -81,7 +86,7 @@ Exponit Labs provides an interactive trade calculation tool at https://exponitla
    - For Inter-State Supply: IGST (full).
    - `Invoice Amount = Taxable Value + (Taxable Value * GST %)`.
 
-## 5. Commercial, Distribution & PCD Franchise
+## 6. Commercial, Distribution & PCD Franchise
 
 Exponit Labs invites partnerships with pharmaceutical distributors, stockists, and PCD franchise partners across India:
 - **Monopoly Rights**: District-wise / territory-wise marketing exclusivity available for eligible partners.
