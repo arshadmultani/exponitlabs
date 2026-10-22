@@ -156,8 +156,8 @@ it('can log a new dcr for the doctor through the relation manager', function () 
             'date' => '2026-09-01',
             'sample_given' => true,
             'input_given' => true,
-            'products' => [$product->id => 6],
-            'inputs' => [$input->id => 10],
+            'products' => [$product->id],
+            'inputs' => [$input->id],
             'remarks' => 'Created from doctor view page',
         ])
         ->assertHasNoTableActionErrors();
@@ -172,13 +172,13 @@ it('can log a new dcr for the doctor through the relation manager', function () 
     $this->assertDatabaseHas(DCRProduct::class, [
         'dcr_id' => $newDcr->id,
         'product_id' => $product->id,
-        'quantity' => 6,
+        'quantity' => 1,
     ]);
 
     $this->assertDatabaseHas(DCRPromotionalInput::class, [
         'dcr_id' => $newDcr->id,
         'promotional_input_id' => $input->id,
-        'quantity' => 10,
+        'quantity' => 1,
     ]);
 });
 
@@ -190,4 +190,21 @@ it('renders view action and dcr count column in doctors list table', function ()
         ->assertCanSeeTableRecords([$doctor])
         ->assertTableActionExists('view', record: $doctor)
         ->assertSee('3');
+});
+
+it('does not group the dcrs table in the doctor view infolist page', function () {
+    $doctor = Doctor::factory()->create();
+    DCR::factory()->count(2)->create([
+        'doctor_id' => $doctor->id,
+        'date' => '2026-08-20',
+    ]);
+
+    $test = Livewire::test(DcrsRelationManager::class, [
+        'ownerRecord' => $doctor,
+        'pageClass' => ViewDoctor::class,
+    ]);
+
+    expect($test->instance()->getTableGrouping())->toBeNull();
+    $test->assertDontSee('doctor call')
+        ->assertDontSee('doctor calls');
 });

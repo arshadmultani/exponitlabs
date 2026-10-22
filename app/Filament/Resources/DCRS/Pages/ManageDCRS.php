@@ -22,23 +22,41 @@ class ManageDCRS extends ManageRecords
                 ->outlined()
                 ->after(function (DCR $record, array $data): void {
                     if (! empty($data['products']) && is_array($data['products'])) {
-                        foreach ($data['products'] as $productId => $quantity) {
-                            if ((int) $quantity > 0) {
+                        if (array_is_list($data['products'])) {
+                            foreach ($data['products'] as $productId) {
                                 $record->sampleProducts()->create([
                                     'product_id' => $productId,
-                                    'quantity' => (int) $quantity,
+                                    'quantity' => 1,
                                 ]);
+                            }
+                        } else {
+                            foreach ($data['products'] as $productId => $quantity) {
+                                if ((int) $quantity > 0) {
+                                    $record->sampleProducts()->create([
+                                        'product_id' => $productId,
+                                        'quantity' => (int) $quantity,
+                                    ]);
+                                }
                             }
                         }
                     }
 
                     if (! empty($data['inputs']) && is_array($data['inputs'])) {
-                        foreach ($data['inputs'] as $inputId => $quantity) {
-                            if ((int) $quantity > 0) {
+                        if (array_is_list($data['inputs'])) {
+                            foreach ($data['inputs'] as $inputId) {
                                 $record->promotionalInputs()->create([
                                     'promotional_input_id' => $inputId,
-                                    'quantity' => (int) $quantity,
+                                    'quantity' => 1,
                                 ]);
+                            }
+                        } else {
+                            foreach ($data['inputs'] as $inputId => $quantity) {
+                                if ((int) $quantity > 0) {
+                                    $record->promotionalInputs()->create([
+                                        'promotional_input_id' => $inputId,
+                                        'quantity' => (int) $quantity,
+                                    ]);
+                                }
                             }
                         }
                     }

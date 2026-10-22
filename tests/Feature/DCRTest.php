@@ -28,8 +28,8 @@ test('it creates a dcr along with sample products and promotional inputs', funct
         ->set('mountedActions.0.data.doctor_id', $doctor->id)
         ->set('mountedActions.0.data.sample_given', true)
         ->set('mountedActions.0.data.input_given', true)
-        ->set('mountedActions.0.data.products', [$product->id => 5])
-        ->set('mountedActions.0.data.inputs', [$input->id => 3])
+        ->set('mountedActions.0.data.products', [$product->id])
+        ->set('mountedActions.0.data.inputs', [$input->id])
         ->set('mountedActions.0.data.remarks', 'Test visit')
         ->callMountedAction()
         ->assertHasNoActionErrors();
@@ -44,13 +44,13 @@ test('it creates a dcr along with sample products and promotional inputs', funct
     $this->assertDatabaseHas(DCRProduct::class, [
         'dcr_id' => $dcr->id,
         'product_id' => $product->id,
-        'quantity' => 5,
+        'quantity' => 1,
     ]);
 
     $this->assertDatabaseHas(DCRPromotionalInput::class, [
         'dcr_id' => $dcr->id,
         'promotional_input_id' => $input->id,
-        'quantity' => 3,
+        'quantity' => 1,
     ]);
 });
 
@@ -140,4 +140,63 @@ test('it updates doctor call count in group header when search filter is applied
         ->searchTable('UniqueAlpha')
         ->assertSee('1 doctor call')
         ->assertDontSee('2 doctor calls');
+});
+
+test('it creates a dcr with multiple sample products and promotional inputs selected via multi-select', function () {
+    $user = User::factory()->create();
+    $doctor = Doctor::factory()->create();
+    $p1 = Product::factory()->create(['name' => 'Med A']);
+    $p2 = Product::factory()->create(['name' => 'Med B']);
+    $i1 = PromotionalInput::factory()->create(['name' => 'Calendar']);
+    $i2 = PromotionalInput::factory()->create(['name' => 'Brochure']);
+
+    $this->actingAs($user);
+
+    Livewire::test(ManageDCRS::class)
+        ->mountAction('create')
+        ->set('mountedActions.0.data.date', '2026-10-22')
+        ->set('mountedActions.0.data.doctor_id', $doctor->id)
+        ->set('mountedActions.0.data.sample_given', true)
+        ->set('mountedActions.0.data.input_given', true)
+        ->set('mountedActions.0.data.products', [$p1->id, $p2->id])
+        ->set('mountedActions.0.data.inputs', [$i1->id, $i2->id])
+        ->set('mountedActions.0.data.remarks', 'Multi-select test visit')
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    $dcr = DCR::where('remarks', 'Multi-select test visit')->first();
+    expect($dcr)->not->toBeNull();
+    expect($dcr->sampleProducts)->toHaveCount(2);
+    expect($dcr->promotionalInputs)->toHaveCount(2);
+    expect($dcr->sampleProducts->pluck('product_id')->all())->toEqualCanonicalizing([$p1->id, $p2->id]);
+    expect($dcr->promotionalInputs->pluck('promotional_input_id')->all())->toEqualCanonicalizing([$i1->id, $i2->id]);
+});
+
+test('it can edit a dcr and update its sample products and promotional inputs', function () {
+    $user = User::factory()->create();
+    $doctor = Doctor::factory()->create();
+    $p1 = Product::factory()->create(['name' => 'Old Product']);
+    $p2 = Product::factory()->create(['name' => 'New Product']);
+
+    $dcr = DCR::factory()->create([
+        'doctor_id' => $doctor->id,
+        'date' => '2026-10-22',
+        'remarks' => 'Before edit',
+    ]);
+    $dcr->sampleProducts()->create(['product_id' => $p1->id, 'quantity' => 1]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ManageDCRS::class)
+        ->callTableAction('edit', $dcr, data: [
+            'sample_given' => true,
+            'products' => [$p2->id],
+            'remarks' => 'After edit',
+        ])
+        ->assertHasNoTableActionErrors();
+
+    $dcr->refresh();
+    expect($dcr->remarks)->toBe('After edit');
+    expect($dcr->sampleProducts)->toHaveCount(1);
+    expect($dcr->sampleProducts->first()->product_id)->toBe($p2->id);
 });
