@@ -2,34 +2,35 @@
 
 namespace App\Filament\Resources\DCRS;
 
-use App\Filament\Resources\DCRS\Pages\ManageDCRS;
+use BackedEnum;
 use App\Models\DCR;
 use App\Models\Doctor;
 use App\Models\Product;
-use App\Models\PromotionalInput;
-use BackedEnum;
+use Filament\Tables\Table;
 use Filament\Actions\Action;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
+use Filament\Schemas\Schema;
+use App\Models\PromotionalInput;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Actions\DeleteAction;
+use Filament\Tables\Grouping\Group;
+use Filament\Support\Icons\Heroicon;
+use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Select;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\DatePicker;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\DCRS\Pages\ManageDCRS;
+use Filament\Infolists\Components\RepeatableEntry;
 
 class DCRResource extends Resource
 {
@@ -201,6 +202,22 @@ class DCRResource extends Resource
         return $table
             ->modifyQueryUsing(fn (Builder $query) => $query->with(['doctor.area']))
             ->defaultSort('date', 'desc')
+            ->paginated([
+                50, 100, 150, 200,
+            ])
+            ->defaultGroup(
+                Group::make('date')
+                    ->date()
+                    ->collapsible()
+                    ->titlePrefixedWithLabel(false)
+                    ->getDescriptionFromRecordUsing(function (DCR $record, ?Table $table = null): string {
+                        $count = $table?->getLivewire()
+                            ? $table->getLivewire()->getFilteredTableQuery()->whereDate('date', $record->date)->count()
+                            : DCR::whereDate('date', $record->date)->count();
+
+                        return "{$count} ".str('doctor call')->plural($count);
+                    })
+            )
             ->columns([
                 TextColumn::make('date')
                     ->label('Date')

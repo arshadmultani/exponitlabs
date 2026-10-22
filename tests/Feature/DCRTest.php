@@ -91,3 +91,53 @@ test('it displays doctor area and town below doctor name in table and select opt
         ->assertSee('Downtown Hub, Metropolis')
         ->assertSee('Gotham');
 });
+
+test('it groups dcr table records by date and displays doctor call count', function () {
+    $user = User::factory()->create();
+    $doc1 = Doctor::factory()->create(['name' => 'Dr. Alpha']);
+    $doc2 = Doctor::factory()->create(['name' => 'Dr. Beta']);
+    $doc3 = Doctor::factory()->create(['name' => 'Dr. Gamma']);
+
+    $todayDcr1 = DCR::factory()->create([
+        'doctor_id' => $doc1->id,
+        'date' => '2026-10-22',
+    ]);
+    $todayDcr2 = DCR::factory()->create([
+        'doctor_id' => $doc2->id,
+        'date' => '2026-10-22',
+    ]);
+    $yesterdayDcr = DCR::factory()->create([
+        'doctor_id' => $doc3->id,
+        'date' => '2026-10-21',
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ManageDCRS::class)
+        ->assertCanSeeTableRecords([$todayDcr1, $todayDcr2, $yesterdayDcr])
+        ->assertSee('2 doctor calls')
+        ->assertSee('1 doctor call');
+});
+
+test('it updates doctor call count in group header when search filter is applied', function () {
+    $user = User::factory()->create();
+    $doc1 = Doctor::factory()->create(['name' => 'Dr. UniqueAlpha']);
+    $doc2 = Doctor::factory()->create(['name' => 'Dr. CommonBeta']);
+
+    DCR::factory()->create([
+        'doctor_id' => $doc1->id,
+        'date' => '2026-10-22',
+    ]);
+    DCR::factory()->create([
+        'doctor_id' => $doc2->id,
+        'date' => '2026-10-22',
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test(ManageDCRS::class)
+        ->assertSee('2 doctor calls')
+        ->searchTable('UniqueAlpha')
+        ->assertSee('1 doctor call')
+        ->assertDontSee('2 doctor calls');
+});

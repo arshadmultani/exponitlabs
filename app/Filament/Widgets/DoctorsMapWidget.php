@@ -2,16 +2,18 @@
 
 namespace App\Filament\Widgets;
 
-use App\Filament\Resources\Doctors\DoctorResource;
 use App\Models\Area;
 use App\Models\Doctor;
 use Filament\Widgets\Widget;
+use App\Filament\Resources\Doctors\DoctorResource;
 
 class DoctorsMapWidget extends Widget
 {
     protected string $view = 'filament.widgets.doctors-map';
 
     protected int|string|array $columnSpan = 'full';
+
+    protected static bool $isDiscovered = false;
 
     // Render inline (not lazy) so the map + data are in the page on first load.
     protected static bool $isLazy = false;

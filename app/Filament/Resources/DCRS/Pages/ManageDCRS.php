@@ -11,6 +11,8 @@ class ManageDCRS extends ManageRecords
 {
     protected static string $resource = DCRResource::class;
 
+    public ?string $tableGrouping = 'date:desc';
+
     protected function getHeaderActions(): array
     {
         return [
