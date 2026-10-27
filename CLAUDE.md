@@ -406,4 +406,14 @@ livewire(ListUsers::class)
   - `$navigationGroup`: `protected static string | UnitEnum | null` (not `?string`)
   - `$view`: `protected string` (not `protected static string`) on `Page` and `Widget` classes
 
+=== egm rules ===
+
+# Elephant-Goldfish Model (EGM)
+
+EGM artifact directory: docs/designs
+
+- When using `/egm-draft` or `/egm-review`, save design specifications under `docs/designs/` and maintain an entry in `docs/designs/SITEMAP.md`.
+- Activate the `exponit-elephant` skill to load project architecture and domain context during EGM planning sessions.
+
 </laravel-boost-guidelines>
+
