@@ -18,6 +18,9 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+/public/llms.txt
+/public/llms-full.txt
+/public/robots.txt
 /database/*.sqlite
 /database/*.sqlite-shm
 /database/*.sqlite-wal

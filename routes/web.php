@@ -39,7 +39,8 @@ Route::view('/refund-policy', 'pages.legal.refund')->name('refund');
 Route::get('/pricing-calculator.md', [PageController::class, 'pricingCalculatorMd'])->name('pricing-calculator.md');
 Route::get('/pricing-calculator', [PageController::class, 'pricingCalculator'])->name('pricing-calculator');
 
-// SEO: XML sitemap (DIY, no package).
+// SEO & Crawlers (dynamic from APP_URL)
+Route::get('/robots.txt', [PageController::class, 'robotsTxt'])->name('robots.txt');
 Route::get('/sitemap.xml', [PageController::class, 'sitemap'])->name('sitemap');
 
 // LLM discovery (GEO: Generative Engine Optimization)

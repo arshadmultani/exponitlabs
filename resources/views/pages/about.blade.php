@@ -14,7 +14,7 @@
                     A focused pharmaceutical company, built for consistency.
                 </h1>
                 <p class="mt-6 text-lg leading-8 text-muted">
-                    Exponit Labs (<a href="https://exponit.com" class="underline hover:text-brand">exponit.com</a>) is a focused pharmaceutical company delivering a deliberately narrow portfolio of pharmaceutical products —
+                    Exponit Labs (<a href="{{ url('/') }}" class="underline hover:text-brand">{{ parse_url(config('app.url', url('/')), PHP_URL_HOST) ?? 'exponit.com' }}</a>) is a focused pharmaceutical company delivering a deliberately narrow portfolio of pharmaceutical products —
                     across pain management, gastro care, antibiotics and allergy treatment — through
                     trusted, quality-controlled manufacturing partnerships.
                 </p>

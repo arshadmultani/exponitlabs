@@ -166,24 +166,14 @@ it('serves the internal pricing calculator as a noindex page', function () {
         ->assertSee('noindex, nofollow', false);
 });
 
-it('ships robots.txt, llms.txt, and llms-full.txt with the right content', function () {
-    // Static files served by the webserver, not the Laravel router — assert on disk.
-    expect(file_get_contents(public_path('robots.txt')))
-        ->toContain('Sitemap:')
-        ->toContain('Disallow: /console')
-        ->toContain('User-agent: GPTBot')
-        ->toContain('User-agent: OAI-SearchBot');
-
-    expect(file_get_contents(public_path('llms.txt')))
-        ->toContain('Exponit Labs')
-        ->toContain('## Core Therapeutic Areas')
-        ->toContain('## Product Directory');
-
-    expect(file_get_contents(public_path('llms-full.txt')))
-        ->toContain('## 1. Company Profile & Quality Standards')
-        ->toContain('## 2. Therapeutic Areas & Clinical Divisions')
-        ->toContain('## 3. Product Master Table')
-        ->toContain('Pharmaceutical Trade Pricing Reference (India: PTR, PTS & Schemes)');
+it('serves dynamic robots.txt with sitemap derived from APP_URL', function () {
+    $this->get(route('robots.txt'))
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertSee('Sitemap: '.route('sitemap'), false)
+        ->assertSee('Disallow: /console')
+        ->assertSee('User-agent: GPTBot')
+        ->assertSee('User-agent: OAI-SearchBot');
 });
 
 it('serves dynamic /llms.txt and /llms-full.txt with active catalog data and excludes inactive products', function () {
@@ -201,6 +191,7 @@ it('serves dynamic /llms.txt and /llms-full.txt with active catalog data and exc
     $this->get(route('llms.txt'))
         ->assertOk()
         ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertSee('Official Website: '.rtrim(config('app.url'), '/'), false)
         ->assertSee('Cardionit-50')
         ->assertSee('Atenolol 50mg')
         ->assertDontSee('SecretMolecule-X');
@@ -208,6 +199,9 @@ it('serves dynamic /llms.txt and /llms-full.txt with active catalog data and exc
     $this->get(route('llms-full.txt'))
         ->assertOk()
         ->assertHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->assertSee('**Official Website**: '.rtrim(config('app.url'), '/'), false)
+        ->assertSee('## 2. Therapeutic Areas & Clinical Divisions', false)
+        ->assertSee('## 3. Product Master Table', false)
         ->assertSee('Cardionit-50')
         ->assertSee('PTR (Price to Retailer)')
         ->assertDontSee('SecretMolecule-X');

@@ -37,7 +37,7 @@
                 </p>
 
                 <p class="mt-4 text-sm text-muted/70">
-                    Visit <a href="https://exponit.com" class="underline hover:text-brand">exponit.com</a> to explore our full pharmaceutical portfolio.
+                    Visit <a href="{{ route('products.index') }}" class="underline hover:text-brand">{{ parse_url(config('app.url', url('/')), PHP_URL_HOST) ?? 'exponit.com' }}</a> to explore our full pharmaceutical portfolio.
                 </p>
 
                 <div class="mt-10 flex flex-wrap gap-4">

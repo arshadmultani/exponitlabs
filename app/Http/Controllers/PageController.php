@@ -173,10 +173,57 @@ class PageController extends Controller
         return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
     }
 
+    public function robotsTxt()
+    {
+        $sitemapUrl = route('sitemap');
+
+        $content = implode("\n", [
+            'User-agent: *',
+            'Allow: /',
+            'Disallow: /console',
+            'Disallow: /ar/',
+            'Disallow: /dr/',
+            '',
+            '# AI & LLM Search Engine Crawlers',
+            'User-agent: GPTBot',
+            'Allow: /',
+            '',
+            'User-agent: OAI-SearchBot',
+            'Allow: /',
+            '',
+            'User-agent: ChatGPT-User',
+            'Allow: /',
+            '',
+            'User-agent: PerplexityBot',
+            'Allow: /',
+            '',
+            'User-agent: ClaudeBot',
+            'Allow: /',
+            '',
+            'User-agent: Google-Extended',
+            'Allow: /',
+            '',
+            'User-agent: Applebot-Extended',
+            'Allow: /',
+            '',
+            'User-agent: Meta-ExternalAgent',
+            'Allow: /',
+            '',
+            'Sitemap: '.$sitemapUrl,
+            '',
+        ]);
+
+        return response($content, 200, [
+            'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=3600, stale-while-revalidate=86400',
+        ]);
+    }
+
     public function llmsTxt()
     {
         return response(LlmsTxt::generate(), 200, [
             'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=3600, stale-while-revalidate=86400',
         ]);
     }
 
@@ -184,6 +231,7 @@ class PageController extends Controller
     {
         return response(LlmsTxt::generateFull(), 200, [
             'Content-Type' => 'text/plain; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=3600, stale-while-revalidate=86400',
         ]);
     }
 
