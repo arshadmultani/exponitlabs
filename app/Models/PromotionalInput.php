@@ -12,8 +12,22 @@ class PromotionalInput extends Model
 
     protected $fillable = [
         'name',
+        'unit_cost',
         'is_active',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'unit_cost' => 'decimal:2',
+            'is_active' => 'boolean',
+        ];
+    }
 
     public function dcrPromotionalItems()
     {

@@ -29,6 +29,7 @@ class Product extends Model
         'packaging',
         'mrp',
         'unit_cost',
+        'sample_cost',
         'description',
         'image_path',
         'images',
@@ -46,6 +47,7 @@ class Product extends Model
             'sort_order' => 'integer',
             'mrp' => 'decimal:2',
             'unit_cost' => 'decimal:2',
+            'sample_cost' => 'decimal:2',
         ];
     }
 

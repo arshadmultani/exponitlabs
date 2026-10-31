@@ -36,6 +36,7 @@ class Doctor extends Model
         'location',
         'practice_since',
         'status',
+        'visit_cost_override',
     ];
 
     protected $casts = [
@@ -43,6 +44,7 @@ class Doctor extends Model
         'location' => 'array',
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
+        'visit_cost_override' => 'decimal:2',
     ];
 
     /**
@@ -132,6 +134,11 @@ class Doctor extends Model
     public function dcrs(): HasMany
     {
         return $this->hasMany(DCR::class);
+    }
+
+    public function revenues(): HasMany
+    {
+        return $this->hasMany(DoctorRevenue::class);
     }
 
     public function isActive(): bool
