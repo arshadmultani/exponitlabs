@@ -21,7 +21,8 @@ New features and architectural refactors designed with `/egm-draft` and reviewed
 
 | Document | Target Subsystem | Status | Owner |
 | :--- | :--- | :--- | :--- |
-| *(New specs drafted with `/egm-draft` will be indexed here)* | — | — | — |
+| [2026-10-27_DRIFT_REPORT.md](./2026-10-27_DRIFT_REPORT.md) | `app/` Codebase Contracts | Verified (0 drift) | EGM Bootstrap |
+
 
 ---
 
