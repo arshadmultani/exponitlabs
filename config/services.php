@@ -35,9 +35,17 @@ return [
         ],
     ],
 
+    'discord_backup' => [
+        'webhook' => env('DISCORD_BACKUP_WEBHOOK', env('DISCORD_ALERT_WEBHOOK')),
+        'excluded_directories' => array_values(array_filter(array_map('trim', explode(',', env('BACKUP_EXCLUDE_DIRS', env('TELEGRAM_BACKUP_EXCLUDE_DIRS', 'ar')))))),
+        'max_file_size' => (int) env('BACKUP_MAX_FILE_SIZE', env('TELEGRAM_BACKUP_MAX_FILE_SIZE', 15 * 1024 * 1024)),
+    ],
+
     'telegram_backup' => [
         'token' => env('TELEGRAM_BACKUP_BOT_TOKEN'),
         'chat_id' => env('TELEGRAM_BACKUP_CHAT_ID'),
+        'excluded_directories' => array_values(array_filter(array_map('trim', explode(',', env('TELEGRAM_BACKUP_EXCLUDE_DIRS', 'ar'))))),
+        'max_file_size' => (int) env('TELEGRAM_BACKUP_MAX_FILE_SIZE', 15 * 1024 * 1024),
     ],
 
     // Google Analytics 4. Set GA_MEASUREMENT_ID to inject the gtag snippet
