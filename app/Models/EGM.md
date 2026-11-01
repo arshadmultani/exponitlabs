@@ -10,11 +10,12 @@ Eloquent data models mapped to the SQLite database schema, defining domain entit
   - `NewsPost`: Press releases and clinical updates (`title`, `slug`, `content`, `published_at`).
   - `ContactSubmission`: Web lead submissions with spam scoring and handled status.
 - **Field Force & MR Operations**:
-  - `Doctor`: Healthcare provider registry with GPS coordinates, phone, area, and headquarters assignment.
+  - `Doctor`: Healthcare provider registry with GPS coordinates, phone, area, headquarters assignment, `visit_cost_override`, and `revenues` relation.
+  - `DoctorRevenue`: Monthly prescription revenues and sales audits attributed to physicians (`doctor_id`, `period_date`, `amount`, `source`, `notes`, `created_by_user_id`). Belongs to `Doctor` and `User`.
   - `DCR`: Daily Call Report entries logging MR visits to doctors. Has many `DCRProduct` and `DCRPromotionalInput`.
-  - `DCRProduct`: Products detailed during a specific MR visit.
-  - `DCRPromotionalInput`: Promotional collateral/samples delivered during a visit.
-  - `PromotionalInput`: Master list of promotional inputs and marketing materials.
+  - `DCRProduct`: Products detailed during a specific MR visit, with `unit_cost_snapshot`.
+  - `DCRPromotionalInput`: Promotional collateral/samples delivered during a visit, with `unit_cost_snapshot`.
+  - `PromotionalInput`: Master list of promotional inputs and marketing materials with `unit_cost`.
   - `Area` / `Headquarter`: Hierarchical geographic sales territories.
   - `ProductPricing`: Price points including PTS, PTR, MRP, margin percentages, and GST.
 - **Augmented Reality & Dynamic QR Telemetry**:

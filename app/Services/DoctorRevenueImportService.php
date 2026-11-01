@@ -102,7 +102,13 @@ class DoctorRevenueImportService
             }
 
             // 2. Validate amount
-            if ($rawAmount === '' || ! is_numeric($rawAmount) || (float) $rawAmount <= 0.0) {
+            if ($rawAmount === '' || (is_numeric($rawAmount) && (float) $rawAmount === 0.0)) {
+                $result->incrementSkipped();
+
+                continue;
+            }
+
+            if (! is_numeric($rawAmount) || (float) $rawAmount < 0.0) {
                 $result->addError($rowNumber, "Invalid amount '{$rawAmount}': Must be a positive decimal.");
 
                 continue;

@@ -18,6 +18,11 @@ class RevenueImportResult
         return empty($this->errors);
     }
 
+    public function hasErrors(): bool
+    {
+        return ! empty($this->errors);
+    }
+
     public function addError(int $row, string $message): void
     {
         $this->errors[] = [

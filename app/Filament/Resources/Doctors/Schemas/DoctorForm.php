@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Doctors\Schemas;
 
-use Filament\Schemas\Schema;
+use App\Filament\Forms\Components\LocationMapField;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
-use App\Filament\Forms\Components\LocationMapField;
+use Filament\Schemas\Schema;
 
 class DoctorForm
 {
@@ -88,6 +88,18 @@ class DoctorForm
                     ->components([
                         LocationMapField::make('location')
                             ->height(300),
+                    ]),
+
+                Section::make('Commercial & Detailing Valuation')
+                    ->description('Physician-specific operational costing and detailing expenditure overrides.')
+                    ->columns(2)
+                    ->components([
+                        TextInput::make('visit_cost_override')
+                            ->label('Visit Cost Override (₹)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('₹')
+                            ->helperText('Custom cost per detailing call visit. Defaults to global setting (₹250.00) if unset.'),
                     ]),
 
                 Section::make('Profile photo')

@@ -31,6 +31,13 @@ class PromotionalInputResource extends Resource
                 TextInput::make('name')
                     ->required()
                     ->maxLength(255),
+                TextInput::make('unit_cost')
+                    ->label('Unit cost (₹)')
+                    ->numeric()
+                    ->minValue(0)
+                    ->prefix('₹')
+                    ->default(0.00)
+                    ->helperText('Standard unit cost for this promotional input or gift.'),
             ]);
     }
 
@@ -41,6 +48,10 @@ class PromotionalInputResource extends Resource
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
+                TextColumn::make('unit_cost')
+                    ->label('Unit Cost')
+                    ->money('INR')
+                    ->sortable(),
             ])
             ->filters([
                 //

@@ -1,5 +1,6 @@
 <?php
 
+use App\Filament\Resources\Doctors\Pages\ListDoctors;
 use App\Models\Area;
 use App\Models\Doctor;
 use App\Models\User;
@@ -67,4 +68,14 @@ it('renders the doctor view page', function () {
         ->get("/console/doctors/{$doctor->getKey()}")
         ->assertOk()
         ->assertSee('Dr. View Me');
+});
+
+it('exports doctors roster to CSV from the doctors table', function () {
+    Doctor::create(['name' => 'Dr. Export Test']);
+
+    $this->actingAs(User::factory()->create());
+
+    Livewire\Livewire::test(ListDoctors::class)
+        ->callTableAction('exportCsv')
+        ->assertFileDownloaded('doctors_'.now()->format('Y-m-d').'.csv');
 });

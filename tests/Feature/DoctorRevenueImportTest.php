@@ -114,7 +114,7 @@ it('rejects non-existent doctor IDs with row-level validation errors and rolls b
     expect(DoctorRevenue::count())->toBe(0);
 });
 
-it('rejects invalid or zero amounts with row-level errors', function () {
+it('rejects invalid negative or non-numeric amounts with row-level errors', function () {
     $doctor = Doctor::factory()->create();
 
     $csvContent = implode("\n", [
@@ -131,4 +131,31 @@ it('rejects invalid or zero amounts with row-level errors', function () {
     expect($result->isSuccessful())->toBeFalse()
         ->and($result->errors)->toHaveCount(2)
         ->and(DoctorRevenue::count())->toBe(0);
+});
+
+it('skips rows where amount is blank or zero without errors (supporting template rosters)', function () {
+    $doctorActive = Doctor::factory()->create();
+    $doctorBlank = Doctor::factory()->create();
+    $doctorZero = Doctor::factory()->create();
+
+    $csvContent = implode("\n", [
+        'doctor_id,doctor_name,area,period_date,amount,notes',
+        "{$doctorActive->id},Dr. Active,South Mumbai,2026-10-01,45000.00,Valid sale",
+        "{$doctorBlank->id},Dr. Blank,Andheri,2026-10-01,,No sales recorded",
+        "{$doctorZero->id},Dr. Zero,Bandra,2026-10-01,0,Zero sales",
+    ]);
+
+    $file = UploadedFile::fake()->createWithContent('template_roster.csv', $csvContent);
+
+    $service = new DoctorRevenueImportService;
+    $result = $service->import($file);
+
+    expect($result->isSuccessful())->toBeTrue()
+        ->and($result->importedCount)->toBe(1)
+        ->and($result->skippedCount)->toBe(2)
+        ->and($result->errors)->toBeEmpty();
+
+    expect(DoctorRevenue::where('doctor_id', $doctorActive->id)->count())->toBe(1)
+        ->and(DoctorRevenue::where('doctor_id', $doctorBlank->id)->count())->toBe(0)
+        ->and(DoctorRevenue::where('doctor_id', $doctorZero->id)->count())->toBe(0);
 });

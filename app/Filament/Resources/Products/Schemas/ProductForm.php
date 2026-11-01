@@ -4,8 +4,8 @@ namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -57,6 +57,13 @@ class ProductForm
                             ->minValue(0)
                             ->prefix('₹')
                             ->helperText('Company cost per unit (incl. GST). Optional.'),
+
+                        TextInput::make('sample_cost')
+                            ->label('Sample cost override (₹)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('₹')
+                            ->helperText('Optional cost for promotional sample packs. Defaults to Unit cost if unset.'),
 
                         Textarea::make('description')
                             ->rows(4)
