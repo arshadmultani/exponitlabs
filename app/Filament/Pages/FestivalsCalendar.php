@@ -5,9 +5,12 @@ namespace App\Filament\Pages;
 use App\Models\Doctor;
 use App\Models\FestivalDate;
 use App\Services\FestivalGreetingService;
+use App\Services\FestivalImportService;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
@@ -18,9 +21,11 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 use UnitEnum;
 
 class FestivalsCalendar extends Page
@@ -103,107 +108,212 @@ class FestivalsCalendar extends Page
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('createFestival')
-                ->label('Add Festival')
-                ->icon(Heroicon::Plus)
-                ->color('primary')
-                ->modalHeading('Add Indian Festival or Healthcare Observance')
-                ->modalDescription('Manually schedule a new cultural festival, regional holiday, or clinical awareness day.')
-                ->extraModalFooterActions(fn (Action $action): array => [
-                    $action->makeModalSubmitAction('createAnother', arguments: ['another' => true])
-                        ->label('Create & create another'),
-                ])
-                ->schema([
-                    TextInput::make('name')
-                        ->label('Observance / Festival Name')
-                        ->required()
-                        ->placeholder('e.g. Ganesh Chaturthi, Hospital Foundation Day, World Diabetes Day')
-                        ->maxLength(255),
-                    Select::make('category')
-                        ->label('Category')
-                        ->options([
-                            'cultural_and_national' => 'Cultural & National (Universal to all doctors)',
-                            'clinical_observance' => 'Clinical Observance (Specialty targeted)',
-                        ])
-                        ->default('cultural_and_national')
-                        ->required()
-                        ->native(false)
-                        ->live(),
-                    DatePicker::make('date')
-                        ->label('Observance Date')
-                        ->required()
-                        ->native(false)
-                        ->displayFormat('d/m/Y')
-                        ->default(fn () => Carbon::createFromDate($this->year, $this->month, min(now()->day, 28))->toDateString()),
-                    Grid::make(2)->schema([
-                        TextInput::make('days_before')
-                            ->label('Active Window Before (Days)')
-                            ->numeric()
-                            ->minValue(0)
-                            ->default(2)
-                            ->required(),
-                        TextInput::make('days_after')
-                            ->label('Active Window After (Days)')
-                            ->numeric()
-                            ->minValue(0)
-                            ->default(1)
-                            ->required(),
-                    ]),
-                    TagsInput::make('target_specialties')
-                        ->label('Target Clinical Specialties')
-                        ->placeholder('Type specialty and press Enter (e.g. Cardiology, Pediatrics)')
-                        ->visible(fn (Get $get): bool => $get('category') === 'clinical_observance'),
-                    Textarea::make('greeting_message_template')
-                        ->label('WhatsApp / Greeting Copy Template')
-                        ->rows(3)
-                        ->placeholder('Respected Dr. {doctor_name}, wishing you and your team a meaningful...')
-                        ->helperText('Available placeholders: {doctor_name}, {mr_name}'),
-                    TextInput::make('adjustment_notes')
-                        ->label('Notes / Source (Optional)')
-                        ->placeholder('e.g. State Gazette notification / Hospital circular')
-                        ->maxLength(255),
-                ])
-                ->action(function (array $data, array $arguments, Action $action, Schema $schema, FestivalGreetingService $service): void {
-                    $service->createCustomFestival($data, auth()->id());
+            ActionGroup::make([
+                Action::make('createFestival')
+                    ->label('Add Festival')
+                    ->icon(Heroicon::Plus)
+                    ->color('primary')
+                    ->modalHeading('Add Indian Festival or Healthcare Observance')
+                    ->modalDescription('Manually schedule a new cultural festival, regional holiday, or clinical awareness day.')
+                    ->extraModalFooterActions(fn (Action $action): array => [
+                        $action->makeModalSubmitAction('createAnother', arguments: ['another' => true])
+                            ->label('Create & create another'),
+                    ])
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Observance / Festival Name')
+                            ->required()
+                            ->placeholder('e.g. Ganesh Chaturthi, Hospital Foundation Day, World Diabetes Day')
+                            ->maxLength(255),
+                        Select::make('category')
+                            ->label('Category')
+                            ->options([
+                                'cultural_and_national' => 'Cultural & National (Universal to all doctors)',
+                                'clinical_observance' => 'Clinical Observance (Specialty targeted)',
+                            ])
+                            ->default('cultural_and_national')
+                            ->required()
+                            ->native(false)
+                            ->live(),
+                        DatePicker::make('date')
+                            ->label('Observance Date')
+                            ->required()
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->default(fn () => Carbon::createFromDate($this->year, $this->month, min(now()->day, 28))->toDateString()),
+                        Grid::make(2)->schema([
+                            TextInput::make('days_before')
+                                ->label('Active Window Before (Days)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(2)
+                                ->required(),
+                            TextInput::make('days_after')
+                                ->label('Active Window After (Days)')
+                                ->numeric()
+                                ->minValue(0)
+                                ->default(1)
+                                ->required(),
+                        ]),
+                        TagsInput::make('target_specialties')
+                            ->label('Target Clinical Specialties')
+                            ->placeholder('Type specialty and press Enter (e.g. Cardiology, Pediatrics)')
+                            ->visible(fn (Get $get): bool => $get('category') === 'clinical_observance'),
+                        Textarea::make('greeting_message_template')
+                            ->label('WhatsApp / Greeting Copy Template')
+                            ->rows(3)
+                            ->placeholder('Respected Dr. {doctor_name}, wishing you and your team a meaningful...')
+                            ->helperText('Available placeholders: {doctor_name}, {mr_name}'),
+                        TextInput::make('adjustment_notes')
+                            ->label('Notes / Source (Optional)')
+                            ->placeholder('e.g. State Gazette notification / Hospital circular')
+                            ->maxLength(255),
+                    ])
+                    ->action(function (array $data, array $arguments, Action $action, Schema $schema, FestivalGreetingService $service): void {
+                        $service->createCustomFestival($data, auth()->id());
 
-                    Notification::make()
-                        ->title("Observance '{$data['name']}' created successfully.")
-                        ->success()
-                        ->send();
+                        Notification::make()
+                            ->title("Observance '{$data['name']}' created successfully.")
+                            ->success()
+                            ->send();
 
-                    if ($arguments['another'] ?? false) {
-                        $schema->fill([
-                            'name' => null,
-                            'category' => $data['category'],
-                            'date' => $data['date'],
-                            'days_before' => $data['days_before'] ?? 2,
-                            'days_after' => $data['days_after'] ?? 1,
-                            'target_specialties' => null,
-                            'greeting_message_template' => null,
-                            'adjustment_notes' => null,
+                        if ($arguments['another'] ?? false) {
+                            $schema->fill([
+                                'name' => null,
+                                'category' => $data['category'],
+                                'date' => $data['date'],
+                                'days_before' => $data['days_before'] ?? 2,
+                                'days_after' => $data['days_after'] ?? 1,
+                                'target_specialties' => null,
+                                'greeting_message_template' => null,
+                                'adjustment_notes' => null,
+                            ]);
+
+                            $schema->dispatchClientSideStateReset();
+
+                            $action->halt();
+                        }
+                    }),
+
+                Action::make('downloadTemplate')
+                    ->label('Download Template')
+                    ->icon(Heroicon::ArrowDownTray)
+                    ->color('gray')
+                    ->action(function () {
+                        $filename = 'festivals_template.csv';
+
+                        return response()->streamDownload(function (): void {
+                            $handle = fopen('php://output', 'w');
+                            fputcsv($handle, [
+                                'name',
+                                'category',
+                                'date',
+                                'days_before',
+                                'days_after',
+                                'target_specialties',
+                                'greeting_message_template',
+                                'adjustment_notes',
+                            ]);
+
+                            fputcsv($handle, [
+                                'Ganesh Chaturthi',
+                                'cultural_and_national',
+                                '2026-09-14',
+                                '2',
+                                '1',
+                                '',
+                                'Warm greetings to you and your family on Ganesh Chaturthi! May Lord Ganesha bestow good health and prosperity.',
+                                'Regional state observance',
+                            ]);
+
+                            fputcsv($handle, [
+                                'World Malaria Day',
+                                'clinical_observance',
+                                '2026-04-25',
+                                '1',
+                                '1',
+                                'General Medicine;Pediatrics',
+                                'Respected Dr. {doctor_name}, commemorating World Malaria Day and honoring your role in vector-borne disease care.',
+                                'WHO clinical health day',
+                            ]);
+
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
                         ]);
+                    }),
 
-                        $schema->dispatchClientSideStateReset();
+                Action::make('importFestivals')
+                    ->label('Bulk Upload Festivals')
+                    ->icon(Heroicon::ArrowUpTray)
+                    ->color('gray')
+                    ->modalHeading('Bulk Import Festivals & Observances CSV')
+                    ->modalDescription('Upload a CSV file containing festivals. Required columns: name, date. Optional columns: category, days_before, days_after, target_specialties, greeting_message_template, adjustment_notes.')
+                    ->schema([
+                        FileUpload::make('csv_file')
+                            ->label('CSV File')
+                            ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel'])
+                            ->disk('local')
+                            ->directory('temp-festival-imports')
+                            ->required(),
+                    ])
+                    ->action(function (array $data): void {
+                        $rawFile = is_array($data['csv_file']) ? reset($data['csv_file']) : $data['csv_file'];
+                        if ($rawFile instanceof UploadedFile) {
+                            $filePath = $rawFile->getRealPath();
+                        } elseif (Storage::disk('local')->exists((string) $rawFile)) {
+                            $filePath = Storage::disk('local')->path((string) $rawFile);
+                        } else {
+                            $filePath = (string) $rawFile;
+                        }
 
-                        $action->halt();
-                    }
-                }),
+                        $importService = app(FestivalImportService::class);
+                        $result = $importService->import($filePath, auth()->id());
 
-            Action::make('syncOfficialDataset')
-                ->label('Sync Official Dataset')
-                ->icon(Heroicon::ArrowPath)
-                ->color('gray')
-                ->requiresConfirmation()
-                ->modalHeading('Sync Official Festivals Dataset')
-                ->modalDescription('Reload canonical gazetted 2025–2030 dataset from disk. Existing manual date adjustments will be preserved.')
-                ->action(function (): void {
-                    Artisan::call('festivals:import');
+                        if (file_exists($filePath) && ! ($rawFile instanceof UploadedFile)) {
+                            @unlink($filePath);
+                        }
 
-                    Notification::make()
-                        ->title('Official festivals dataset synchronized.')
-                        ->success()
-                        ->send();
-                }),
+                        if ($result->hasErrors()) {
+                            $errorCount = count($result->errors);
+                            $errorSummary = collect($result->errors)
+                                ->take(3)
+                                ->map(fn (array $err): string => "Row {$err['row']}: {$err['message']}")
+                                ->implode('; ');
+
+                            Notification::make()
+                                ->title("Import stopped with {$errorCount} issues")
+                                ->body("Issues: {$errorSummary}")
+                                ->warning()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title("Successfully imported {$result->importedCount} festival observances")
+                                ->success()
+                                ->send();
+                        }
+                    }),
+
+                Action::make('syncOfficialDataset')
+                    ->label('Sync Official Dataset')
+                    ->icon(Heroicon::ArrowPath)
+                    ->color('gray')
+                    ->requiresConfirmation()
+                    ->modalHeading('Sync Official Festivals Dataset')
+                    ->modalDescription('Reload canonical gazetted 2025–2030 dataset from disk. Existing manual date adjustments will be preserved.')
+                    ->action(function (): void {
+                        Artisan::call('festivals:import');
+
+                        Notification::make()
+                            ->title('Official festivals dataset synchronized.')
+                            ->success()
+                            ->send();
+                    }),
+            ])
+                ->label('Festival Actions')
+                ->icon(Heroicon::EllipsisVertical)
+                ->tooltip('Festival Actions')
+                ->color('gray'),
         ];
     }
 

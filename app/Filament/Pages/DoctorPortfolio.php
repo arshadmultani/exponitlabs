@@ -10,6 +10,7 @@ use App\Services\DoctorPortfolioQueryService;
 use App\Services\DoctorRevenueImportService;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -245,177 +246,184 @@ class DoctorPortfolio extends Page implements HasTable
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('logRevenue')
-                ->label('Log Attributed Revenue')
-                ->icon(Heroicon::CurrencyRupee)
-                ->modalHeading('Log Doctor Prescription Revenue')
-                ->modalDescription('Enter monthly secondary prescription sales audit revenue for a specific doctor.')
-                ->extraModalFooterActions(fn (Action $action): array => [
-                    $action->makeModalSubmitAction('createAnother', arguments: ['another' => true])
-                        ->label('Create & create another'),
-                ])
-                ->schema([
-                    Select::make('doctor_id')
-                        ->label('Doctor')
-                        ->searchable()
-                        ->options(fn () => Doctor::query()->orderBy('name')->pluck('name', 'id'))
-                        ->required(),
-                    DatePicker::make('period_date')
-                        ->label('Audit Period Date')
-                        ->helperText('Select any date in the audit month (normalized to 1st of month)')
-                        ->default(now()->startOfMonth())
-                        ->native(false)
-                        ->displayFormat('d/m/Y')
-                        ->required(),
-                    TextInput::make('amount')
-                        ->label('Attributed Revenue Amount')
-                        ->prefix('₹')
-                        ->numeric()
-                        ->minValue(0.01)
-                        ->required(),
-                    TextInput::make('notes')
-                        ->label('Notes / Stockist Info')
-                        ->maxLength(255),
-                ])
-                ->action(function (array $data, array $arguments, Action $action, Schema $schema): void {
-                    $periodDate = Carbon::parse($data['period_date'])->startOfMonth()->toDateString();
-                    DoctorRevenue::create([
-                        'doctor_id' => $data['doctor_id'],
-                        'period_date' => $periodDate,
-                        'amount' => $data['amount'],
-                        'notes' => $data['notes'] ?? null,
-                        'created_by_user_id' => auth()->id(),
-                    ]);
-
-                    Notification::make()
-                        ->title('Attributed revenue logged successfully')
-                        ->success()
-                        ->send();
-
-                    if ($arguments['another'] ?? false) {
-                        $schema->fill([
-                            'doctor_id' => null,
-                            'period_date' => $data['period_date'],
-                            'amount' => null,
-                            'notes' => null,
+            ActionGroup::make([
+                Action::make('logRevenue')
+                    ->label('Log Attributed Revenue')
+                    ->icon(Heroicon::CurrencyRupee)
+                    ->color('primary')
+                    ->modalHeading('Log Doctor Prescription Revenue')
+                    ->modalDescription('Enter monthly secondary prescription sales audit revenue for a specific doctor.')
+                    ->extraModalFooterActions(fn (Action $action): array => [
+                        $action->makeModalSubmitAction('createAnother', arguments: ['another' => true])
+                            ->label('Create & create another'),
+                    ])
+                    ->schema([
+                        Select::make('doctor_id')
+                            ->label('Doctor')
+                            ->searchable()
+                            ->options(fn () => Doctor::query()->orderBy('name')->pluck('name', 'id'))
+                            ->required(),
+                        DatePicker::make('period_date')
+                            ->label('Audit Period Date')
+                            ->helperText('Select any date in the audit month (normalized to 1st of month)')
+                            ->default(now()->startOfMonth())
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->required(),
+                        TextInput::make('amount')
+                            ->label('Attributed Revenue Amount')
+                            ->prefix('₹')
+                            ->numeric()
+                            ->minValue(0.01)
+                            ->required(),
+                        TextInput::make('notes')
+                            ->label('Notes / Stockist Info')
+                            ->maxLength(255),
+                    ])
+                    ->action(function (array $data, array $arguments, Action $action, Schema $schema): void {
+                        $periodDate = Carbon::parse($data['period_date'])->startOfMonth()->toDateString();
+                        DoctorRevenue::create([
+                            'doctor_id' => $data['doctor_id'],
+                            'period_date' => $periodDate,
+                            'amount' => $data['amount'],
+                            'notes' => $data['notes'] ?? null,
+                            'created_by_user_id' => auth()->id(),
                         ]);
 
-                        $schema->dispatchClientSideStateReset();
-
-                        $action->halt();
-                    }
-                }),
-
-            Action::make('downloadTemplate')
-                ->label('Download Revenue Template')
-                ->icon(Heroicon::ArrowDownTray)
-                ->color('gray')
-                ->modalHeading('Download Secondary Sales Revenue Template')
-                ->modalDescription('Downloads a pre-populated CSV template with doctor IDs, names, territories, and audit month ready for revenue entry.')
-                ->schema([
-                    DatePicker::make('period_date')
-                        ->label('Audit Period Month')
-                        ->helperText('Pre-fills the period_date column for all doctors (normalized to 1st of month).')
-                        ->default(now()->startOfMonth())
-                        ->native(false)
-                        ->displayFormat('d/m/Y')
-                        ->required(),
-                    Select::make('area_id')
-                        ->label('Filter by Territory / Area (Optional)')
-                        ->placeholder('All Territories (All Doctors)')
-                        ->options(fn () => Area::query()->orderBy('name')->pluck('name', 'id'))
-                        ->searchable(),
-                ])
-                ->action(function (array $data) {
-                    $periodDate = Carbon::parse($data['period_date'])->startOfMonth()->toDateString();
-                    $filename = "doctor_revenue_template_{$periodDate}.csv";
-
-                    return response()->streamDownload(function () use ($data, $periodDate): void {
-                        $handle = fopen('php://output', 'w');
-                        fputcsv($handle, ['doctor_id', 'doctor_name', 'area', 'period_date', 'amount', 'notes']);
-
-                        $query = Doctor::query()->with('area')->orderBy('name');
-                        if (filled($data['area_id'] ?? null)) {
-                            $query->where('area_id', $data['area_id']);
-                        }
-
-                        $query->chunk(100, function ($doctors) use ($handle, $periodDate): void {
-                            foreach ($doctors as $doctor) {
-                                fputcsv($handle, [
-                                    $doctor->id,
-                                    $doctor->name,
-                                    $doctor->area?->name ?? '',
-                                    $periodDate,
-                                    '',
-                                    '',
-                                ]);
-                            }
-                        });
-
-                        fclose($handle);
-                    }, $filename, [
-                        'Content-Type' => 'text/csv',
-                    ]);
-                }),
-
-            Action::make('importCsv')
-                ->label('Import Revenue CSV')
-                ->icon(Heroicon::ArrowUpTray)
-                ->color('gray')
-                ->modalHeading('Import Prescription Sales CSV')
-                ->modalDescription('Upload a monthly secondary sales audit CSV file. Required columns: doctor_id, period_date, amount. Optional: notes.')
-                ->schema([
-                    FileUpload::make('csv_file')
-                        ->label('CSV File')
-                        ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel'])
-                        ->disk('local')
-                        ->directory('temp-revenue-imports')
-                        ->required(),
-                    DatePicker::make('fallback_period')
-                        ->label('Fallback Period Date (Optional)')
-                        ->helperText('Used if period_date column is missing or blank in CSV rows.')
-                        ->native(false)
-                        ->displayFormat('d/m/Y'),
-                ])
-                ->action(function (array $data): void {
-                    $rawFile = is_array($data['csv_file']) ? reset($data['csv_file']) : $data['csv_file'];
-                    if ($rawFile instanceof UploadedFile) {
-                        $filePath = $rawFile->getRealPath();
-                    } elseif (Storage::disk('local')->exists((string) $rawFile)) {
-                        $filePath = Storage::disk('local')->path((string) $rawFile);
-                    } else {
-                        $filePath = (string) $rawFile;
-                    }
-
-                    $fallbackPeriod = filled($data['fallback_period'] ?? null)
-                        ? Carbon::parse($data['fallback_period'])
-                        : null;
-
-                    $importService = app(DoctorRevenueImportService::class);
-                    $result = $importService->import($filePath, $fallbackPeriod, auth()->id());
-
-                    if (file_exists($filePath) && ! ($rawFile instanceof UploadedFile)) {
-                        @unlink($filePath);
-                    }
-
-                    if ($result->hasErrors()) {
-                        $errorSummary = collect($result->errors)
-                            ->take(3)
-                            ->map(fn (array $err): string => "Row {$err['row']}: {$err['message']}")
-                            ->implode('; ');
-
                         Notification::make()
-                            ->title("Import completed with {$result->skippedCount} issues")
-                            ->body("Imported: {$result->importedCount}. Issues: {$errorSummary}")
-                            ->warning()
-                            ->send();
-                    } else {
-                        Notification::make()
-                            ->title("Successfully imported {$result->importedCount} revenue records")
+                            ->title('Attributed revenue logged successfully')
                             ->success()
                             ->send();
-                    }
-                }),
+
+                        if ($arguments['another'] ?? false) {
+                            $schema->fill([
+                                'doctor_id' => null,
+                                'period_date' => $data['period_date'],
+                                'amount' => null,
+                                'notes' => null,
+                            ]);
+
+                            $schema->dispatchClientSideStateReset();
+
+                            $action->halt();
+                        }
+                    }),
+
+                Action::make('downloadTemplate')
+                    ->label('Download Revenue Template')
+                    ->icon(Heroicon::ArrowDownTray)
+                    ->color('gray')
+                    ->modalHeading('Download Secondary Sales Revenue Template')
+                    ->modalDescription('Downloads a pre-populated CSV template with doctor IDs, names, territories, and audit month ready for revenue entry.')
+                    ->schema([
+                        DatePicker::make('period_date')
+                            ->label('Audit Period Month')
+                            ->helperText('Pre-fills the period_date column for all doctors (normalized to 1st of month).')
+                            ->default(now()->startOfMonth())
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->required(),
+                        Select::make('area_id')
+                            ->label('Filter by Territory / Area (Optional)')
+                            ->placeholder('All Territories (All Doctors)')
+                            ->options(fn () => Area::query()->orderBy('name')->pluck('name', 'id'))
+                            ->searchable(),
+                    ])
+                    ->action(function (array $data) {
+                        $periodDate = Carbon::parse($data['period_date'])->startOfMonth()->toDateString();
+                        $filename = "doctor_revenue_template_{$periodDate}.csv";
+
+                        return response()->streamDownload(function () use ($data, $periodDate): void {
+                            $handle = fopen('php://output', 'w');
+                            fputcsv($handle, ['doctor_id', 'doctor_name', 'area', 'period_date', 'amount', 'notes']);
+
+                            $query = Doctor::query()->with('area')->orderBy('name');
+                            if (filled($data['area_id'] ?? null)) {
+                                $query->where('area_id', $data['area_id']);
+                            }
+
+                            $query->chunk(100, function ($doctors) use ($handle, $periodDate): void {
+                                foreach ($doctors as $doctor) {
+                                    fputcsv($handle, [
+                                        $doctor->id,
+                                        $doctor->name,
+                                        $doctor->area?->name ?? '',
+                                        $periodDate,
+                                        '',
+                                        '',
+                                    ]);
+                                }
+                            });
+
+                            fclose($handle);
+                        }, $filename, [
+                            'Content-Type' => 'text/csv',
+                        ]);
+                    }),
+
+                Action::make('importCsv')
+                    ->label('Import Revenue CSV')
+                    ->icon(Heroicon::ArrowUpTray)
+                    ->color('gray')
+                    ->modalHeading('Import Prescription Sales CSV')
+                    ->modalDescription('Upload a monthly secondary sales audit CSV file. Required columns: doctor_id, period_date, amount. Optional: notes.')
+                    ->schema([
+                        FileUpload::make('csv_file')
+                            ->label('CSV File')
+                            ->acceptedFileTypes(['text/csv', 'text/plain', 'application/vnd.ms-excel'])
+                            ->disk('local')
+                            ->directory('temp-revenue-imports')
+                            ->required(),
+                        DatePicker::make('fallback_period')
+                            ->label('Fallback Period Date (Optional)')
+                            ->helperText('Used if period_date column is missing or blank in CSV rows.')
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+                    ])
+                    ->action(function (array $data): void {
+                        $rawFile = is_array($data['csv_file']) ? reset($data['csv_file']) : $data['csv_file'];
+                        if ($rawFile instanceof UploadedFile) {
+                            $filePath = $rawFile->getRealPath();
+                        } elseif (Storage::disk('local')->exists((string) $rawFile)) {
+                            $filePath = Storage::disk('local')->path((string) $rawFile);
+                        } else {
+                            $filePath = (string) $rawFile;
+                        }
+
+                        $fallbackPeriod = filled($data['fallback_period'] ?? null)
+                            ? Carbon::parse($data['fallback_period'])
+                            : null;
+
+                        $importService = app(DoctorRevenueImportService::class);
+                        $result = $importService->import($filePath, $fallbackPeriod, auth()->id());
+
+                        if (file_exists($filePath) && ! ($rawFile instanceof UploadedFile)) {
+                            @unlink($filePath);
+                        }
+
+                        if ($result->hasErrors()) {
+                            $errorSummary = collect($result->errors)
+                                ->take(3)
+                                ->map(fn (array $err): string => "Row {$err['row']}: {$err['message']}")
+                                ->implode('; ');
+
+                            Notification::make()
+                                ->title("Import completed with {$result->skippedCount} issues")
+                                ->body("Imported: {$result->importedCount}. Issues: {$errorSummary}")
+                                ->warning()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title("Successfully imported {$result->importedCount} revenue records")
+                                ->success()
+                                ->send();
+                        }
+                    }),
+            ])
+                ->label('Revenue Actions')
+                ->icon(Heroicon::EllipsisVertical)
+                ->tooltip('Revenue Actions')
+                ->color('gray'),
         ];
     }
 }

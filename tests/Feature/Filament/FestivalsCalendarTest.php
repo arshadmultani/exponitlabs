@@ -7,8 +7,10 @@ use App\Models\FestivalDate;
 use App\Models\User;
 use App\Services\FestivalGreetingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -201,4 +203,61 @@ it('opens doctor birthday modal via viewDoctorBirthday action', function () {
             'doctorId' => $doctor->id,
         ])
         ->assertHasNoActionErrors();
+});
+
+it('downloads festival import template via header action', function () {
+    $response = Livewire::test(FestivalsCalendar::class)
+        ->callAction('downloadTemplate');
+
+    $response->assertFileDownloaded('festivals_template.csv');
+});
+
+it('bulk imports festivals via CSV upload header action', function () {
+    Storage::fake('local');
+
+    $csvContent = "name,category,date,days_before,days_after,target_specialties,greeting_message_template,adjustment_notes\n".
+        "Kolkata Durga Carnival,cultural_and_national,2026-10-22,3,1,,Joyous Durga Puja wishes!,State carnival\n".
+        "National Epilepsy Day,clinical_observance,2026-11-17,1,1,\"Neurology;Pediatrics\",Saluting your care on Epilepsy Day,National health day\n";
+
+    $file = UploadedFile::fake()->createWithContent('festivals.csv', $csvContent);
+
+    Livewire::test(FestivalsCalendar::class)
+        ->callAction('importFestivals', [
+            'csv_file' => [$file],
+        ])
+        ->assertNotified('Successfully imported 2 festival observances');
+
+    $cultural = Festival::where('name', 'Kolkata Durga Carnival')->first();
+    expect($cultural)->not->toBeNull()
+        ->and($cultural->category)->toBe('cultural_and_national')
+        ->and($cultural->days_before)->toBe(3);
+
+    $culturalDate = FestivalDate::where('festival_id', $cultural->id)->first();
+    expect($culturalDate)->not->toBeNull()
+        ->and($culturalDate->date->format('Y-m-d'))->toBe('2026-10-22')
+        ->and($culturalDate->year)->toBe(2026)
+        ->and($culturalDate->is_manually_adjusted)->toBeTrue()
+        ->and($culturalDate->adjustment_notes)->toBe('State carnival');
+
+    $clinical = Festival::where('name', 'National Epilepsy Day')->first();
+    expect($clinical)->not->toBeNull()
+        ->and($clinical->category)->toBe('clinical_observance')
+        ->and($clinical->target_specialties)->toBe(['Neurology', 'Pediatrics']);
+});
+
+it('reports validation errors when importing malformed festival CSV', function () {
+    Storage::fake('local');
+
+    // Row 2 is missing date, row 3 has invalid category
+    $csvContent = "name,category,date\n".
+        "Festival Without Date,cultural_and_national,\n".
+        "Festival With Bad Category,alien_category,2026-05-10\n";
+
+    $file = UploadedFile::fake()->createWithContent('bad_festivals.csv', $csvContent);
+
+    Livewire::test(FestivalsCalendar::class)
+        ->callAction('importFestivals', [
+            'csv_file' => [$file],
+        ])
+        ->assertNotified('Import stopped with 2 issues');
 });
