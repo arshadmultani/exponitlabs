@@ -37,6 +37,9 @@ class Doctor extends Model
         'practice_since',
         'status',
         'visit_cost_override',
+        'doctor_potential_id',
+        'visiting_days',
+        'visiting_shifts',
     ];
 
     protected $casts = [
@@ -45,6 +48,8 @@ class Doctor extends Model
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
         'visit_cost_override' => 'decimal:2',
+        'visiting_days' => 'array',
+        'visiting_shifts' => 'array',
     ];
 
     /**
@@ -53,11 +58,25 @@ class Doctor extends Model
      */
     protected static function booted(): void
     {
+        static::creating(function (Doctor $doctor): void {
+            if (empty($doctor->doctor_potential_id)) {
+                $doctor->doctor_potential_id = DoctorPotential::where('code', 'nascent')->value('id');
+            }
+        });
+
         static::saving(function (Doctor $doctor): void {
             $coords = data_get($doctor->location, 'features.0.geometry.coordinates');
 
             if (is_array($coords) && count($coords) >= 2) {
                 [$doctor->longitude, $doctor->latitude] = [$coords[0], $coords[1]];
+            }
+
+            if (is_array($doctor->visiting_days) && empty($doctor->visiting_days)) {
+                $doctor->visiting_days = null;
+            }
+
+            if (is_array($doctor->visiting_shifts) && empty($doctor->visiting_shifts)) {
+                $doctor->visiting_shifts = null;
             }
         });
     }
@@ -139,6 +158,31 @@ class Doctor extends Model
     public function revenues(): HasMany
     {
         return $this->hasMany(DoctorRevenue::class);
+    }
+
+    public function potential(): BelongsTo
+    {
+        return $this->belongsTo(DoctorPotential::class, 'doctor_potential_id');
+    }
+
+    public function scopeAvailableOnDay(Builder $query, string $day): Builder
+    {
+        return $query->where(function (Builder $q) use ($day) {
+            $q->whereJsonContains('visiting_days', $day)
+                ->orWhereNull('visiting_days')
+                ->orWhere('visiting_days', '[]')
+                ->orWhere('visiting_days', '');
+        });
+    }
+
+    public function scopeAvailableOnShift(Builder $query, string $shift): Builder
+    {
+        return $query->where(function (Builder $q) use ($shift) {
+            $q->whereJsonContains('visiting_shifts', $shift)
+                ->orWhereNull('visiting_shifts')
+                ->orWhere('visiting_shifts', '[]')
+                ->orWhere('visiting_shifts', '');
+        });
     }
 
     public function isActive(): bool

@@ -1,16 +1,19 @@
-# Doctor Portfolio Management & Commercial ROI Tracker
+# Doctor Call Cadence, Route Planning & Potential Tiers
 
 * **Author:** EGM Ideation Swarm (Elephant + 6 Goldfish Reviewers)
-* **Date:** 2026-11-01
-* **Target:** Filament Administrative Console (`/console/doctor-portfolio`)
+* **Date:** 2026-11-02
+* **Target:** Filament Administrative Console (`/console/doctor-cadence`)
 
 ---
 
 ## Overview
 
-A commercial return-on-investment (ROI) dashboard embedded inside the Filament v5 administrative panel (`/console`). It equips leadership and marketing managers with account-level visibility into capital deployed versus commercial return generated across all 233 healthcare providers in the Exponit Labs doctor registry.
+The Doctor Call Cadence & Route Planning system is an operational decision-support and territory management interface embedded within the Exponit Labs Filament v5 administrative console (`/console/doctor-cadence`). It eliminates undisciplined, mood-based daily visit scheduling across the company's 233 registered healthcare providers by giving sales leadership and field managers clear visibility into visit recency, call frequency adherence, doctor availability, and account potential.
 
-The system aggregates operational cost drivers captured by Medical Representatives (MRs) during Daily Call Reports (DCRs)—including rep call visits, distributed drug samples, and promotional collateral—and evaluates them against monthly prescription revenue attributed to each doctor. The dashboard replaces speculative intuition with concrete commercial performance tiers, identifying high-yield prescribers, steady contributors, and under-yielding accounts requiring rep frequency reassessment.
+The system introduces:
+1. **Database-Backed Potential Tiers**: A dynamic `doctor_potentials` lookup table (`Core`, `Serious`, `Nascent`, `Unresponsive`) assigning target monthly detailing frequencies and visual priority to each account.
+2. **Doctor Availability Scheduling**: Multi-select visiting days (Monday–Sunday) and visiting clinic shifts (Morning, Afternoon, Evening) configured on each doctor's master profile, with native support for "Everyday / All Shifts" open-door availability.
+3. **DCR Cadence Ledger**: A high-performance, sortable administrative report calculating total detailing visits, all-time last visit dates, and days elapsed since the last call, equipped with territory, potential tier, visiting day, and shift filters to streamline daily beat planning.
 
 ---
 
@@ -18,65 +21,101 @@ The system aggregates operational cost drivers captured by Medical Representativ
 
 The 6-lens Goldfish review swarm audited the feature concept against system architecture, codebase patterns, ergonomics, tech debt, and implementation safety:
 
-### 1. Database Indexing & Query Architecture (SQLite Guardrails)
-- **The Risk:** In the current SQLite schema, `d_c_r_s` lacks indexes on `(doctor_id, date)`, and pivot tables `dcr_products` and `dcr_promotional_inputs` lack foreign key indexes. Calculating dynamic sums and sorting by computed virtual columns (Net P&L and ROI %) in Filament table queries without indexes will trigger unindexed multi-table scans, causing request timeouts.
-- **Resolution:** 
-  1. Add composite indexes via migrations: `d_c_r_s(doctor_id, date)`, `dcr_products(dcr_id, product_id)`, and `dcr_promotional_inputs(dcr_id, promotional_input_id)`.
-  2. Implement correlated SQL subqueries in `modifyQueryUsing` on the Filament query builder rather than PHP Eloquent accessors. This pushes sorting and pagination down to SQLite, eliminating N+1 queries.
+### 1. Database Architecture & Potential Tier Storage (`egm-zoom-out` & `egm-codebase-details`)
+- **Review Finding**: While a PHP 8.4 Backed Enum requires zero migration boilerplate, the user requirement dictates database storage so that business tiers, visit targets, and badge colors can be customized dynamically without code releases.
+- **Synthesized Resolution**: Create a dedicated `doctor_potentials` table (`id`, `name`, `code`, `color`, `sort_order`, `target_visits_per_month`, `is_active`, `timestamps`).
+  - Pre-seed with the 4 standard tiers:
+    - **Core**: 4 visits/month (target interval: 7 days), color `success`.
+    - **Serious**: 2 visits/month (target interval: 15 days), color `info`.
+    - **Nascent**: 1 visit/month (target interval: 30 days, default for all 233 existing doctors), color `warning`.
+    - **Unresponsive**: 0 visits/month (dormant/non-yielding accounts), color `danger`.
+  - Add nullable foreign key `doctor_potential_id` on `doctors` with `nullOnDelete()`.
 
-### 2. Temporal Accounting Invariant (Cost Point-in-Time Immutability)
-- **The Risk:** Multiplying historical quantities by live product master costs (`dcr_items.qty * products.sample_cost`) causes retrospective data corruption. If sample prices or gift costs update in 2027, all historical 2025 and 2026 financial metrics and quarterly reports will silently mutate.
-- **Resolution:** 
-  - For v1 pragmatic implementation: Catalog prices act as active standard cost baselines.
-  - For long-term audit compliance: Migrations should add `unit_cost_snapshot` to line items or record costs at DCR closure to preserve historical immutability.
+### 2. SQLite Date Calculations & The 140 Never-Visited Doctors Anomaly (`egm-design` & `egm-implementation-readiness`)
+- **Review Finding**: 140 out of 233 doctors (60%) currently have zero recorded DCR visits in the database.
+  - In SQLite, `MAX(date)` evaluates to `NULL` for unvisited doctors. Subtracting dates from `NULL` yields `NULL`.
+  - Standard SQL `ASC` and `DESC` sorting behaves unpredictably with null values (putting never-visited doctors either at the bottom or scrambling them).
+  - Furthermore, SQLite lacks MySQL's `DATEDIFF()` and evaluates `julianday('now')` in server UTC, inducing off-by-one errors in Indian Standard Time (IST, UTC+05:30).
+- **Synthesized Resolution**:
+  - Calculate elapsed days using SQLite Julian day arithmetic parameterized with application-local IST date: `CAST(julianday(?) - julianday(date(last_visit_date)) AS INTEGER)`.
+  - Handle nulls safely in sorting using `COALESCE(days_since_last_visit, 999999)` so that uncontacted accounts reliably sort to the top when prioritizing overdue visits.
+  - In the UI, render `Last Visit Date` as badge `Never Visited` (danger/neutral) and `Days Since Last Visit` as `Never` to prevent confusion with `0d ago` (Visited Today).
 
-### 3. Pharma Domain Ergonomics vs. "Broker-Terminal" Gimmick
-- **The Risk:** Labeling practicing physicians with Wall Street stock tickers, "gainers vs losers", and "capital drains" introduces high cognitive friction, clashes with Filament v5's design system, and presents severe regulatory compliance risks under pharmaceutical marketing codes (e.g., UCPMP in India) if screens are exported or audited.
-- **Resolution:** Standardize on professional pharmaceutical commercial terminology:
-  - Screen Title: **Doctor Commercial Performance & ROI Portfolio**
-  - Tiers: **High-Yield Prescribers (Net +)**, **Balanced Accounts**, and **Under-Yielding Accounts (Net -)**.
-  - UI Components: Native Filament v5 `StatsOverviewWidget` cards (Total Capital Deployed, Total Attributed Revenue, Net Commercial P&L, Overall Return Multiple) and standard Filament tables with badge columns.
+### 3. Decoupling Recency from Time-Horizon Filters (`egm-design` & `egm-zoom-out`)
+- **Review Finding**: The initial concept proposed time-horizon tabs (`This Month`, `Current FY`, `All Time`).
+  - If `Last Visit Date` is bounded by "This Month", any doctor not visited this month evaluates to `NULL` / "Never Visited", blinding managers to whether the doctor was seen 32 days ago or 400 days ago.
+  - Route planning is an operational recency problem, not an accounting ledger.
+- **Synthesized Resolution**:
+  - **Decouple the Metrics**: `Last Visit Date` and `Days Since Last Visit` must ALWAYS be computed across **All Time** (`MAX(d_c_r_s.date)` with no lower date bound).
+  - Only the visit count (`visits_in_period`) adapts to the selected horizon tab (`This Month` vs `Current FY` vs `All Time`).
+  - In "This Month", compare `visits_this_month` against `doctor_potentials.target_visits_per_month` to display a progress ratio (e.g. `2 / 4 calls`).
 
-### 4. Cadence Mismatch & Attribution Lag
-- **The Risk:** DCR expenses accumulate daily in real time, while prescription revenue is booked retrospectively on a monthly cadence. Evaluating a doctor mid-month will falsely mark them as negative. Furthermore, doctor detailing has a 30–90 day prescription ramp.
-- **Resolution:**
-  - Time-horizon filters must prioritize closed accounting periods: **All Time**, **This Financial Year (Apr–Mar)**, **Last Closed Month**, **Trailing 90 Days**.
-  - New doctors detailed for under 60 days receive an **Incubation** status badge to prevent premature disinvestment.
+### 4. Availability Scheduling & The "Everyday / Open Availability" Convention
+- **Review Finding**: Storing `visiting_days` and `visiting_shifts` as separate JSON arrays requires a clean convention for doctors with open or full availability, and must avoid rendering sprawling badges that stretch table row heights.
+- **Synthesized Resolution**:
+  - **Database Schema**: Two nullable JSON columns on `doctors`:
+    - `visiting_days` (JSON array: `['monday', 'tuesday', ...]`)
+    - `visiting_shifts` (JSON array: `['morning', 'afternoon', 'evening']`)
+  - **The Open-Door Convention ("Blank = Everyday / All Shifts")**:
+    - If a doctor's schedule is `null` or empty, the system treats them as having **Open Availability (Available Everyday on All Shifts)**.
+    - Zero data-entry overhead: Reps only check boxes when a doctor has *restricted* days (e.g. Wed/Thu only).
+    - Form UI provides a 1-click `bulkToggleable()` "Select All" button above both checkbox lists.
+  - **Table Layout**:
+    - Unrestricted or full-schedule doctors display a compact emerald badge: `Everyday (All Shifts)`.
+    - Restricted doctors display compact single-line tokens: `Mon · Wed · Fri (Morning)`.
+  - **Filter Logic**:
+    - Filtering by day (e.g. `Wednesday`) and shift (e.g. `Evening`) matches both explicitly tagged doctors AND open-availability doctors (`visiting_days IS NULL`).
 
-### 5. Mathematical Division-by-Zero Safeguards
-- **The Risk:** Doctors with ₹0 investment but positive revenue (organic legacy prescribers) yield infinite/undefined ROI. Doctors with investment but ₹0 revenue yield -100% regardless of whether the spend was ₹200 or ₹20,000.
-- **Resolution:**
-  - Primary ranking and sorting must default to **Absolute Net P&L (₹)** (`Revenue - Investment`).
-  - Calculate ROI % safely: When investment is zero, display as `Organic / No Direct Cost` (or 100% cap) rather than division-by-zero overflow.
+### 5. High-Performance Query Architecture via Eloquent `fromSub()` (`egm-codebase-details` & `egm-implementation-readiness`)
+- **Review Finding**: Computing `visits_count`, `last_visit_date`, and `days_since_last_visit` in PHP accessors or Livewire column closures causes an $O(N)$ N+1 query disaster and breaks database pagination and sorting.
+- **Synthesized Resolution**:
+  - Build `App\Services\DoctorCadenceQueryService` using Eloquent's `fromSub()` pattern established in `DoctorPortfolioQueryService`.
+  - Correlated subqueries compute `actual_visits` and `last_visit_date` utilizing the existing composite index `idx_dcrs_doctor_date` on `d_c_r_s(doctor_id, date)`.
+  - All derived fields (`days_since_last_visit`, `visit_deficit`, `coverage_percent`) project directly into the outer query as real SQL columns, enabling native sub-millisecond database sorting.
+
+### 6. Offline Field App (`/mr`) Backward Compatibility (`egm-implementation-readiness`)
+- **Review Finding**: In `SyncController::syncDoctors()`, medical reps create doctors offline. If `doctor_potential_id` is a non-nullable foreign key or unhandled in sync, offline batch uploads will crash with SQLite NOT NULL violations.
+- **Synthesized Resolution**:
+  - Declare `doctor_potential_id` as nullable in the migration.
+  - In `Doctor::booted()` or `SyncController`, automatically assign the `Nascent` tier ID when a new doctor is created without an explicit tier.
+  - Expose `doctor_potential_id`, `visiting_days`, and `visiting_shifts` in `/api/v1/sync/master-data` so mobile reps receive availability data offline.
 
 ---
 
 ## Goals vs. Non-Goals
 
-### In-Scope Goals (v1)
-* **Master Catalog Cost Enrichment:**
-  - Add `unit_cost` (decimal:2) to `promotional_inputs`.
-  - Add `sample_cost` (decimal:2) to `products` (defaulting to existing unit cost).
-  - Add `visit_cost_override` (nullable decimal:2) to `doctors`, defaulting to a configurable system visit cost (₹250 default).
-* **Revenue Ingestion Model (`doctor_revenues`):**
-  - Create table: `id`, `doctor_id`, `period_date` (date/ISO `YYYY-MM-01`), `amount` (decimal:2), `notes`, `source` (`manual_entry` | `csv_import`), `created_by_user_id`, `timestamps`.
-  - Enforce composite unique constraint on `(doctor_id, period_date)` to guarantee idempotent re-imports.
-* **Filament Executive Dashboard (`/console/doctor-portfolio`):**
-  - Header statistics cards: Total Investment, Total Attributed Revenue, Net Portfolio P&L, Overall Portfolio ROI %.
-  - Filterable Table: Doctor name, specialty, territory/area, call count, promotional input spend, sample medicine spend, total invested capital, total revenue, net P&L, and ROI tier badge.
-  - Time Horizon Filters: All Time, Current Financial Year (India April–March cycle), Trailing 90 Days, Last Closed Month.
-  - Inline / Modal Revenue Recording Action: Fast entry modal to log or update monthly doctor revenue.
+### In-Scope Goals
+1. **Dynamic Potential Tiers**: Migration and model for `doctor_potentials` pre-seeded with `Core`, `Serious`, `Nascent`, and `Unresponsive`.
+2. **Doctor Master Integration**: Foreign key `doctor_potential_id` and JSON columns `visiting_days` and `visiting_shifts` added to `Doctor` model and `DoctorForm.php`.
+3. **High-Performance Query Engine**: `DoctorCadenceQueryService` calculating total visits, all-time last visit dates, and days elapsed without N+1 overhead using `fromSub()` and indexed subqueries.
+4. **Cadence & Route Planning Report**: Standalone Filament v5 page at `/console/doctor-cadence` under navigation group `Field Operations` with:
+   - 3-zone balanced table layout with non-wrapping columns.
+   - Status badges for potential tiers (`Core: success`, `Serious: info`, `Nascent: warning`, `Unresponsive: danger`).
+   - Filters for Territory / Area, Potential Tier (default excludes `Unresponsive`), Day of Week, Shift, and Recency (>30d, >60d, Never Visited).
+   - In-table Quick Actions: "Edit Schedule" slideover modal and "Log Visit" quick modal.
+5. **Zero-Division & Null-Safety**: Graceful handling of never-visited accounts and date timezone boundaries.
 
-### Out-of-Scope Non-Goals (Postponed to v2)
-* **Direct ERPNext Database Connection:** No live socket/query coupling to local MariaDB or Python bench. Revenue data remains native to Laravel; ERP sync will be handled via a decoupled API importer script later.
-* **Mobile Field App (`/mr`) Exposure:** Field representatives will **not** see financial margins, sample costs, or doctor P&L on mobile devices.
-* **Complex Multi-Attribute Stock Sparklines:** No bespoke client-side charting libraries or broker-terminal trading ribbons; all UI relies on standard Filament v5 and Tailwind CSS v4 components.
+### Out-of-Scope Non-Goals
+1. **Automated Traveling Salesman / Turn-by-Turn GPS Routing**: No automated map routing or real-time traffic route optimization in v1. The report provides tabular territory filtering to inform manual rep planning.
+2. **Strict Field Visit Blocking**: Visiting a doctor outside their registered schedule will NOT be blocked on `/mr`. Impromptu or rescheduled calls remain 100% permitted.
+3. **Automated Tier Escalation/Downgrade Engine**: Tiers are manually assigned and maintained by sales managers in v1. Automated promotion based on secondary prescription revenue is deferred to v2.
 
 ---
 
 ## Key Decisions & Staging for Next Steps
 
-1. **Storage Decoupling:** Keep `doctor_revenues` inside Laravel's SQLite database to maintain instant subquery performance and transactional safety.
-2. **Standard Filament Presentation:** Leverage native Filament v5 table actions, filters, and stats widgets instead of custom standalone SPA wrappers.
-3. **Primary Sort Metric:** Default table ordering to **Absolute Net P&L (₹) DESC**, surfacing the most commercially profitable prescribers at the top and the largest cash drains at the bottom.
-4. **Idempotent Ingestion:** Require unique `(doctor_id, period_date)` to ensure monthly CSV revenue updates overwrite or update cleanly without duplicating revenue.
+| Decision Item | Decision Chosen | Technical Rationale |
+| :--- | :--- | :--- |
+| **Tier Storage** | Dedicated `doctor_potentials` table | Fulfills requirement for DB-driven tiers; allows dynamic adjustment of monthly target visit frequencies. |
+| **Legacy Doctor Default** | Default all 233 doctors to `Nascent` | Prevents null cadence baselines; unclassified doctors operate under baseline monitoring until evaluated. |
+| **Availability Model** | Two JSON columns (`visiting_days`, `visiting_shifts`) | Clean multi-select CheckboxList with `bulkToggleable()`; blank schedule defaults to Open Availability (Everyday). |
+| **Recency Calculation** | All-time `MAX(d_c_r_s.date)` parameterized with local IST date | Prevents horizon tab filtering from artificially corrupting "last visit date" for accounts unvisited in the current month. |
+| **Sorting on Unvisited** | `COALESCE(days_since_last_visit, 999999)` | Guarantees uncontacted accounts sort to the top when triaging overdue relationships in SQLite. |
+| **Availability Filtering** | Native SQLite `json_each()` via `whereJsonContains` | Fast, typed JSON querying on SQLite 3.45.2 without false positive string matches. |
+
+### Implementation Staging for `/egm-draft`
+* **Phase 1**: Database Migrations & Seeds (`create_doctor_potentials_table`, alter `doctors`, seed default tiers).
+* **Phase 2**: Model Contracts & Offline Sync Safety (`DoctorPotential` model, `Doctor` relationships/casts, `SyncController` defaults).
+* **Phase 3**: Query Service (`DoctorCadenceQueryService` with `fromSub()` outer projections and Julian day math).
+* **Phase 4**: Filament Admin UI (`DoctorForm` fields, `DoctorCadence` page at `/console/doctor-cadence`, row slideover actions).
+* **Phase 5**: Automated Pest Verification (migration tests, cadence query tests, filter tests, and page rendering tests).

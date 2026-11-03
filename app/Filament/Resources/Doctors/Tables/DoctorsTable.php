@@ -25,6 +25,7 @@ class DoctorsTable
                 50, 100, 150, 200,
             ])
             ->defaultSort('name', 'asc')
+            ->modifyQueryUsing(fn ($query) => $query->with('potential'))
             ->extremePaginationLinks()
             ->recordUrl(fn (Doctor $record): string => DoctorResource::getUrl('view', ['record' => $record]))
             ->headerActions([
@@ -71,6 +72,12 @@ class DoctorsTable
                 TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('potential.name')
+                    ->label('Potential')
+                    ->badge()
+                    ->color(fn ($record) => $record->potential?->color ?? 'gray')
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('area.name')
                     ->label('Area')
                     ->toggleable()

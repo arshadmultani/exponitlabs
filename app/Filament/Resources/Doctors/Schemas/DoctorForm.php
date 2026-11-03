@@ -3,19 +3,96 @@
 namespace App\Filament\Resources\Doctors\Schemas;
 
 use App\Filament\Forms\Components\LocationMapField;
+use App\Models\DoctorPotential;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class DoctorForm
 {
+    /**
+     * @return array<Component>
+     */
+    public static function getScheduleComponents(): array
+    {
+        return [
+            Select::make('doctor_potential_id')
+                ->label('Commercial Potential Tier')
+                ->relationship('potential', 'name')
+                ->default(fn () => DoctorPotential::where('code', 'nascent')->value('id'))
+                ->searchable()
+                ->preload()
+                ->createOptionForm([
+                    TextInput::make('name')
+                        ->required()
+                        ->maxLength(255)
+                        ->placeholder('e.g., Key Account'),
+                    TextInput::make('code')
+                        ->required()
+                        ->maxLength(50)
+                        ->placeholder('e.g., key_account'),
+                    TextInput::make('target_visits_per_month')
+                        ->label('Target Visits / Month')
+                        ->numeric()
+                        ->default(4)
+                        ->required(),
+                    Select::make('color')
+                        ->options([
+                            'success' => 'Green (Success)',
+                            'info' => 'Blue (Info)',
+                            'warning' => 'Amber (Warning)',
+                            'danger' => 'Red (Danger)',
+                            'gray' => 'Gray',
+                        ])
+                        ->default('success')
+                        ->required(),
+                ])
+                ->nullable()
+                ->native(false),
+
+            CheckboxList::make('visiting_days')
+                ->label('Visiting Days of Week')
+                ->options([
+                    'monday' => 'Monday',
+                    'tuesday' => 'Tuesday',
+                    'wednesday' => 'Wednesday',
+                    'thursday' => 'Thursday',
+                    'friday' => 'Friday',
+                    'saturday' => 'Saturday',
+                    'sunday' => 'Sunday',
+                ])
+                ->dehydrateStateUsing(fn ($state) => empty($state) ? null : array_values($state))
+                ->columns(4)
+                ->bulkToggleable()
+                ->helperText('Leave empty if doctor meets every day.'),
+
+            CheckboxList::make('visiting_shifts')
+                ->label('Visiting Shifts')
+                ->options([
+                    'morning' => 'Morning (OPD)',
+                    'afternoon' => 'Afternoon',
+                    'evening' => 'Evening (Private Clinic)',
+                ])
+                ->dehydrateStateUsing(fn ($state) => empty($state) ? null : array_values($state))
+                ->columns(3)
+                ->bulkToggleable()
+                ->helperText('Leave empty if available during all shifts.'),
+        ];
+    }
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
+                Section::make('Commercial Priority & Visiting Schedule')
+                    ->description('Set physician commercial priority tier and weekly practice availability.')
+                    ->components(static::getScheduleComponents()),
+
                 Section::make('Doctor')
                     ->columns(2)
                     ->components([

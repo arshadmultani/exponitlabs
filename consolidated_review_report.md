@@ -1,167 +1,191 @@
-# Consolidated Goldfish Review Report
+# Consolidated Review Report: Doctor Call Cadence & Route Planning System
 
-**Target Document:** [`docs/designs/doctor_portfolio.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/doctor_portfolio.md)  
-**Evaluated Scope:** Full Document (Lines 1–418)  
-**Semantic Boundary:** `FeatureRange`: lines 1–322 | `DetailedRange`: lines 324–418  
-**Pipeline Preset:** Consolidated Report (Uninterrupted Full Flow across Stages 5–9)  
-**Date:** 2026-11-01  
-**Consolidated Verdict:** **FAIL** (Actionable remediation required across 5 Blockers and 8 Major findings prior to implementation).
-
----
-
-## Executive Summary
-
-The proposed "Doctor Commercial Performance & ROI Tracker" addresses a genuine commercial problem for Exponit Labs: establishing financial visibility over field detailing investments, sampling costs, and promotional expenditures across 233 physicians. The design commendably decouples the Laravel application from premature ERPNext schema dependencies and avoids speculative caching infrastructure (materialized roll-up tables, Redis queues).
-
-However, across all five zero-context Goldfish review stages (Initial Zoom Out, Naive Reader Comprehension, Adversarial Critic Swarm, Intermediate Zoom Out, and Implementation Readiness), independent reviewers unanimously identified critical architectural, mathematical, and structural defects that would cause runtime PDO database crashes, historical accounting corruption, and implementation stalls.
-
-This consolidated report synthesizes all raw findings from the 5 stage reports into deduplicated, prioritized action items supported by a full Traceability Matrix.
+* **Target Document:** [`docs/designs/doctor_cadence.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/doctor_cadence.md)
+* **Audited Scope:** Complete Specification (Lines 1–453: Feature Spec & Implementation Plan)
+* **Review Protocol:** Elephant-Goldfish Model (EGM) Multi-Perspective Review Swarm
+* **Review Date:** 2026-11-02
+* **Overall Swarm Verdict:** **FAIL (Actionable Remediation Required)**
 
 ---
 
-## Consolidated Action Items by Priority
+## 1. Executive Summary & Swarm Scorecard
 
-### 🔴 Blockers (Must Resolve Before Implementation Begins)
+The review swarm completed an exhaustive evaluation of the Doctor Call Cadence & Route Planning specification across all five stages of the EGM protocol. The reviewers affirmed the core domain model—integrating database-backed potential tiers with clinic availability schedules to eliminate ad-hoc, mood-driven territory visit planning.
 
-#### [TASK-B1] Formulate Sortable SQL Projections for `net_pnl` and `total_investment` via `fromSub()`
-* **Primary Defect:** The specification requires native SQLite sorting on `net_pnl DESC` (`defaultSort`) and `total_investment`. However, the query service reference implementation only selects `visits_count`, `samples_cost`, `promos_cost`, and `total_revenue`. In SQLite and standard SQL, aliases defined in the `SELECT` clause cannot be referenced in sibling select expressions at the same projection level. Attempting to sort by `net_pnl` crashes immediately at runtime with `SQLSTATE[HY000]: General error: 1 no such column: net_pnl`.
-* **Actionable Fix:** Update `DoctorPortfolioQueryService::getBaseQuery()` to use a derived query via Eloquent's `fromSub()`:
-  ```php
-  $innerQuery = Doctor::query()
-      ->select('doctors.*')
-      ->selectSub($visitsCountQuery, 'visits_count')
-      ->selectSub($samplesCostQuery, 'samples_cost')
-      ->selectSub($promosCostQuery, 'promos_cost')
-      ->selectSub($totalRevenueQuery, 'total_revenue');
+However, the swarm identified **6 Blocker defects** and **9 Major architectural issues** that would cause compile-time failures, fatal SQL exceptions, data loss during offline synchronization, and severe operational blindspots if built as specified.
 
-  return Doctor::query()
-      ->fromSub($innerQuery, 'doctors')
-      ->select('doctors.*')
-      ->selectRaw('((doctors.visits_count * COALESCE(doctors.visit_cost_override, ?)) + doctors.samples_cost + doctors.promos_cost) AS total_investment', [$defaultVisitCost])
-      ->selectRaw('(doctors.total_revenue - ((doctors.visits_count * COALESCE(doctors.visit_cost_override, ?)) + doctors.samples_cost + doctors.promos_cost)) AS net_pnl', [$defaultVisitCost]);
-  ```
-  This creates real SQL columns `total_investment` and `net_pnl` that Filament's native sorting can sort on in SQLite with zero migration views.
-
-#### [TASK-B2] Insert Mandatory "Risks & Mitigations" Section into Feature Specification
-* **Primary Defect:** The Feature Specification Standard strictly mandates an evaluation of constraints, failure modes, security, and scalability limits. Lines 1–322 completely omit this section.
-* **Actionable Fix:** Insert a dedicated `## Risks & Mitigations` section addressing:
-  1. *SQLite Write Concurrency:* Single-writer locking during CSV imports, mitigated by sub-20ms atomic transactions and WAL mode.
-  2. *Healthcare Regulatory & Privacy Compliance (UCPMP):* Restricting prescriber commercial profitability data to authorized management roles.
-  3. *Historical Accounting Mutability:* Guarding closed financial periods against master catalog price changes.
-  4. *Date Horizon Normalization:* Aligning monthly revenue audits with daily DCR logs.
-
-#### [TASK-B3] Define Deterministic Quantitative Boundaries & Precedence for Prescriber Tiers
-* **Primary Defect:** Prescriber badge tiers (`High-Yield`, `Balanced`, `Under-Yielding`, `Incubation`) rely on subjective qualitative language (*"significantly exceeds"*, *"cross threshold limits"*) without numerical cutoffs.
-* **Actionable Fix:** Document the exact evaluation logic, precedence order, and threshold cutoffs in Section 3 and Section 5:
-  1. **Incubation:** Evaluated first: `doctors.created_at >= now()->subDays(60)` (Badge: Info / Gray).
-  2. **High-Yield Prescriber:** `net_pnl > 0` AND `roi_percentage >= 50.0` (Badge: Success / Green).
-  3. **Balanced Prescriber:** `net_pnl >= 0` AND `roi_percentage < 50.0` (Badge: Warning / Amber).
-  4. **Under-Yielding Prescriber:** `net_pnl < 0` (Badge: Danger / Red).
-
-#### [TASK-B4] Define Technical Ingestion Contract for `DoctorRevenueImportService`
-* **Primary Defect:** The implementation plan requires `DoctorRevenueImportService` but omits the CSV column format, method signature, date resolution, and error semantics.
-* **Actionable Fix:** Document the complete technical contract in Section 3 and Section 4:
-  - **CSV Column Schema:** `doctor_id,period_date,amount,notes` (with fallback supporting modal period selection).
-  - **Date Format:** Normalized to `YYYY-MM-01`.
-  - **Service Method Signature:**
-    ```php
-    public function import(UploadedFile $file, ?Carbon $fallbackPeriod = null): RevenueImportResult
-    ```
-  - **Transaction & Error Strategy:** Memory validation first, rejecting non-existent `doctor_id`s with row-level error arrays; valid records committed in a single `DB::transaction()` via `DoctorRevenue::upsert()`.
-
-#### [TASK-B5] Eliminate Redundant Schema Drift by Reusing Existing `products.unit_cost`
-* **Primary Defect:** The plan proposes a new `sample_cost` column on `products`. In the actual codebase, `products` already has a populated `unit_cost` column (`decimal:2`) exposed in `ProductForm.php`. Introducing `sample_cost` defaulting to `0.00` ignores existing pricing data and causes all existing 233 doctors to evaluate to ₹0 sample investment.
-* **Actionable Fix:** Update Migration 1, model casting, and query calculations to reuse `unit_cost`:
-  ```php
-  COALESCE(products.sample_cost, products.unit_cost, 0.00)
-  ```
-  Or drop `sample_cost` entirely if pharmaceutical samples share unit cost economics with finished goods.
+| Stage | Focus Area | Reviewer Persona | Verdict | Report Link |
+| :--- | :--- | :--- | :--- | :--- |
+| **Stage 5** | Initial Altitude, Scope & YAGNI | Skeptical Architect (`egm-zoom-out`) | `PASS WITH RESERVATIONS` | [`zoom_out_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/zoom_out_report.md) |
+| **Stage 6** | Zero-Assumption Comprehension | Naive Reader (`egm-comprehension`) | `FAIL` | [`comprehension_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/comprehension_report.md) |
+| **Stage 7** | System Architecture & Risk | Hostile Design Critic (`egm-design`) | `FAIL` | [`critic_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/critic_report.md) |
+| **Stage 7** | Structural Layout & Standards | Layout Validator (`egm-structural`) | `PASS WITH RESERVATIONS` | [`critic_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/critic_report.md) |
+| **Stage 7** | Technical Style & Precision | Copy Editor (`egm-style`) | `PASS WITH RESERVATIONS` | [`critic_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/critic_report.md) |
+| **Stage 8** | Intermediate Architectural Sanity | Skeptical Architect (`egm-zoom-out`) | `PASS WITH RESERVATIONS` | [`intermediate_zoom_out_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/intermediate_zoom_out_report.md) |
+| **Stage 9** | Codebase Alignment & Verification | Codebase Auditor (`egm-codebase-details`) | `FAIL` | [`implementation_readiness_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/implementation_readiness_report.md) |
+| **Stage 9** | Pragmatic Execution & Contracts | Tech Lead (`egm-implementation-readiness`) | `FAIL` | [`implementation_readiness_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/implementation_readiness_report.md) |
+| **Stage 9** | Implementation Style & Clarity | Copy Editor (`egm-style`) | `PASS WITH RESERVATIONS` | [`implementation_readiness_report.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/implementation_readiness_report.md) |
 
 ---
 
-### 🟡 Major Findings (Architectural & Behavioral Corrections)
+## 2. Traceability Matrix
 
-#### [TASK-M1] Align Date Normalization for Horizon Filters (`last_3_months` / `startOfMonth()`)
-* **Defect:** Rolling intra-month date filters (such as `trailing_90` resolving to Aug 3) exclude August monthly revenue stored as `2026-08-01` (`2026-08-01 >= 2026-08-03` is false), while including 28 days of August DCR expenses. This distorts doctor P&L.
-* **Fix:** Replace `trailing_90` with calendar-aligned **`last_3_months`**, or explicitly clamp `$startDate` for monthly revenue queries to `$startDate->copy()->startOfMonth()`.
+The following matrix maps raw findings across all 9 reviewer evaluations into unified, consolidated action items:
 
-#### [TASK-M2] Resolve Historical Price Mutability via Nullable `unit_cost_snapshot`
-* **Defect:** CUJ 3 claims past activities remain unaffected when prices change. However, live joins to catalog tables retroactively alter all closed accounting periods when prices are updated.
-* **Fix:** Add a nullable `unit_cost_snapshot` (`decimal:10,2`) column to `dcr_products` and `dcr_promotional_inputs`. Populate it during DCR submission, and update queries to evaluate `COALESCE(dcr_products.unit_cost_snapshot, products.unit_cost, 0.00)`.
-
-#### [TASK-M3] Permit Multi-Chemist Revenue Attribution by Dropping Composite Unique Constraint
-* **Defect:** Migration 4 enforces a database-level unique constraint on `(doctor_id, period_date)`. In real-world clinics, prescription revenue audits arrive from multiple chemists within the same month for a single doctor. The unique constraint causes collisions or data overwrites.
-* **Fix:** Remove `$table->unique(['doctor_id', 'period_date'])`, replacing it with an indexed `$table->index(['doctor_id', 'period_date'])`. The query service already aggregates with `SUM(amount)`.
-
-#### [TASK-M4] Define State Synchronization Between `DoctorPortfolio` Page and `DoctorPortfolioStatsWidget`
-* **Defect:** Filament page header widgets do not automatically inherit tab filter selections from parent pages without explicit wiring. Furthermore, Card 4 definition is contradictory between sections ("Account Efficiency Ratio" vs. "Overall Return Multiple").
-* **Fix:**
-  - Standardize Card 4 as **"Overall Return Multiple"** (`Total Attributed Revenue / Total Invested Capital`, returning `0.0x` if investment is ₹0).
-  - Document the state-passing contract: `DoctorPortfolio` passes the active horizon to `DoctorPortfolioStatsWidget` using `$widgetData = ['horizon' => $this->activeHorizon]`.
-
-#### [TASK-M5] Relocate Unit Test Suite to Database Feature Test Suite
-* **Defect:** The test plan specifies `tests/Unit/DoctorFinancialMetricsTest.php`, but no `DoctorFinancialMetrics` class exists. All calculations live in SQL query builders. Unit tests cannot boot database query engines.
-* **Fix:** Retitle and relocate to `tests/Feature/Services/DoctorPortfolioQueryServiceTest.php` extending `TestCase` with `RefreshDatabase`. Add `database/factories/DoctorRevenueFactory.php`.
-
-#### [TASK-M6] Add Action Modifiers (`[Create]`, `[Modify]`, `[Delete]`) to All Scope Files
-* **Defect:** Scope files in lines 328–418 are listed as bare paths without action markers, violating the Implementation Readiness Standard.
-* **Fix:** Prefix each entry in Section 1–6 with `[Create]`, `[Modify]`, or `[Delete]`.
-
-#### [TASK-M7] Provide Explicit Modal Form Schema for "Log Monthly Revenue"
-* **Defect:** The plan specifies a "Log Monthly Revenue" header action on the page but provides no form schema or validation rules.
-* **Fix:** Document the Filament action modal schema: `doctor_id` (Select, required, searchable), `period_date` (DatePicker, format Y-m-d, default start of current month, required), `amount` (TextInput, numeric, min 0.01, required), `notes` (TextInput, nullable).
-
-#### [TASK-M8] Eliminate Conflicting "Minor-Unit" Terminology and Runtime Error Descriptions
-* **Defect:** `DoctorRevenue` is described as having "minor-unit formatting helpers" while the database column is `decimal(12, 2)`. Line 406 references "arithmetic overflow" instead of PHP 8's `DivisionByZeroError`.
-* **Fix:** Standardize terminology to standard decimal rupee formatting and `DivisionByZeroError`.
-
----
-
-### 🟢 Nits (Code Quality, Formatting, and Style Cleanliness)
-
-* **[TASK-N1] Align Blueprint Section Headings:** Canonicalize `## The Problem` to `## Problem Statement`, unify `Goals & Non-Goals`, and rename `## Technical Plan (Architecture)` to `## Proposed Architecture`.
-* **[TASK-N2] Remove Duplicate Composite Index:** In Migration 4, drop `$table->index(['doctor_id', 'period_date'])` if unique constraint is kept, or eliminate redundant duplicate index definitions.
-* **[TASK-N3] Strip Hyperbole, Slang, and Promotional Fluff:** Replace emotional rhetoric ("severe cross-stack coupling", "N+1 query explosion", "YAGNI", "high-performance", "executive") with dry, neutral engineering prose.
-* **[TASK-N4] Fix LaTeX Math Formatting:** Clean up unescaped double question marks and quotes in inline math expressions on Line 178.
-* **[TASK-N5] Link File Paths, Symbols, and External Concepts:** Add markdown links to referenced models, console routes, and explain domain acronyms (`UCPMP`, `ERPNext`).
-* **[TASK-N6] Add Intermediate CLI Verification Checkpoints:** Insert execution checkpoints (`php artisan migrate`, `php artisan test`) at the end of each implementation phase.
-* **[TASK-N7] Reconcile Sitemap Task:** Mark `docs/designs/SITEMAP.md` update as already completed.
-
----
-
-## Traceability Matrix
-
-| Raw Finding Source | Reviewer & Stage | Category | Consolidated Action Item |
+| Action Item | Severity | Originating Stages & Reviewers | Core Issue Addressed |
 | :--- | :--- | :--- | :--- |
-| Query Service Omits Sortable Columns | `egm-design` (Stage 7.A2), `egm-zoom-out` (Stage 5.1), `egm-comprehension` (Stage 6.1), `egm-implementation-readiness` (Stage 9.A1), `egm-codebase-details` (Stage 9.B1) | 🔴 Blocker | **[TASK-B1]** |
-| Missing "Risks & Mitigations" Section | `egm-structural` (Stage 7.B1), `egm-design` (Stage 7.A1) | 🔴 Blocker | **[TASK-B2]** |
-| Undefined Prescriber Tier Thresholds | `egm-style` (Stage 7.C1), `egm-design` (Stage 7.A5), `egm-comprehension` (Stage 6.3), `egm-implementation-readiness` (Stage 9.A2) | 🔴 Blocker | **[TASK-B3]** |
-| Missing CSV Ingestion Schema & Contract | `egm-comprehension` (Stage 6.2), `egm-implementation-readiness` (Stage 9.A3), `egm-codebase-details` (Stage 9.B5) | 🔴 Blocker | **[TASK-B4]** |
-| Schema Drift: `products.sample_cost` vs `unit_cost` | `egm-codebase-details` (Stage 9.B2), `egm-zoom-out` (Stage 5.5, Stage 8.6) | 🔴 Blocker | **[TASK-B5]** |
-| Date Boundary Mismatch on Rolling Filters | `egm-zoom-out` (Stage 5.2, Stage 8.4), `egm-design` (Stage 7.A4), `egm-comprehension` (Stage 6.5), `egm-codebase-details` (Stage 9.B4) | 🟡 Major | **[TASK-M1]** |
-| Historical Pricing Mutability Contradiction | `egm-design` (Stage 7.A3), `egm-zoom-out` (Stage 5.3, Stage 8.3), `egm-comprehension` (Stage 6.7) | 🟡 Major | **[TASK-M2]** |
-| Multi-Chemist Sales Attribution Collision | `egm-zoom-out` (Stage 5.4, Stage 8.5) | 🟡 Major | **[TASK-M3]** |
-| Page-to-Widget State Sync & Card Contradiction | `egm-comprehension` (Stage 6.4, 6.6), `egm-implementation-readiness` (Stage 9.A4), `egm-codebase-details` (Stage 9.B7, 9.B8) | 🟡 Major | **[TASK-M4]** |
-| Phantom Unit Test Class & Missing Factory | `egm-implementation-readiness` (Stage 9.A5), `egm-codebase-details` (Stage 9.B6) | 🟡 Major | **[TASK-M5]** |
-| Scope Files Lack Action Modifiers | `egm-codebase-details` (Stage 9.B3) | 🟡 Major | **[TASK-M6]** |
-| Missing Modal Schema for "Log Monthly Revenue" | `egm-implementation-readiness` (Stage 9.A6) | 🟡 Major | **[TASK-M7]** |
-| Minor-Unit Terminology & Error Terminology | `egm-style` (Stage 9.C1, 9.C2), `egm-implementation-readiness` (Stage 9.A7), `egm-codebase-details` (Stage 9.B10) | 🟡 Major | **[TASK-M8]** |
-| Blueprint Heading Nomenclature | `egm-structural` (Stage 7.B2) | 🟢 Nit | **[TASK-N1]** |
-| Redundant Composite Index | `egm-design` (Stage 7.A7), `egm-structural` (Stage 7.B3), `egm-zoom-out` (Stage 5.7), `egm-comprehension` (Stage 6.9) | 🟢 Nit | **[TASK-N2]** |
-| Hyperbole, Slang, and Promotional Fluff | `egm-style` (Stage 7.C2, 7.C3, 7.C4, 7.C5, Stage 9.C3) | 🟢 Nit | **[TASK-N3]** |
-| Malformed LaTeX Math Mode Syntax | `egm-structural` (Stage 7.B4) | 🟢 Nit | **[TASK-N4]** |
-| Unlinked File Paths & Domain Acronyms | `egm-structural` (Stage 7.B5), `egm-comprehension` (Stage 6.8), `egm-design` (Stage 7.A8) | 🟢 Nit | **[TASK-N5]** |
-| Missing Phase Verification Checkpoints | `egm-implementation-readiness` (Stage 9.A8) | 🟢 Nit | **[TASK-N6]** |
-| Sitemap Registration Reconciled | `egm-codebase-details` (Stage 9.B9) | 🟢 Nit | **[TASK-N7]** |
+| **ACT-01** | 🔴 **Blocker** | Stage 7 (Design Critic, Structural) | Missing mandatory blueprint section: `## Risks & Mitigations`. |
+| **ACT-02** | 🔴 **Blocker** | Stage 7 (Design), Stage 8 (Zoom Out), Stage 9 (Codebase Details) | Replace `fromSub()` with `selectSub()`; fix multi-column scalar subquery cardinality violation. |
+| **ACT-03** | 🔴 **Blocker** | Stage 6 (Comprehension), Stage 7 (Design), Stage 8 (Zoom Out) | Partition tabs strictly by tier (`code != 'unresponsive'`) to prevent 140 unvisited accounts from vanishing. |
+| **ACT-04** | 🔴 **Blocker** | Stage 6 (Comprehension), Stage 9 (Tech Lead, Codebase Details) | Harmonize commercial potential tier UI color tokens across schema, UI, and seeders. |
+| **ACT-05** | 🔴 **Blocker** | Stage 9 (Tech Lead, Codebase Details) | Fix Filament v5 Page contracts and Blade view: implement `HasTable`, use `HasTabs`, render `{{ $this->content }}`. |
+| **ACT-06** | 🔴 **Blocker** | Stage 9 (Tech Lead) | Fix topological inversion: move `DoctorPotential` model creation to Phase 1 before seeder execution. |
+| **ACT-07** | 🟡 **Major** | Stage 5 (Zoom Out), Stage 6 (Comprehension), Stage 7 (Design), Stage 9 (Codebase Details) | Prevent empty JSON array dehydration (`[]`) from breaking open-availability route filtering. |
+| **ACT-08** | 🟡 **Major** | Stage 5 (Zoom Out), Stage 6 (Comprehension), Stage 8 (Zoom Out), Stage 9 (Codebase Details) | Correct non-existent migration column reference: change `'clinic_hospital_name'` to `'clinic_name'`. |
+| **ACT-09** | 🟡 **Major** | Stage 7 (Design Critic), Stage 8 (Zoom Out) | Ensure `logVisit` action generates UUIDs and prevents duplicate same-day visits for offline sync integrity. |
+| **ACT-10** | 🟡 **Major** | Stage 7 (Design Critic), Stage 9 (Tech Lead, Codebase Details) | Add request validation and attribute mapping in `SyncController::syncDoctors()`, and denormalize tier metadata. |
+| **ACT-11** | 🟡 **Major** | Stage 9 (Codebase Details) | Add `database/factories/DoctorPotentialFactory.php` for Pest testing and model completeness. |
+| **ACT-12** | 🟡 **Major** | Stage 5 (Zoom Out), Stage 8 (Zoom Out) | Remove redundant Julian day SQL math and unused `visit_deficit` calculation; sort natively on `last_visit_date ASC NULLS FIRST`. |
+| **ACT-13** | 🟡 **Major** | Stage 5 (Zoom Out), Stage 8 (Zoom Out) | DRY form schema: extract schedule components into `DoctorForm::getScheduleSection()` shared with slideover. |
+| **ACT-14** | 🟡 **Major** | Stage 9 (Tech Lead) | Provide explicit verification test commands in Phase 6. |
+| **ACT-15** | 🟡 **Major** | Stage 7 (Style), Stage 9 (Style) | Strip unmeasured performance hyperbole ("sub-millisecond") and marketing buzzwords ("effortless", "seamless"). |
+| **ACT-16** | 🟢 **Nit** | Stage 6 (Comprehension), Stage 9 (Tech Lead) | Include `is_active` in Phase 1 migration columns, `$fillable`, and `$casts`. |
+| **ACT-17** | 🟢 **Nit** | Stage 6 (Comprehension), Stage 8 (Zoom Out) | Define acronyms (DCR, OPD, Beat) and update mobile app references to `/elos`. |
+| **ACT-18** | 🟢 **Nit** | Stage 9 (Codebase Details) | Eager-load `potential` in `DoctorsTable.php` to avoid N+1 queries. |
+| **ACT-19** | 🟢 **Nit** | Stage 7 (Structural) | Escape Mermaid `<` and `>` operators in node labels. |
 
 ---
 
-## Conclusion & Recommended Next Step
+## 3. Consolidated Actionable Remediation Plan
 
-The Goldfish Review Protocol has successfully identified and isolated all critical failure modes across the feature specification and implementation plan. 
+### 🔴 Critical Blockers (Must Be Fixed Before Implementation)
 
-The document author should now execute:
+#### 1. ACT-01: Insert Mandatory `## Risks & Mitigations` Section
+* **Requirement**: Add an explicit H2 section prior to `## Detailed Implementation Plan` addressing:
+  1. *SQLite Write Contention*: Mitigate database locking during concurrent mobile sync and admin console DCR entry by utilizing SQLite WAL mode and wrapping write transactions in retry blocks.
+  2. *Timezone & Date Boundary Drift*: Eliminate reliance on SQLite `localtime`; bind `Carbon::today()->toDateString()` in local IST.
+  3. *Subquery Scalability*: Benchmark correlated subquery performance and define indexing thresholds on `d_c_r_s(doctor_id, date)`.
+
+#### 2. ACT-02: Query Engine Architecture & SQL Cardinality Fix
+* **Requirement**: Replace `fromSub()` with direct `selectSub()` on `Doctor::query()`, and decompose the correlated subquery into 3 discrete scalar queries:
+  ```php
+  $totalVisitsQuery = DCR::query()
+      ->selectRaw('COUNT(*)')
+      ->whereColumn('d_c_r_s.doctor_id', 'doctors.id');
+
+  $visitsThisMonthQuery = DCR::query()
+      ->selectRaw('COUNT(*)')
+      ->whereColumn('d_c_r_s.doctor_id', 'doctors.id')
+      ->where('d_c_r_s.date', '>=', now()->startOfMonth()->toDateString())
+      ->where('d_c_r_s.date', '<=', now()->endOfMonth()->toDateString());
+
+  $lastVisitDateQuery = DCR::query()
+      ->selectRaw('MAX(d_c_r_s.date)')
+      ->whereColumn('d_c_r_s.doctor_id', 'doctors.id');
+
+  $query = Doctor::query()
+      ->where('doctors.status', 'active')
+      ->select('doctors.*')
+      ->selectSub($totalVisitsQuery, 'total_visits_count')
+      ->selectSub($visitsThisMonthQuery, 'visits_this_month_count')
+      ->selectSub($lastVisitDateQuery, 'last_visit_date')
+      ->with(['potential', 'area.headquarter']);
+  ```
+
+#### 3. ACT-03: Partition Tabs Strictly by Commercial Potential Tier
+* **Requirement**: Decouple tab membership from visit recency. The default tab must show all non-unresponsive doctors, ensuring all 140 unvisited accounts and severely neglected Core prescribers remain visible:
+  ```php
+  public function getTabs(): array
+  {
+      return [
+          'active' => Tab::make('Active Cadence')
+              ->badge(fn () => Doctor::whereHas('potential', fn ($q) => $q->where('code', '!=', 'unresponsive'))->orWhereNull('doctor_potential_id')->count())
+              ->modifyQueryUsing(fn (Builder $query) => $query
+                  ->where(function (Builder $q) {
+                      $q->whereHas('potential', fn ($p) => $p->where('code', '!=', 'unresponsive'))
+                        ->orWhereNull('doctor_potential_id');
+                  })),
+          'unresponsive' => Tab::make('Unresponsive Accounts')
+              ->badge(fn () => Doctor::whereHas('potential', fn ($q) => $q->where('code', 'unresponsive'))->count())
+              ->modifyQueryUsing(fn (Builder $query) => $query
+                  ->whereHas('potential', fn ($q) => $q->where('code', 'unresponsive'))),
+          'all' => Tab::make('All Accounts'),
+      ];
+  }
+  ```
+
+#### 4. ACT-04: Harmonize Potential Tier UI Color Tokens
+* **Requirement**: Unify color mapping across architecture tables, seeders, and column badges to a single deterministic standard:
+  - **Core**: `success` (Green)
+  - **Serious**: `info` (Blue)
+  - **Nascent**: `warning` (Amber)
+  - **Unresponsive**: `gray` (Neutral Gray)
+
+#### 5. ACT-05: Align Filament v5 Page Architecture & Contracts
+* **Requirement**: In `app/Filament/Pages/DoctorCadence.php`, implement `HasTable` using `HasTabs` and `InteractsWithTable`. Compose the layout via `content(Schema $schema): Schema` returning `[$this->getTabsContentComponent(), EmbeddedTable::make()]`, and render `{{ $this->content }}` in `doctor-cadence.blade.php`.
+
+#### 6. ACT-06: Resolve Topological Dependency Inversion in Plan
+* **Requirement**: Move `app/Models/DoctorPotential.php` and `app/Models/Doctor.php` creation into Phase 1 prior to executing `DoctorPotentialSeeder.php`.
+
+---
+
+### 🟡 Major Issues
+
+#### 7. ACT-07: Guard Against Empty Array Dehydration in Schedule Filters
+* **Requirement**:
+  1. In `DoctorForm.php`: Add `dehydrateStateUsing(fn ($state) => empty($state) ? null : array_values($state))` to `visiting_days` and `visiting_shifts`.
+  2. In `Doctor.php`: Update scopes `availableOnDay` and `availableOnShift` to check `orWhereNull('visiting_days')->orWhere('visiting_days', '[]')->orWhere('visiting_days', '')`.
+
+#### 8. ACT-08: Correct Schema Column Name to `clinic_name`
+* **Requirement**: Change `->after('clinic_hospital_name')` to `->after('clinic_name')` across all migration and model specifications.
+
+#### 9. ACT-09: Guarantee DCR UUID Generation & Prevent Duplicate Calls
+* **Requirement**:
+  1. Add `creating()` boot hook in `app/Models/DCR.php`: `$dcr->uuid = $dcr->uuid ?? (string) Str::uuid();`.
+  2. In `logVisit` modal action: verify whether a DCR record already exists for `(doctor_id, date)` and warn the user.
+
+#### 10. ACT-10: Complete `SyncController` Mobile Synchronization Contracts
+* **Requirement**:
+  1. In `SyncController::masterData()`: Denormalize tier metadata onto the doctor payload (`code`, `name`, `color`, `target_visits_per_month`).
+  2. In `SyncController::syncDoctors()`: Add `$request->validate()` rules for `doctor_potential_id`, `visiting_days`, and `visiting_shifts`, and map them into `Doctor::updateOrCreate()`.
+
+#### 11. ACT-11: Create `DoctorPotentialFactory`
+* **Requirement**: Add `database/factories/DoctorPotentialFactory.php` [Create] in Phase 2.
+
+#### 12. ACT-12: Strip Redundant SQL Date Math and Dead Calculations
+* **Requirement**: Drop SQLite `julianday(?)` math and `visit_deficit` calculations from the query engine. Sort overdue accounts directly on `last_visit_date ASC NULLS FIRST`, and render relative time via Carbon in PHP.
+
+#### 13. ACT-13: Unify Schedule Form Schema
+* **Requirement**: Extract the schedule components into a reusable static method `DoctorForm::getScheduleComponents()` and invoke it in both `DoctorForm` and the `editSchedule` action slideover.
+
+#### 14. ACT-14: Provide Explicit Verification Commands
+* **Requirement**: Add exact test execution instructions:
+  ```bash
+  php artisan test --compact tests/Feature/DoctorCadenceTest.php
+  php artisan test --compact
+  ```
+
+#### 15. ACT-15: Apply Technical Copy Edits
+* **Requirement**: Replace hyperbolic and promotional phrases ("sub-millisecond", "effortless", "seamless", "zero-friction", "flawless", "100% feature reliability") with dry, objective engineering descriptions.
+
+---
+
+### 🟢 Nits & Structural Refinements
+
+* **ACT-16**: Include `is_active` in Phase 1 migration columns, `$fillable`, and `$casts`.
+* **ACT-17**: Spell out acronyms upon first appearance (Daily Call Report - DCR, Outpatient Department - OPD, Beat) and update mobile app references to `/elos`.
+* **ACT-18**: Add `modifyQueryUsing(fn ($query) => $query->with('potential'))` in `DoctorsTable.php` to prevent N+1 queries.
+* **ACT-19**: Escape Mermaid `<` and `>` operators using `&le;` and `&gt;`.
+
+---
+
+## 4. Next Steps & Recommended Action
+
+Per the EGM specification lifecycle, this review concludes with findings requiring resolution.
+You can execute automated remediation via:
+
+```bash
+/egm-resolve docs/designs/doctor_cadence.md
 ```
-/egm-resolve docs/designs/doctor_portfolio.md
-```
-This will activate the primary Elephant resolver context to evaluate the consolidated findings, approve technical fixes, and apply the required textual and architectural updates to [`docs/designs/doctor_portfolio.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/doctor_portfolio.md).
+
+This will apply all approved fixes from this report directly into [`docs/designs/doctor_cadence.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/doctor_cadence.md), bringing the specification into full compliance and preparing it for implementation.

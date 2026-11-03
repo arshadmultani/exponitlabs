@@ -26,7 +26,7 @@
                     </div>
                     <div>
                         <h2 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
-                            <span>WhatsApp Reminder</span>
+                            <span>WhatsApp Call Reminder</span>
                         </h2>
                         <p class="text-xs text-slate-400">
                             <span

@@ -24,5 +24,6 @@ class DatabaseSeeder extends Seeder
 
         // Real doctor data from database/data/doctors.csv (idempotent by name).
         $this->call(DoctorImportSeeder::class);
+        $this->call(DoctorPotentialSeeder::class);
     }
 }

@@ -8,6 +8,7 @@ use App\Models\DCR;
 use App\Models\DCRProduct;
 use App\Models\DCRPromotionalInput;
 use App\Models\Doctor;
+use App\Models\DoctorPotential;
 use App\Models\Headquarter;
 use App\Models\Product;
 use App\Models\PromotionalInput;
@@ -25,7 +26,7 @@ class SyncController extends Controller
     {
         $since = $request->query('since');
 
-        $doctorsQuery = Doctor::query()->where('status', 'active');
+        $doctorsQuery = Doctor::query()->with('potential')->where('status', 'active');
         $productsQuery = Product::query();
         $inputsQuery = PromotionalInput::query();
 
@@ -46,6 +47,9 @@ class SyncController extends Controller
             'profile_photo',
             'town',
             'area_id',
+            'doctor_potential_id',
+            'visiting_days',
+            'visiting_shifts',
             'address',
             'clinic_name',
             'latitude',
@@ -61,6 +65,13 @@ class SyncController extends Controller
 
             $doc->profile_photo_url = $doc->profile_photo_url;
             $doc->whatsapp_number = $doc->whatsapp_number;
+            $doc->potential = [
+                'id' => $doc->potential?->id,
+                'code' => $doc->potential?->code ?? 'nascent',
+                'name' => $doc->potential?->name ?? 'Nascent',
+                'color' => $doc->potential?->color ?? 'warning',
+                'target_visits_per_month' => $doc->potential?->target_visits_per_month ?? 1,
+            ];
 
             return $doc;
         });
@@ -141,6 +152,9 @@ class SyncController extends Controller
             'doctors.*.qualification' => 'nullable|string|max:255',
             'doctors.*.town' => 'nullable|string|max:255',
             'doctors.*.area_id' => 'nullable|integer',
+            'doctors.*.doctor_potential_id' => 'nullable|integer|exists:doctor_potentials,id',
+            'doctors.*.visiting_days' => 'nullable|array',
+            'doctors.*.visiting_shifts' => 'nullable|array',
             'doctors.*.address' => 'nullable|string|max:500',
             'doctors.*.clinic_name' => 'nullable|string|max:255',
             'doctors.*.latitude' => 'nullable|numeric',
@@ -149,8 +163,9 @@ class SyncController extends Controller
         ]);
 
         $synced = [];
+        $defaultPotentialId = DoctorPotential::where('code', 'nascent')->value('id');
 
-        DB::transaction(function () use ($validated, &$synced) {
+        DB::transaction(function () use ($validated, &$synced, $defaultPotentialId) {
             foreach ($validated['doctors'] as $item) {
                 $lat = isset($item['latitude']) && is_numeric($item['latitude']) ? (float) $item['latitude'] : null;
                 $lng = isset($item['longitude']) && is_numeric($item['longitude']) ? (float) $item['longitude'] : null;
@@ -169,6 +184,9 @@ class SyncController extends Controller
                         'qualification' => $item['qualification'] ?? null,
                         'town' => $item['town'] ?? null,
                         'area_id' => $item['area_id'] ?? null,
+                        'doctor_potential_id' => $item['doctor_potential_id'] ?? $defaultPotentialId,
+                        'visiting_days' => ! empty($item['visiting_days']) ? $item['visiting_days'] : null,
+                        'visiting_shifts' => ! empty($item['visiting_shifts']) ? $item['visiting_shifts'] : null,
                         'address' => $item['address'] ?? null,
                         'clinic_name' => $item['clinic_name'] ?? null,
                         'latitude' => $lat,

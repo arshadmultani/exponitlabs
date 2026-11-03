@@ -54,8 +54,7 @@
                     class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200"
                     x-text="availableDates.length + ' Logged Call' + (availableDates.length > 1 ? 's' : '')"></span>
                 <span x-show="!hasLoggedDcrs"
-                    class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">No
-                    Calls Yet</span>
+                    class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">No Calls Yet</span>
             </div>
 
             <div class="relative">
@@ -72,6 +71,14 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                 </div>
+            </div>
+
+            <!-- General Greeting / Date Omitted Notice -->
+            <div x-show="!includeVisitDate" class="mt-1.5 px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 flex items-center gap-1.5 text-[10px] text-blue-800 font-medium">
+                <svg class="w-3.5 h-3.5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>General Mode: Visit date is omitted from card & message (ideal for birthdays, festivals & greetings).</span>
             </div>
 
             <!-- Reminder Sent Status Indicator for Active Visit Date -->
