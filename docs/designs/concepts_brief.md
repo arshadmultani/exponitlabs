@@ -1,121 +1,102 @@
-# Doctor Call Cadence, Route Planning & Potential Tiers
+# Centralized Indian Festival & Healthcare Observance Calendar Engine
 
 * **Author:** EGM Ideation Swarm (Elephant + 6 Goldfish Reviewers)
-* **Date:** 2026-11-02
-* **Target:** Filament Administrative Console (`/console/doctor-cadence`)
+* **Date:** 2026-11-03
+* **Target:** Filament Administrative Console (`/console/festivals`) & Offline MR Field App (`/elos`)
 
 ---
 
 ## Overview
 
-The Doctor Call Cadence & Route Planning system is an operational decision-support and territory management interface embedded within the Exponit Labs Filament v5 administrative console (`/console/doctor-cadence`). It eliminates undisciplined, mood-based daily visit scheduling across the company's 233 registered healthcare providers by giving sales leadership and field managers clear visibility into visit recency, call frequency adherence, doctor availability, and account potential.
+The Centralized Indian Festival & Healthcare Observance Calendar Engine equips Exponit Labs with an authoritative, database-backed calendar system to manage major Indian cultural festivals, national holidays, and healthcare observances across 2025–2030. 
 
-The system introduces:
-1. **Database-Backed Potential Tiers**: A dynamic `doctor_potentials` lookup table (`Core`, `Serious`, `Nascent`, `Unresponsive`) assigning target monthly detailing frequencies and visual priority to each account.
-2. **Doctor Availability Scheduling**: Multi-select visiting days (Monday–Sunday) and visiting clinic shifts (Morning, Afternoon, Evening) configured on each doctor's master profile, with native support for "Everyday / All Shifts" open-door availability.
-3. **DCR Cadence Ledger**: A high-performance, sortable administrative report calculating total detailing visits, all-time last visit dates, and days elapsed since the last call, equipped with territory, potential tier, visiting day, and shift filters to streamline daily beat planning.
+Rather than recording sensitive personal doctor attributes (such as religion or community), the system approaches relationship-building through an objective, calendar-driven greeting engine. Administrators maintain and adjust festival dates centrally within a responsive, month-by-month calendar grid in the Filament admin console (`/console/festivals`)—enabling real-time adjustments for astronomical moon sightings (e.g., Eid-ul-Fitr, Eid-ul-Adha) and regional calendar variations.
+
+In the offline-first field app used by Medical Representatives (`/elos`), active greeting windows automatically highlight upcoming observances without requiring continuous network connectivity, seamlessly connecting into the existing celebration card canvas and festive text generation engine.
 
 ---
 
-## Analysis (Synthesized Swarm Findings)
+## Analysis (Synthesized Multi-Lens Review)
 
-The 6-lens Goldfish review swarm audited the feature concept against system architecture, codebase patterns, ergonomics, tech debt, and implementation safety:
+The 6-lens Goldfish review swarm audited the feature hypothesis across system architecture, codebase patterns, ergonomics, tech debt, and implementation safety:
 
-### 1. Database Architecture & Potential Tier Storage (`egm-zoom-out` & `egm-codebase-details`)
-- **Review Finding**: While a PHP 8.4 Backed Enum requires zero migration boilerplate, the user requirement dictates database storage so that business tiers, visit targets, and badge colors can be customized dynamically without code releases.
-- **Synthesized Resolution**: Create a dedicated `doctor_potentials` table (`id`, `name`, `code`, `color`, `sort_order`, `target_visits_per_month`, `is_active`, `timestamps`).
-  - Pre-seed with the 4 standard tiers:
-    - **Core**: 4 visits/month (target interval: 7 days), color `success`.
-    - **Serious**: 2 visits/month (target interval: 15 days), color `info`.
-    - **Nascent**: 1 visit/month (target interval: 30 days, default for all 233 existing doctors), color `warning`.
-    - **Unresponsive**: 0 visits/month (dormant/non-yielding accounts), color `danger`.
-  - Add nullable foreign key `doctor_potential_id` on `doctors` with `nullOnDelete()`.
+### 1. The Sync Invalidation & Sliding Window Paradox (`egm-design`, `egm-implementation-readiness`)
+- **The Risk:** The existing ELOS sync architecture (`SyncController::masterData`) relies on incremental delta updates using `?since=<last_synced_at>` filtering on `updated_at >= $since`. If the server attempts to serve a dynamic "rolling 60-day window" of festivals, pre-seeded 2025–2030 records will have static creation timestamps from initial seeding. When time simply advances, upcoming festivals entering the 60-day horizon will have older timestamps and be omitted by `?since`. Furthermore, when dates shift or expire, incremental `bulkPut()` leaves obsolete ghost records in IndexedDB.
+- **Resolution:** Decouple festival synchronization from the `?since` timestamp filter. Multi-year calendar data is tiny (~40 observances/year × 6 years ≈ 240 records ≈ 16 KB uncompressed). The `masterData` endpoint will sync the full active dataset (or current year + next year), and the client sync engine will execute an atomic table clear-and-replace in Dexie.js (`db.upcoming_festivals.clear(); db.upcoming_festivals.bulkPut(payload);`).
 
-### 2. SQLite Date Calculations & The 140 Never-Visited Doctors Anomaly (`egm-design` & `egm-implementation-readiness`)
-- **Review Finding**: 140 out of 233 doctors (60%) currently have zero recorded DCR visits in the database.
-  - In SQLite, `MAX(date)` evaluates to `NULL` for unvisited doctors. Subtracting dates from `NULL` yields `NULL`.
-  - Standard SQL `ASC` and `DESC` sorting behaves unpredictably with null values (putting never-visited doctors either at the bottom or scrambling them).
-  - Furthermore, SQLite lacks MySQL's `DATEDIFF()` and evaluates `julianday('now')` in server UTC, inducing off-by-one errors in Indian Standard Time (IST, UTC+05:30).
-- **Synthesized Resolution**:
-  - Calculate elapsed days using SQLite Julian day arithmetic parameterized with application-local IST date: `CAST(julianday(?) - julianday(date(last_visit_date)) AS INTEGER)`.
-  - Handle nulls safely in sorting using `COALESCE(days_since_last_visit, 999999)` so that uncontacted accounts reliably sort to the top when prioritizing overdue visits.
-  - In the UI, render `Last Visit Date` as badge `Never Visited` (danger/neutral) and `Days Since Last Visit` as `Never` to prevent confusion with `0d ago` (Visited Today).
+### 2. Seeder Mutability Safeguard vs. Moon-Sighting Overrides (`egm-structural`, `egm-codebase-details`, `egm-comprehension`)
+- **The Risk:** Indian Gazetted and Islamic holidays frequently shift by 1–2 days based on local Hilal moon sightings or state notifications. If an administrator adjusts a date in `/console/festivals`, routine zero-downtime CI/CD deployments running `php artisan db:seed` with naive `updateOrCreate` would clobber production administrative corrections with static JSON dates.
+- **Resolution:** Add an `is_manually_adjusted` boolean flag and an `adjusted_by_user_id` foreign key on the `festival_dates` table. The seeder and dataset import command will check this flag and skip existing records where `is_manually_adjusted === true` unless an explicit `--force` flag is passed.
 
-### 3. Decoupling Recency from Time-Horizon Filters (`egm-design` & `egm-zoom-out`)
-- **Review Finding**: The initial concept proposed time-horizon tabs (`This Month`, `Current FY`, `All Time`).
-  - If `Last Visit Date` is bounded by "This Month", any doctor not visited this month evaluates to `NULL` / "Never Visited", blinding managers to whether the doctor was seen 32 days ago or 400 days ago.
-  - Route planning is an operational recency problem, not an accounting ledger.
-- **Synthesized Resolution**:
-  - **Decouple the Metrics**: `Last Visit Date` and `Days Since Last Visit` must ALWAYS be computed across **All Time** (`MAX(d_c_r_s.date)` with no lower date bound).
-  - Only the visit count (`visits_in_period`) adapts to the selected horizon tab (`This Month` vs `Current FY` vs `All Time`).
-  - In "This Month", compare `visits_this_month` against `doctor_potentials.target_visits_per_month` to display a progress ratio (e.g. `2 / 4 calls`).
+### 3. Immediate Reuse of Existing Celebration Card & Copy Engine (`egm-zoom-out`)
+- **The Opportunity:** The initial concept deferred card generation as a future phase. However, Exponit Labs already contains a production-ready, client-side 1080x1080 Canvas card rendering engine in `resources/js/reminder-cards/celebration.js`, paired with occasion copy templates (`festive_greetings`, `independence_day`, `birthday_wishes`) in `resources/js/reminder-cards/text-engine.js`.
+- **Resolution:** Zero new graphics or canvas engines need to be written. When an active greeting window opens, the field app displays an "Active Observance" banner. Tapping it opens the existing Call Reminder Studio modal (`mr.components.call-reminder-modal`) with the `celebration` card template pre-selected and festive greeting copy pre-populated.
 
-### 4. Availability Scheduling & The "Everyday / Open Availability" Convention
-- **Review Finding**: Storing `visiting_days` and `visiting_shifts` as separate JSON arrays requires a clean convention for doctors with open or full availability, and must avoid rendering sprawling badges that stretch table row heights.
-- **Synthesized Resolution**:
-  - **Database Schema**: Two nullable JSON columns on `doctors`:
-    - `visiting_days` (JSON array: `['monday', 'tuesday', ...]`)
-    - `visiting_shifts` (JSON array: `['morning', 'afternoon', 'evening']`)
-  - **The Open-Door Convention ("Blank = Everyday / All Shifts")**:
-    - If a doctor's schedule is `null` or empty, the system treats them as having **Open Availability (Available Everyday on All Shifts)**.
-    - Zero data-entry overhead: Reps only check boxes when a doctor has *restricted* days (e.g. Wed/Thu only).
-    - Form UI provides a 1-click `bulkToggleable()` "Select All" button above both checkbox lists.
-  - **Table Layout**:
-    - Unrestricted or full-schedule doctors display a compact emerald badge: `Everyday (All Shifts)`.
-    - Restricted doctors display compact single-line tokens: `Mon · Wed · Fri (Morning)`.
-  - **Filter Logic**:
-    - Filtering by day (e.g. `Wednesday`) and shift (e.g. `Evening`) matches both explicitly tagged doctors AND open-availability doctors (`visiting_days IS NULL`).
+### 4. Blanket Greetings vs. Clinical Specialty Observance Guardrail (`egm-design`, `egm-comprehension`)
+- **The Risk:** Applying blanket greetings universally to all doctors works well for cultural and national celebrations (Diwali, Eid, Christmas, Republic Day, National Doctor's Day on July 1). However, treating clinical specialty days (e.g., World Glaucoma Day, World Spine Day, World Dialysis Day) as universal broadcasts would prompt MRs to send irrelevant clinical greetings to unrelated specialists (e.g., wishing an Orthopedic Surgeon on World Glaucoma Day), degrading field credibility.
+- **Resolution:** Classify observances into two explicit categories:
+  1. `cultural_and_national`: Universal greeting windows displayed across all doctor profiles.
+  2. `clinical_observance`: Targeted observances with an optional `target_specialties` JSON array (e.g., World Heart Day → `['Cardiology', 'Internal Medicine']`). If populated, the banner only surfaces on matching physician profiles.
 
-### 5. High-Performance Query Architecture via Eloquent `fromSub()` (`egm-codebase-details` & `egm-implementation-readiness`)
-- **Review Finding**: Computing `visits_count`, `last_visit_date`, and `days_since_last_visit` in PHP accessors or Livewire column closures causes an $O(N)$ N+1 query disaster and breaks database pagination and sorting.
-- **Synthesized Resolution**:
-  - Build `App\Services\DoctorCadenceQueryService` using Eloquent's `fromSub()` pattern established in `DoctorPortfolioQueryService`.
-  - Correlated subqueries compute `actual_visits` and `last_visit_date` utilizing the existing composite index `idx_dcrs_doctor_date` on `d_c_r_s(doctor_id, date)`.
-  - All derived fields (`days_since_last_visit`, `visit_deficit`, `coverage_percent`) project directly into the outer query as real SQL columns, enabling native sub-millisecond database sorting.
+### 5. Native Livewire v4 Calendar Grid Architecture (`egm-zoom-out`, `egm-codebase-details`)
+- **The Risk:** Embedding third-party calendar npm/composer packages (e.g., FullCalendar wrappers) inside Filament v5 introduces heavy bundle bloat, styling conflicts with Tailwind v4, and upstream upgrade fragility.
+- **Resolution:** Implement `/console/festivals` as a custom Filament Page (`App\Filament\Pages\FestivalsCalendar`) leveraging a native Livewire 4 month-grid Blade template styled with standard 7-column Tailwind CSS grid (`grid-cols-7`). Clicking any festival opens a standard Filament slide-over modal action (`Filament\Actions\Action::make('editDate')`) to modify the date and record the manual override flag.
 
-### 6. Offline Field App (`/mr`) Backward Compatibility (`egm-implementation-readiness`)
-- **Review Finding**: In `SyncController::syncDoctors()`, medical reps create doctors offline. If `doctor_potential_id` is a non-nullable foreign key or unhandled in sync, offline batch uploads will crash with SQLite NOT NULL violations.
-- **Synthesized Resolution**:
-  - Declare `doctor_potential_id` as nullable in the migration.
-  - In `Doctor::booted()` or `SyncController`, automatically assign the `Nascent` tier ID when a new doctor is created without an explicit tier.
-  - Expose `doctor_potential_id`, `visiting_days`, and `visiting_shifts` in `/api/v1/sync/master-data` so mobile reps receive availability data offline.
+### 6. Timezone Invariants & Midnight Offsets (`egm-structural`, `egm-implementation-readiness`)
+- **The Risk:** Doctor visits and festival greetings are strictly local to India. Evaluating greeting windows across device-local JavaScript `new Date()` and server UTC timestamps risks 5.5-hour off-by-one errors across midnight thresholds.
+- **Resolution:** Enforce Indian Standard Time (`Asia/Kolkata`, UTC+05:30) throughout the domain model. All backend queries anchor to `Carbon::now('Asia/Kolkata')->startOfDay()`, and client-side calculations evaluate dates against clean `YYYY-MM-DD` strings.
 
 ---
 
 ## Goals vs. Non-Goals
 
 ### In-Scope Goals
-1. **Dynamic Potential Tiers**: Migration and model for `doctor_potentials` pre-seeded with `Core`, `Serious`, `Nascent`, and `Unresponsive`.
-2. **Doctor Master Integration**: Foreign key `doctor_potential_id` and JSON columns `visiting_days` and `visiting_shifts` added to `Doctor` model and `DoctorForm.php`.
-3. **High-Performance Query Engine**: `DoctorCadenceQueryService` calculating total visits, all-time last visit dates, and days elapsed without N+1 overhead using `fromSub()` and indexed subqueries.
-4. **Cadence & Route Planning Report**: Standalone Filament v5 page at `/console/doctor-cadence` under navigation group `Field Operations` with:
-   - 3-zone balanced table layout with non-wrapping columns.
-   - Status badges for potential tiers (`Core: success`, `Serious: info`, `Nascent: warning`, `Unresponsive: danger`).
-   - Filters for Territory / Area, Potential Tier (default excludes `Unresponsive`), Day of Week, Shift, and Recency (>30d, >60d, Never Visited).
-   - In-table Quick Actions: "Edit Schedule" slideover modal and "Log Visit" quick modal.
-5. **Zero-Division & Null-Safety**: Graceful handling of never-visited accounts and date timezone boundaries.
+1. **Authoritative Dataset Ingestion**: Pre-bundle verified 2025–2030 dates in `database/data/indian_festivals.json` derived from GoI DoPT Gazetted orders, IMD Rashtriya Panchang, and IMA National Doctor's Day.
+2. **Database Schema & Models**: Create `festivals` and `festival_dates` tables with composite indexes on `['date', 'festival_id']` and `is_manually_adjusted` protection.
+3. **Filament v5 Monthly Calendar Grid**: Build `/console/festivals` with month navigation stepper, category color badges, and slide-over date editing.
+4. **Active Greeting Window Engine**: Formulate date arithmetic: a festival date $D$ is active on target date $T$ if $(D - \text{days\_before}) \le T \le (D + \text{days\_after})$.
+5. **Offline Master Data Sync**: Update `SyncController::masterData` to include pre-computed upcoming festival windows and upgrade Dexie.js to schema version 6 (`upcoming_festivals` store).
+6. **Field App Awareness**: Surface contextual festival banners in `/elos/dcr` and doctor profiles during active windows, pre-selecting the existing `celebration` card template.
 
 ### Out-of-Scope Non-Goals
-1. **Automated Traveling Salesman / Turn-by-Turn GPS Routing**: No automated map routing or real-time traffic route optimization in v1. The report provides tabular territory filtering to inform manual rep planning.
-2. **Strict Field Visit Blocking**: Visiting a doctor outside their registered schedule will NOT be blocked on `/mr`. Impromptu or rescheduled calls remain 100% permitted.
-3. **Automated Tier Escalation/Downgrade Engine**: Tiers are manually assigned and maintained by sales managers in v1. Automated promotion based on secondary prescription revenue is deferred to v2.
+1. **Doctor Religious or Community Profiling**: Strictly excluded. No religion or community fields will be added to doctor records.
+2. **Custom Visual Card / Canvas Generation**: Strictly deferred. Will directly reuse the existing client-side `celebration.js` canvas engine.
+3. **Client-Side Video Generation**: Explicitly excluded from Phase 1.
+4. **Automated WhatsApp Broadcasting / Push Bots**: Strictly rep-initiated. Greetings are sent via rep-reviewed click-to-chat (`wa.me`) to protect against WhatsApp bulk spam detection.
 
 ---
 
-## Key Decisions & Staging for Next Steps
+## Key Decisions & Architecture Staging
 
 | Decision Item | Decision Chosen | Technical Rationale |
 | :--- | :--- | :--- |
-| **Tier Storage** | Dedicated `doctor_potentials` table | Fulfills requirement for DB-driven tiers; allows dynamic adjustment of monthly target visit frequencies. |
-| **Legacy Doctor Default** | Default all 233 doctors to `Nascent` | Prevents null cadence baselines; unclassified doctors operate under baseline monitoring until evaluated. |
-| **Availability Model** | Two JSON columns (`visiting_days`, `visiting_shifts`) | Clean multi-select CheckboxList with `bulkToggleable()`; blank schedule defaults to Open Availability (Everyday). |
-| **Recency Calculation** | All-time `MAX(d_c_r_s.date)` parameterized with local IST date | Prevents horizon tab filtering from artificially corrupting "last visit date" for accounts unvisited in the current month. |
-| **Sorting on Unvisited** | `COALESCE(days_since_last_visit, 999999)` | Guarantees uncontacted accounts sort to the top when triaging overdue relationships in SQLite. |
-| **Availability Filtering** | Native SQLite `json_each()` via `whereJsonContains` | Fast, typed JSON querying on SQLite 3.45.2 without false positive string matches. |
+| **Data Authority** | `database/data/indian_festivals.json` + `festival_dates` table | Multi-year pre-bundling ensures zero runtime external API dependency, while SQLite allows central date overrides. |
+| **Seeder Safety** | Skip existing records where `is_manually_adjusted = true` | Prevents future deployments from overwriting real-world moon sighting date adjustments. |
+| **Calendar Grid UX** | Native Livewire v4 Blade component (Tailwind `grid-cols-7`) | Zero third-party package dependencies; full design cohesion with Filament v5 and Tailwind v4. |
+| **Sync Strategy** | Full-table atomic replacement for active years in Dexie | Eliminates the sliding window vs. `?since` timestamp sync trap. |
+| **Specialty Scope** | Universal for Cultural/National; Filtered for Clinical Observances | Prevents irrelevant clinical greeting spam to specialized physicians. |
+| **Card Pipeline** | Direct integration with existing `celebration.js` canvas template | 100% codebase reuse; immediate production utility without building new graphics tooling. |
+
+---
 
 ### Implementation Staging for `/egm-draft`
-* **Phase 1**: Database Migrations & Seeds (`create_doctor_potentials_table`, alter `doctors`, seed default tiers).
-* **Phase 2**: Model Contracts & Offline Sync Safety (`DoctorPotential` model, `Doctor` relationships/casts, `SyncController` defaults).
-* **Phase 3**: Query Service (`DoctorCadenceQueryService` with `fromSub()` outer projections and Julian day math).
-* **Phase 4**: Filament Admin UI (`DoctorForm` fields, `DoctorCadence` page at `/console/doctor-cadence`, row slideover actions).
-* **Phase 5**: Automated Pest Verification (migration tests, cadence query tests, filter tests, and page rendering tests).
+
+* **Phase 1: Database Schema & Dataset Ingestion**
+  - Create migrations for `festivals` and `festival_dates`.
+  - Compile `database/data/indian_festivals.json` (2025–2030) with official DoPT, IMD, and IMA dates.
+  - Create `FestivalSeeder` with `is_manually_adjusted` override protection.
+* **Phase 2: Festival Query Service & Timezone Invariant**
+  - Implement `FestivalGreetingService` calculating active and upcoming windows in `Asia/Kolkata`.
+  - Write Pest unit tests covering before/after window boundary arithmetic.
+* **Phase 3: Filament Admin Calendar Grid (`/console/festivals`)**
+  - Create `App\Filament\Pages\FestivalsCalendar` with month-by-month Livewire grid view.
+  - Implement slide-over `EditDateAction` that updates dates and sets `is_manually_adjusted = true`.
+* **Phase 4: Sync Engine & Dexie.js Schema Upgrade (v6)**
+  - Add `festivals` payload to `SyncController::masterData` with pre-computed window boundaries.
+  - Bump Dexie schema to `v6` in `resources/js/offline-db.js` and add atomic replace in `resources/js/sync-engine.js`.
+* **Phase 5: Field App Greeting Banner & Studio Integration**
+  - Add active festival banner in `/elos/dcr` and doctor profiles.
+  - Pre-fill Call Reminder Studio with `celebration` card template and festive greeting text on click.
+* **Phase 6: Automated Verification & Documentation**
+  - Feature test suite in Pest 4 covering calendar rendering, date overrides, sync payload, and offline Dexie upgrade.
+  - Register documentation in `docs/designs/SITEMAP.md`.

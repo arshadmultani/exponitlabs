@@ -23,6 +23,10 @@ db.version(5).stores({
   visit_history: 'uuid, doctor_uuid, date, reminder_sent_at'
 });
 
+db.version(6).stores({
+  upcoming_festivals: 'id, category, date'
+});
+
 export async function getLastSyncedAt() {
   const meta = await db.sync_meta.get('last_synced_at');
   return meta ? meta.value : null;

@@ -13,6 +13,25 @@
         </div>
     </template>
 
+    <!-- Active Observance Awareness Banner -->
+    <template x-if="activeObservances && activeObservances.length > 0">
+        <div class="rounded-2xl p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-900 shadow-sm flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🪔</span>
+                <div>
+                    <div class="text-xs font-bold uppercase tracking-wider text-emerald-700">Active Observance</div>
+                    <div class="text-sm font-semibold text-emerald-950">
+                        <span x-text="activeObservances.map(o => o.name).join(' & ')"></span>
+                        <span class="text-xs font-normal text-emerald-800 ml-1">— Celebrate with doctors on your route today!</span>
+                    </div>
+                </div>
+            </div>
+            <a href="{{ route('elos.doctors.index') }}" class="shrink-0 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition">
+                View Directory &rarr;
+            </a>
+        </div>
+    </template>
+
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-5">
         <div class="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>

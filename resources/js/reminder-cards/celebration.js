@@ -119,13 +119,27 @@ export async function drawCelebrationCard(ctx, W, H, data) {
   // Golden Banner Text
   ctx.font = '900 24px Inter, sans-serif';
   ctx.fillStyle = CELEBRATION_THEME.goldText;
-  ctx.fillText('WARMEST WISHES & SINCERE REGARDS', W / 2, plaqueY + 50);
+  const bannerHeading = data.greetingQuote ? data.greetingQuote.toUpperCase() : 'WARMEST WISHES & SINCERE REGARDS';
+  ctx.fillText(bannerHeading, W / 2, plaqueY + 50);
 
   // Quote
   ctx.font = 'italic 20px Georgia, serif';
   ctx.fillStyle = CELEBRATION_THEME.quoteColor;
-  ctx.fillText('“Wishing you boundless health, joy, and continued distinction', W / 2, plaqueY + 105);
-  ctx.fillText('in your tireless and noble dedication to healing lives.”', W / 2, plaqueY + 140);
+  if (data.greetingMessage) {
+    const msg = data.greetingMessage;
+    if (msg.length > 55) {
+      const mid = msg.lastIndexOf(' ', 55);
+      const line1 = msg.substring(0, mid > 0 ? mid : 55);
+      const line2 = msg.substring(mid > 0 ? mid + 1 : 55);
+      ctx.fillText(`“${line1}`, W / 2, plaqueY + 105);
+      ctx.fillText(`${line2}”`, W / 2, plaqueY + 140);
+    } else {
+      ctx.fillText(`“${msg}”`, W / 2, plaqueY + 120);
+    }
+  } else {
+    ctx.fillText('“Wishing you boundless health, joy, and continued distinction', W / 2, plaqueY + 105);
+    ctx.fillText('in your tireless and noble dedication to healing lives.”', W / 2, plaqueY + 140);
+  }
 
   // Divider
   ctx.beginPath();

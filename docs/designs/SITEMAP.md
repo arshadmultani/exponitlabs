@@ -24,7 +24,8 @@ New features and architectural refactors designed with `/egm-draft` and reviewed
 | [2026-10-27_DRIFT_REPORT.md](./2026-10-27_DRIFT_REPORT.md) | `app/` Codebase Contracts | Verified (0 drift) | EGM Bootstrap |
 | [doctor_portfolio.md](./doctor_portfolio.md) | Admin Console (`/console/doctor-portfolio`) | Implemented (Verified) | Exponit Labs Core Architecture |
 | [doctor_cadence.md](./doctor_cadence.md) | Admin Console (`/console/doctor-cadence`) | Approved (Ready for Implementation) | Exponit Labs Core Architecture |
-| [concepts_brief.md](./concepts_brief.md) | Doctor Portfolio & ROI Tracker | Concept Brief Aligned | EGM Brainstorm |
+| [festival_calendar.md](./festival_calendar.md) | Filament Admin (`/console/festivals`) & Field App (`/elos`) | Implemented (Verified) | Exponit Labs Core Architecture |
+| [concepts_brief.md](./concepts_brief.md) | Festival & Observance Calendar Engine | Concept Brief Aligned | EGM Brainstorm |
 
 
 ---

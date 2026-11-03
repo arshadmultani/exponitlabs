@@ -191,3 +191,63 @@ it('generates a pre-filled revenue template CSV for download', function () {
 
     $response->assertFileDownloaded('doctor_revenue_template_2026-11-01.csv');
 });
+
+it('supports create and create another on record log revenue action', function () {
+    $doctor = Doctor::factory()->create(['name' => 'Dr. Sequential Entry']);
+
+    Livewire::test(DoctorPortfolio::class)
+        ->callAction(TestAction::make('logDoctorRevenue')->table($doctor), [
+            'period_date' => '2026-11-05',
+            'amount' => 5000.00,
+            'notes' => 'Batch 1',
+        ], ['another' => true])
+        ->assertActionHalted(TestAction::make('logDoctorRevenue')->table($doctor))
+        ->assertNotified("Revenue logged for {$doctor->name}");
+
+    expect(DoctorRevenue::where('doctor_id', $doctor->id)->count())->toBe(1);
+
+    $revenue = DoctorRevenue::where('doctor_id', $doctor->id)->first();
+    expect($revenue->amount)->toBe('5000.00')
+        ->and($revenue->period_date->format('Y-m-d'))->toBe('2026-11-01')
+        ->and($revenue->notes)->toBe('Batch 1');
+});
+
+it('supports create and create another on header log revenue action', function () {
+    $doctor1 = Doctor::factory()->create(['name' => 'Dr. Alpha']);
+
+    Livewire::test(DoctorPortfolio::class)
+        ->callAction('logRevenue', [
+            'doctor_id' => $doctor1->id,
+            'period_date' => '2026-11-10',
+            'amount' => 12000.00,
+            'notes' => 'November Alpha Stockist',
+        ], ['another' => true])
+        ->assertActionHalted('logRevenue')
+        ->assertNotified('Attributed revenue logged successfully');
+
+    expect(DoctorRevenue::where('doctor_id', $doctor1->id)->count())->toBe(1);
+
+    $revenue = DoctorRevenue::where('doctor_id', $doctor1->id)->first();
+    expect($revenue->amount)->toBe('12000.00')
+        ->and($revenue->period_date->format('Y-m-d'))->toBe('2026-11-01')
+        ->and($revenue->notes)->toBe('November Alpha Stockist');
+});
+
+it('supports logging multiple revenue entries consecutively using create another', function () {
+    $doctor = Doctor::factory()->create(['name' => 'Dr. Multi Entry']);
+
+    Livewire::test(DoctorPortfolio::class)
+        ->callAction(TestAction::make('logDoctorRevenue')->table($doctor), [
+            'period_date' => '2026-10-01',
+            'amount' => 3000.00,
+            'notes' => 'Month 1',
+        ], ['another' => true])
+        ->assertActionHalted(TestAction::make('logDoctorRevenue')->table($doctor))
+        ->fillForm([
+            'amount' => 4500.00,
+            'notes' => 'Month 2',
+        ])
+        ->callMountedAction();
+
+    expect(DoctorRevenue::where('doctor_id', $doctor->id)->count())->toBe(2);
+});

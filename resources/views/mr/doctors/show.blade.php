@@ -17,7 +17,7 @@
                 <button type="button" @click="openReminder()"
                     class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-xs font-semibold text-white shadow-sm transition-all flex items-center space-x-1">
                     <x-bi-whatsapp />
-                    <span>Reminder</span>
+                    <span>WhatsApp Reminder</span>
                 </button>
                 <a :href="'{{ route('elos.presentation') }}?doctor=' + doctorUuid"
                     class="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-xs font-semibold text-white shadow-sm transition-all flex items-center space-x-1">
@@ -123,6 +123,39 @@
                         </div>
                     </template>
                 </div>
+            </div>
+        </template>
+
+        <!-- Active Observance Greeting Banners -->
+        <template x-if="activeObservances && activeObservances.length > 0">
+            <div class="space-y-3">
+                <template x-for="observance in activeObservances" :key="observance.id">
+                    <div class="rounded-2xl p-4 border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                         :class="observance.category === 'cultural_and_national' ? 'bg-gradient-to-r from-emerald-50 to-teal-50 border-emerald-200 text-emerald-950' : 'bg-gradient-to-r from-sky-50 to-indigo-50 border-sky-200 text-sky-950'">
+                        <div class="flex items-start gap-3">
+                            <span class="text-2xl" x-text="observance.category === 'cultural_and_national' ? '🪔' : '🩺'"></span>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-bold uppercase tracking-wider"
+                                          :class="observance.category === 'cultural_and_national' ? 'text-emerald-700' : 'text-sky-700'"
+                                          x-text="observance.category === 'cultural_and_national' ? 'Active Festival Window' : 'Clinical Observance'"></span>
+                                    <span class="text-[11px] font-mono opacity-75" x-text="'(' + observance.date + ')'"></span>
+                                </div>
+                                <div class="text-sm font-bold mt-0.5" x-text="observance.name"></div>
+                                <div class="text-xs opacity-80 mt-0.5 line-clamp-1" x-text="observance.greeting_message"></div>
+                            </div>
+                        </div>
+
+                        <button type="button" @click="openFestivalReminder(observance)"
+                                class="shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold shadow-xs transition flex items-center justify-center gap-1.5"
+                                :class="observance.category === 'cultural_and_national' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-sky-600 hover:bg-sky-700 text-white'">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            <span>Create Greeting Card</span>
+                        </button>
+                    </div>
+                </template>
             </div>
         </template>
 

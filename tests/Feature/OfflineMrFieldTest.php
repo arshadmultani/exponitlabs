@@ -360,3 +360,24 @@ it('syncs batch of reminder logs via API and updates DCR reminder_sent_at', func
             'reminder_sent_at' => $dcr->reminder_sent_at->toIso8601String(),
         ]);
 });
+
+test('it renders active observance banners and greeting action hooks in DCR and Doctor Profile views', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $doctor = Doctor::factory()->create([
+        'specialty' => 'Cardiology',
+    ]);
+
+    // Test DCR page contains observance awareness banner hook
+    $dcrResponse = $this->get('/elos/dcr');
+    $dcrResponse->assertOk()
+        ->assertSee('Active Observance')
+        ->assertSee('activeObservances');
+
+    // Test Doctor Profile page contains active observance greeting card action hook
+    $docResponse = $this->get("/elos/doctors/{$doctor->uuid}");
+    $docResponse->assertOk()
+        ->assertSee('Create Greeting Card')
+        ->assertSee('openFestivalReminder');
+});

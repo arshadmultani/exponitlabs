@@ -1,235 +1,253 @@
 # Goldfish Annotated Review Report
 
-**Target:** `docs/designs/doctor_cadence.md` (full file, lines 1–453)  
-**Status:** resolved (All 19 Propose Fix items accepted and applied)  
+**Target:** [`docs/designs/festival_calendar.md`](file:///Users/arm/Herd/exponitlabs/docs/designs/festival_calendar.md) (`full file`, lines 1–541)  
+**Status:** resolved (All 18 Propose Fix items accepted and applied)  
 **Evaluated by:** EGM Review Swarm (`egm-zoom-out`, `egm-comprehension`, `egm-design`, `egm-structural`, `egm-style`, `egm-implementation-readiness`, `egm-codebase-details`)  
 **Resolution Agent:** Exponit Elephant (`egm-resolve`)  
-**Date:** 2026-11-02
-
----
+**Date:** 2026-11-03
 
 ## Prioritized Findings & AI Suggestions
 
-### Issue 1 [Hostile Design Critic / Structural Validator] - Severity: High (Blocker)
-* **Affected Scope:** Document Root / Pre-Implementation Section (`docs/designs/doctor_cadence.md#L309`)
-* **Discrepancy Description:** Missing mandatory blueprint section: `## Risks & Limits` / `## Risks & Mitigations` required by `feature-spec-standard.md`.
-* **Rationale:** The standard mandates identifying failure modes, concurrency/locking risks under SQLite during offline sync, timezone drift, and query scalability boundaries.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** The critique is accurate. Adding a dedicated `## Risks & Mitigations` section before `## Detailed Implementation Plan` fulfills the standard and documents production concurrency and date boundary defenses.
+### Issue 1: Standard Compliance Gap — Missing Mandatory "Risks & Mitigations" Section [`egm-design`, `egm-structural`] - Severity: High
+* **Affected Scope:** Section Boundary between Line 332 and Line 335
+* **Discrepancy Description:** The document completely omits a dedicated "Risks & Mitigations" (or "Risks & Limits") section, violating `feature-spec-standard.md`.
+* **Rationale:** The specification must identify operational failure modes, security boundaries, and disaster recovery/rollback plans.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** A structured risk register is required by the project standard to evaluate lunisolar announcement latency, client clock tampering, storage quotas, and specialty taxonomy drift.
 * ***Proposed Edit:***
-  * Location: Insert before `## Detailed Implementation Plan` (Line 309)
-  * Change: Add `## Risks & Mitigations` covering SQLite WAL concurrency, local IST date binding, and subquery index optimization.
+  * Location: Insert before `## Alternatives Considered` (or between Technical Plan and Alternatives)
+  * Change: Add a dedicated `## Risks & Mitigations` section addressing:
+    1. Lunisolar Moon Sighting Notification Latency vs Remote Rep Offline Sync.
+    2. Client Mobile Clock Tampering & Midnight Invariance.
+    3. IndexedDB Quota Limits & Atomic Sync Recovery.
+    4. Clinical Specialty Tag Taxonomy Drift.
 
 ---
 
-### Issue 2 [Hostile Design Critic / Codebase Auditor] - Severity: High (Blocker)
-* **Affected Scope:** Section 3 (Lines 174–203) & Phase 2.6 (Lines 366–376)
-* **Discrepancy Description:** 
-  1. `Doctor::fromSub()` forces SQLite to materialize an in-memory unindexed derived table, invalidating the composite index on Filament filters and doubling subquery execution during pagination counts.
-  2. Line 370 specifies a correlated subquery returning 3 columns simultaneously, violating scalar subquery cardinality (`SQLSTATE[21000]: 1241 Operand should contain 1 column(s)`).
-* **Rationale:** Subqueries attached directly via `selectSub()` on `Doctor::query()` preserve table context, enable predicate pushdown, and are automatically stripped by Laravel during pagination counts.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Direct `selectSub()` attachments represent a cleaner, faster, and syntactically valid query architecture.
-* ***Proposed Edit:***
-  * Location: Section 3.B and Phase 2.6
-  * Change: Replace `fromSub()` with base `Doctor::query()` attaching 3 separate scalar `selectSub()` queries (`total_visits_count`, `visits_this_month_count`, `last_visit_date`).
-
----
-
-### Issue 3 [Hostile Design Critic / Naive Reader / Skeptical Architect] - Severity: High (Blocker)
-* **Affected Scope:** Section 4.B (Lines 104, 216–219) & Phase 4.9 (Lines 402–405)
-* **Discrepancy Description:** Partitioning the default "Active Cadence" tab by `days_since_last_visit <= 60` causes all 140 unvisited accounts (`days_since_last_visit IS NULL`) to vanish, and automatically purges high-value Core doctors once they reach 61 days overdue.
-* **Rationale:** Account commercial tier must not be conflated with visit recency. The default tab must surface all active territory accounts, sorting overdue prescribers to the top.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Validating tab membership strictly by tier (`doctor_potentials.code != 'unresponsive'`) completely solves the operational blindspot.
-* ***Proposed Edit:***
-  * Location: Section 4.B and Phase 4.9
-  * Change: Define `Active Cadence` as `code != 'unresponsive'` (or `doctor_potential_id IS NULL`), `Unresponsive Accounts` as `code = 'unresponsive'`, and `All Accounts` as unfiltered.
-
----
-
-### Issue 4 [Naive Reader / Tech Lead / Codebase Auditor] - Severity: High (Blocker)
-* **Affected Scope:** Section 2.A (Lines 144–150) vs Phase 1.3 (Lines 338–341) & Line 323
-* **Discrepancy Description:** Inverted commercial tier UI color tokens. Section 2.A defines Core as `success`, whereas Phase 1.3 seeder defines Core as `danger` (and Unresponsive as `gray` vs `danger`).
-* **Rationale:** Contradictory token definitions will lead to inconsistent UI rendering and badge semantics across the console.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Core high-prescribing doctors should use `success` (Emerald Green) while Unresponsive dormant accounts use `gray` or `danger`.
-* ***Proposed Edit:***
-  * Location: Section 2.A and Phase 1.3
-  * Change: Harmonize tokens deterministically: `Core => success`, `Serious => info`, `Nascent => warning`, `Unresponsive => gray`.
-
----
-
-### Issue 5 [Tech Lead / Codebase Auditor] - Severity: High (Blocker)
-* **Affected Scope:** Section 4.A (Lines 208–215), Phase 4.9 (Lines 397–423), Phase 4.10 (Lines 424–427)
-* **Discrepancy Description:** Specifying `HasTabs` contract and rendering `{{ $this->table }}` in Blade violates Filament v5 conventions and completely prevents header tabs from rendering.
-* **Rationale:** In Filament v5, pages embedding tables implement `HasTable`, use `HasTabs`, define `content(Schema $schema): Schema` returning `[$this->getTabsContentComponent(), EmbeddedTable::make()]`, and render `{{ $this->content }}` in Blade.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Codebase contracts in `DoctorPortfolio.php` already establish this exact pattern.
-* ***Proposed Edit:***
-  * Location: Section 4.A, Phase 4.9, and Phase 4.10
-  * Change: Update class signature to `Page implements HasTable`, implement `content(Schema $schema): Schema`, and render `{{ $this->content }}` in Blade.
-
----
-
-### Issue 6 [Tech Lead] - Severity: High (Blocker)
-* **Affected Scope:** Phase 1.3 (Lines 335–344) & Phase 2.4 (Lines 349–355)
-* **Discrepancy Description:** Topological dependency inversion: Phase 1 item 3 creates `DoctorPotentialSeeder.php` calling `DoctorPotential::firstOrCreate()`, but `DoctorPotential.php` is not created until Phase 2.
-* **Rationale:** Running Phase 1 migrations and seeders in CI or development throws a fatal class-not-found error.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Moving domain model creation to Phase 1 restores clean topological dependency order.
+### Issue 2: Phantom File Paths Across Inventory and Detailed Implementation [`egm-zoom-out`, `egm-comprehension`, `egm-implementation-readiness`, `egm-codebase-details`] - Severity: High
+* **Affected Scope:** Lines 346, 362–382, 477, 505–510
+* **Discrepancy Description:** The plan targets files in non-existent directories: `app/Http/Controllers/Api/V1/SyncController.php`, `resources/views/elos/dcr.blade.php`, and `resources/views/components/mr/doctor-profile.blade.php`.
+* **Rationale:** In the codebase, routes map to `App\Http\Controllers\Api\SyncController.php` (no `V1/` directory), and `/elos` views reside under `resources/views/mr/` (`dcr.blade.php` and `doctors/show.blade.php`).
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** An implementer following the plan will create duplicate/orphaned files or encounter file-not-found errors.
 * ***Proposed Edit:</a>
-  * Location: Reorder Phase 1 and Phase 2 items.
-  * Change: Schedule `DoctorPotential.php` and `Doctor.php` modifications in Phase 1 before running `DoctorPotentialSeeder`.
+  * Location: Table 2 (File Inventory) and Phase 4/5 implementation headings
+  * Change: Replace phantom paths with:
+    - `app/Http/Controllers/Api/SyncController.php`
+    - `resources/views/mr/dcr.blade.php`
+    - `resources/views/mr/doctors/show.blade.php`
 
 ---
 
-### Issue 7 [Hostile Design Critic / Codebase Auditor / Skeptical Architect] - Severity: Medium (Major)
-* **Affected Scope:** Section 4.D.3–4 (Lines 237–244), Phase 2.5 (Lines 362–363), Phase 3.7 (Lines 385–386)
-* **Discrepancy Description:** In Filament and Livewire v4, deselecting all checkboxes in `CheckboxList` dehydrates to `[]` (stored as `'[]'` string in SQLite), not SQL `NULL`, breaking the open-availability fallback (`NULL = Everyday`).
-* **Rationale:** Unchecking all boxes renders the doctor permanently unavailable in day and shift filters.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Normalizing empty arrays to `null` on form save and updating scopes guarantees robust open-door filtering.
+### Issue 3: Destructive Dexie.js Schema Declaration That Corrupts Existing Stores [`egm-comprehension`, `egm-zoom-out`] - Severity: High
+* **Affected Scope:** Lines 223–232 and Lines 499–500
+* **Discrepancy Description:** Line 228 specifies `db.version(6).stores({ doctors: 'id, name, ...', upcoming_festivals: '...' })`. In `resources/js/offline-db.js`, `doctors` was defined in v4 with primary key `uuid`.
+* **Rationale:** In Dexie.js, primary keys are strictly immutable across versions. Re-declaring `doctors: 'id, ...'` mutates the primary key index from `uuid` to `id`, triggering schema errors or dropping cached doctors. Existing stores should not be re-declared in additive version bumps.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Schema version 6 must be strictly additive to prevent client-side data corruption on field devices.
 * ***Proposed Edit:***
-  * Location: `DoctorForm.php` and `Doctor.php` scopes
-  * Change: Add `dehydrateStateUsing(fn ($state) => empty($state) ? null : array_values($state))` and update query scopes to include `orWhere('visiting_days', '[]')`.
+  * Location: Section 5 (Lines 226–232) and Phase 4 (Lines 499–500)
+  * Change: Update the Dexie upgrade declaration to strictly declare only the new store:
+    ```javascript
+    db.version(6).stores({
+        upcoming_festivals: 'id, category, date'
+    });
+    ```
 
 ---
 
-### Issue 8 [Hostile Design Critic / Codebase Auditor / Skeptical Architect] - Severity: Medium (Major)
-* **Affected Scope:** Section 2.B (Line 160) & Phase 1.2 (Line 327)
-* **Discrepancy Description:** Non-existent column reference: migration specifies `after('clinic_hospital_name')`, but the actual column is `clinic_name`.
-* **Rationale:** Strict database drivers will throw a column-not-found error during migration execution.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Align migration code with the actual `doctors` table schema.
+### Issue 4: Call Reminder Studio & Canvas Engine Dynamic Greeting Copy Disconnect [`egm-zoom-out`, `egm-comprehension`, `egm-design`, `egm-implementation-readiness`, `egm-codebase-details`] - Severity: High
+* **Affected Scope:** Lines 37, 45, 69, 109–110, 259–266, 360–382, 511–515
+* **Discrepancy Description:** The design asserts that `celebration.js` and `callReminderApp` seamlessly pre-fill festival greetings without code changes. In reality, `celebration.js` hardcodes the quote, and `mr-app.js`'s `openWithDetail()` unconditionally resets `this.selectedTextTemplateId = 'product_gratitude'` and ignores custom greeting parameters.
+* **Rationale:** Clicking "Create Greeting Card" would produce a generic doctor appreciation card with zero festival text.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Both files must be added to the File Inventory and updated with bounded dynamic text handling.
 * ***Proposed Edit:***
-  * Location: Section 2.B and Phase 1.2
-  * Change: Change `after('clinic_hospital_name')` to `after('clinic_name')`.
+  * Location: Lines 360–382 (File Inventory), Section 6, and Phase 5
+  * Change:
+    1. Add `resources/js/mr-app.js` and `resources/js/reminder-cards/celebration.js` to File Inventory.
+    2. Update `callReminderApp.openWithDetail(detail)` in `mr-app.js` to accept `detail.imageTemplate`, `detail.textTemplateId`, and `detail.greetingText`, bypassing `resetTemplateText()` when `detail.greetingText` is supplied.
+    3. Update `drawCelebrationCard(ctx, W, H, data)` in `celebration.js` to render `data.greetingQuote || data.greetingMessage` if present, falling back to the existing static quote without over-engineering text-wrapping engines.
 
 ---
 
-### Issue 9 [Hostile Design Critic / Skeptical Architect] - Severity: Medium (Major)
-* **Affected Scope:** Section 4.E.2 (Lines 253–258) & Section 5 (Lines 261–267)
-* **Discrepancy Description:** Console `logVisit` action inserts directly into `d_c_r_s` without generating a UUID, breaking client-side Dexie.js offline reconciliation keys and risking duplicate records.
-* **Rationale:** `d_c_r_s` enforces unique UUID constraints that mobile synchronization relies on.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Adding a `booted()` creating hook on `DCR` guarantees UUID generation across both console and API paths.
+### Issue 5: Incompatible MySQL Date Functions (`DATE_SUB`, `DATE_ADD`) on SQLite Engine [`egm-comprehension`, `egm-implementation-readiness`, `egm-codebase-details`] - Severity: High
+* **Affected Scope:** Lines 449–450 (Phase 2, `FestivalGreetingService.php`)
+* **Discrepancy Description:** Line 450 prescribes evaluating active windows via `DATE_SUB(festival_dates.date, INTERVAL festivals.days_before DAY) <= $targetDate AND DATE_ADD(...)`.
+* **Rationale:** Exponit Labs runs on SQLite, which does not support `DATE_SUB`, `DATE_ADD`, or `INTERVAL ... DAY`. Executing this throws `PDOException: no such function: DATE_SUB`.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Must prescribe SQLite-compatible date syntax or Carbon collection evaluation.
 * ***Proposed Edit:***
-  * Location: `app/Models/DCR.php` and Section 4.E.2
-  * Change: Specify `booted()` creating hook assigning `(string) Str::uuid()`, and add duplicate date validation in `logVisit`.
+  * Location: Phase 2 (Line 450)
+  * Change: Replace with SQLite-compatible SQL:
+    `date(festival_dates.date, '-' || festivals.days_before || ' days') <= ? AND date(festival_dates.date, '+' || festivals.days_after || ' days') >= ?`
+    Or specify pre-loading eager records and filtering with Carbon in PHP: `$targetDate->between($windowStart, $windowEnd)`.
 
 ---
 
-### Issue 10 [Hostile Design Critic / Codebase Auditor / Tech Lead] - Severity: Medium (Major)
-* **Affected Scope:** Section 5 (Lines 263–264) & Phase 5.11 (Lines 432–438)
-* **Discrepancy Description:** `SyncController::syncDoctors()` lacks `$request->validate()` rules and attribute mapping for `doctor_potential_id`, `visiting_days`, and `visiting_shifts`, while `masterData()` sends an isolated integer ID without offline tier metadata.
-* **Rationale:** Newly registered offline doctors would fail validation or discard schedule data, and the mobile app cannot render tier badges offline without metadata.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Explicit validation rules and denormalized tier metadata in master data resolve offline contracts cleanly.
+### Issue 6: Client-Side Midnight Timezone Evaluation Trap [`egm-design`, `egm-comprehension`] - Severity: High
+* **Affected Scope:** Lines 186–203, Lines 240, 248
+* **Discrepancy Description:** Client-side JavaScript evaluation uses an undefined `todayStr`. Standard `new Date().toISOString().slice(0, 10)` generates a UTC date string.
+* **Rationale:** Between 00:00:00 and 05:30:00 IST every night, UTC is on yesterday's date, causing greeting windows to open or close 5.5 hours late on field mobile devices.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Enforcing Indian Standard Time on the client eliminates the 5.5-hour midnight rollover bug.
 * ***Proposed Edit:***
-  * Location: Section 5 and Phase 5.11
-  * Change: Add validation rules, map attributes in `Doctor::updateOrCreate()`, and denormalize tier metadata in `masterData()`.
+  * Location: Section 4 (Lines 197–203) and Section 6
+  * Change: Mandate the client-side IST helper:
+    ```javascript
+    const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+    ```
 
 ---
 
-### Issue 11 [Codebase Auditor] - Severity: Medium (Major)
-* **Affected Scope:** Phase 2 (Line 349) & Phase 6 (Line 443)
-* **Discrepancy Description:** Missing `database/factories/DoctorPotentialFactory.php`, violating `AGENTS.md` guidelines and complicating Pest test setup.
-* **Rationale:** Every new Eloquent model requires an accompanying factory for isolated testing.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Create the factory in Phase 2.
+### Issue 7: Non-Atomic IndexedDB Table Replacement Data Loss Hazard [`egm-design`] - Severity: Medium
+* **Affected Scope:** Lines 214–221, Lines 104–106, Alternative 3 (lines 304–306)
+* **Discrepancy Description:** `await db.upcoming_festivals.clear(); await db.upcoming_festivals.bulkPut(data.festivals);` runs in two separate transactions.
+* **Rationale:** If the app closes, battery dies, or `bulkPut()` fails between calls, the local festival store is left empty.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** An explicit readwrite transaction with a non-empty payload guard ensures atomic replacement.
 * ***Proposed Edit:***
-  * Location: Phase 2
-  * Change: Add `database/factories/DoctorPotentialFactory.php` [Create].
+  * Location: Section 5 (Lines 216–221) and Phase 4 (Lines 501–503)
+  * Change: Wrap in an explicit transaction:
+    ```javascript
+    if (Array.isArray(data.festivals) && data.festivals.length > 0) {
+        await db.transaction('rw', db.upcoming_festivals, async () => {
+            await db.upcoming_festivals.clear();
+            await db.upcoming_festivals.bulkPut(data.festivals);
+        });
+    }
+    ```
 
 ---
 
-### Issue 12 [Skeptical Architect] - Severity: Medium (Major)
-* **Affected Scope:** Section 3.B (Lines 188–204) & Phase 2.6 (Lines 366–376)
-* **Discrepancy Description:** Over-engineered SQL Julian day math and unused `visit_deficit` calculation.
-* **Rationale:** Sorting by `last_visit_date ASC NULLS FIRST` achieves identical ordering natively in SQLite, while Carbon in PHP formats relative dates in <0.1ms.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Stripping dead SQL projections simplifies the query service and avoids timezone edge cases.
+### Issue 8: Global DCR Banner Lacks Selected Doctor Context [`egm-design`, `egm-comprehension`] - Severity: Medium
+* **Affected Scope:** Lines 68–69, Lines 239–243, Lines 505–507
+* **Discrepancy Description:** In `/elos/dcr`, no doctor is selected on the initial visit form. Tapping the banner cannot open the Call Reminder modal without a selected doctor.
+* **Rationale:** The studio requires a valid doctor object to construct WhatsApp click-to-chat links and render doctor metadata.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Clarify that the DCR banner serves an awareness function linking to the doctor directory, while card creation originates from doctor profiles.
 * ***Proposed Edit:***
-  * Location: Section 3.B and Phase 2.6
-  * Change: Drop SQL `visit_deficit` and Julian day math; sort natively by `last_visit_date`.
+  * Location: CUJ 2, Section 6, and Phase 5
+  * Change: State that the top DCR banner acts as an awareness alert ("🪔 Diwali window active — Send greetings from doctor profiles") linking to `/elos/doctors`, while one-tap card generation originates on individual doctor profiles (`/elos/doctors/{uuid}`).
 
 ---
 
-### Issue 13 [Skeptical Architect] - Severity: Medium (Major)
-* **Affected Scope:** Section 4.E (Lines 248–252) vs Phase 3 (Lines 380–387)
-* **Discrepancy Description:** Duplicated form schema between `DoctorForm.php` and the `editSchedule` action slideover.
-* **Rationale:** Defining identical field lists in two separate files creates schema drift and doubles maintenance.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Reusable schema methods preserve DRY principles across Filament components.
+### Issue 9: Relational Constraint Collision & Year-Boundary Sync Cutoff [`egm-design`, `egm-implementation-readiness`] - Severity: Medium
+* **Affected Scope:** Lines 140–154, Lines 480–484
+* **Discrepancy Description:** `unique(['festival_id', 'year'])` fails when an Islamic lunar festival occurs twice in a Gregorian year (~every 33 years). Furthermore, querying `whereIn('year', [$currentYear, $currentYear + 1])` drops late-December dates on January 1 while their greeting windows are still active.
+* **Rationale:** Database schema must support lunar calendar shifts, and sync queries must maintain a date buffer.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Indexing on date accommodates dual occurrences, and a rolling date query prevents premature window cutoff.
 * ***Proposed Edit:***
-  * Location: Phase 3 and Phase 4
-  * Change: Extract schedule fields into `DoctorForm::getScheduleComponents()` and invoke it from both locations.
+  * Location: Table `festival_dates` Schema and Phase 4
+  * Change:
+    - Change index to `unique(['festival_id', 'date'])`.
+    - Update sync query to `whereBetween('date', [now('Asia/Kolkata')->subDays(15)->toDateString(), now('Asia/Kolkata')->addMonths(14)->toDateString()])` (or `[$currentYear - 1, $currentYear, $currentYear + 1]`).
 
 ---
 
-### Issue 14 [Tech Lead] - Severity: Medium (Major)
-* **Affected Scope:** Phase 6 (Lines 440–453)
-* **Discrepancy Description:** Missing targeted test runner commands in Phase 6.
-* **Rationale:** Engineers and automated CI harnesses require explicit Artisan/Pest commands.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Document the exact verification commands.
+### Issue 10: Specialty Matching Fragility & Null Specialty Invisibility [`egm-design`, `egm-comprehension`, `egm-implementation-readiness`] - Severity: Medium
+* **Affected Scope:** Lines 71–75, Line 129, Lines 250–252, Line 451
+* **Discrepancy Description:** 100% of current doctor records have `specialty = null`. `target_specialties.includes(null)` evaluates to false. Furthermore, strict `Array.includes` fails on case variations ("Cardiologist" vs "Cardiology").
+* **Rationale:** Clinical health days would be completely invisible in the field app.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Normalized case-insensitive matching and fallback rules ensure reliable behavior.
 * ***Proposed Edit:***
-  * Location: Phase 6
-  * Change: Add `php artisan test --compact tests/Feature/DoctorCadenceTest.php` and full regression command.
+  * Location: Section 6 and Phase 2
+  * Change: Specify case-insensitive substring matching:
+    ```javascript
+    const docSpec = (currentDoctor.specialty || '').toLowerCase().trim();
+    const isMatch = f.target_specialties.some(s => docSpec.includes(s.toLowerCase()) || s.toLowerCase().includes(docSpec));
+    ```
+    If `currentDoctor.specialty` is null, clinical health days remain hidden unless marked universal.
 
 ---
 
-### Issue 15 [Technical Copy Editor] - Severity: Medium (Major)
-* **Affected Scope:** Lines 45, 46, 296, 312, 433, 443
-* **Discrepancy Description:** Unmeasured performance hyperbole ("sub-millisecond"), marketing buzzwords ("effortless", "seamless", "zero-friction"), and absolute claims ("flawless", "100% feature reliability").
-* **Rationale:** Violates the plain-English, anti-fluff standard required by EGM.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Replace with objective, professional engineering descriptions.
+### Issue 11: Standalone Rollback Tooling Architecture Violates YAGNI [`egm-zoom-out`, `egm-design`] - Severity: Medium
+* **Affected Scope:** Lines 173–184, Lines 467–470
+* **Discrepancy Description:** Proposing complex rollback tooling (versioning tables, snapshot logs, temporal state) for 2–4 lunisolar shifts per year is over-engineered.
+* **Rationale:** A simple, direct action in the existing slide-over modal solves the problem without new architectural layers.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Adopting the Skeptical Architect's minimal guardrail enforces simplicity and avoids complexity creep.
 * ***Proposed Edit:***
-  * Location: Throughout lines 1–453
-  * Change: Apply copy editorial replacements.
+  * Location: Section 3 and Phase 3
+  * Change: In `EditFestivalDateAction`, add a secondary button **"Reset to Official Date"** that re-populates the canonical date from `database/data/indian_festivals.json` and resets `is_manually_adjusted = false`.
 
 ---
 
-### Issue 16 [Naive Reader / Tech Lead] - Severity: Low (Nit)
-* **Affected Scope:** Section 2.A (Line 138), Phase 1.1 (Lines 321–325), Phase 2.4 (Line 352)
-* **Discrepancy Description:** Missing `is_active` column in Phase 1 key columns, `$fillable`, and `$casts`.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Complete the attribute definition.
+### Issue 12: Ingestion Logic Duplication Between Seeder & Command [`egm-zoom-out`, `egm-implementation-readiness`] - Severity: Medium
+* **Affected Scope:** Lines 88–91, Lines 368–369, Lines 417–443
+* **Discrepancy Description:** Creating duplicate ingestion loops in both `FestivalSeeder.php` and `ImportIndianFestivalsCommand.php` violates DRY.
+* **Rationale:** Dataset parsing and override-checking logic should live in one place.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Implementing the import logic in `ImportIndianFestivalsCommand` and letting `FestivalSeeder::run()` call `$this->command->call('festivals:import');` eliminates duplication.
 * ***Proposed Edit:***
-  * Location: Phase 1.1 and `DoctorPotential.php`
-  * Change: Include `is_active` in migration columns, `$fillable`, and `$casts`.
+  * Location: Phase 1 (Lines 417–443) and File Inventory
+  * Change: Let `FestivalSeeder` execute the artisan import command.
 
 ---
 
-### Issue 17 [Naive Reader / Skeptical Architect] - Severity: Low (Nit)
-* **Affected Scope:** Overview (Line 14) and throughout
-* **Discrepancy Description:** Undefined acronyms (DCR, OPD, Beat) and mobile app route referencing `/mr` instead of `/elos`.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Clarify terms and align routes with codebase conventions.
-* ***Proposed Edit:***
-  * Location: Overview, Problem, and Non-Goals
-  * Change: Spell out acronyms and update route references.
-
----
-
-### Issue 18 [Codebase Auditor] - Severity: Low (Nit)
-* **Affected Scope:** Phase 3.8 (Line 391)
-* **Discrepancy Description:** Potential N+1 query on `DoctorsTable.php` when rendering potential badges across 200 rows.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Eager-load the relationship to guarantee single-query rendering.
+### Issue 13: Missing Model Factories & Livewire Test Conventions in Pest Plan [`egm-implementation-readiness`, `egm-codebase-details`] - Severity: Medium
+* **Affected Scope:** Lines 362–382, Lines 518–535
+* **Discrepancy Description:** Model factories (`FestivalFactory`, `FestivalDateFactory`) are omitted from inventory. Furthermore, Pest tests cannot use `livewire()` because `pest-plugin-livewire` is not installed; tests must use `Livewire\Livewire::test(...)`.
+* **Rationale:** Adherence to repository testing standards and installed package capabilities.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Justification:*** Add factories to inventory and align test syntax with repository conventions.
 * ***Proposed Edit:</a>
-  * Location: Phase 3.8
-  * Change: Add `modifyQueryUsing(fn ($query) => $query->with('potential'))`.
+  * Location: Table 2 (File Inventory) and Section 4 (Testing Plan)
+  * Change: Add factories to inventory; specify `Livewire\Livewire::test(FestivalsCalendar::class)` with `$this->actingAs(User::factory()->create())`.
 
 ---
 
-### Issue 19 [Structural Validator] - Severity: Low (Nit)
-* **Affected Scope:** Lines 99, 104 (`### 1. Architectural System Overview`)
-* **Discrepancy Description:** Mermaid diagram contains unescaped `<` and `>` operators in node labels.
-* ***AI Suggestion:*** `PROPOSE FIX`
-* ***Justification:*** Prevent SVG parsing issues in strict Markdown parsers.
+### Issue 14: Malformed Mermaid Subgraph Identifiers [`egm-structural`] - Severity: Medium
+* **Affected Scope:** Lines 85–112
+* **Discrepancy Description:** Subgraphs use unquoted spaces and slashes (`subgraph Central Console [Filament v5]`, `subgraph Field Tier [/elos Mobile App]`), breaking strict Markdown parsers.
+* **Rationale:** Syntax compliance for reliable diagram rendering.
+* ***AI Suggestion:*** PROPOSE FIX
 * ***Proposed Edit:***
-  * Location: Line 104
-  * Change: Replace with `&le;` and `&gt;`.
+  * Location: Lines 85–112
+  * Change: Replace with alphanumeric identifiers and quoted display names (`subgraph CentralConsole ["Central Console (Filament v5)"]`).
+
+---
+
+### Issue 15: Enumeration Count Mismatch in Problem Statement [`egm-style`, `egm-structural`] - Severity: Medium
+* **Affected Scope:** Lines 21–26
+* **Discrepancy Description:** "In the current workflow, reps face three distinct operational hurdles:" introduces four numbered items.
+* **Rationale:** Internal factual consistency.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Proposed Edit:***
+  * Location: Line 21
+  * Change: Replace "three distinct operational hurdles" with "four operational constraints".
+
+---
+
+### Issue 16: Plain-English Copy Polish & Fluff Removal [`egm-style`] - Severity: Low
+* **Affected Scope:** Lines 11, 44–48, 281, 290, 294, 303–305, 318, 330
+* **Discrepancy Description:** Promotional adjectives ("zero compliance risk", "guarantees 100% offline autonomy", "eliminates all bugs") and colloquial slang ("JS Bloat", "Sliding Window Trap").
+* **Rationale:** Strict Plain-English standard and objective technical framing.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Proposed Edit:***
+  * Location: Overview, Non-Goals, and Alternatives Considered
+  * Change: Replace promotional adjectives and colloquial headings with objective engineering phrasing per Style audit findings.
+
+---
+
+### Issue 17: Standardize UI CTA Button Copy [`egm-structural`, `egm-style`] - Severity: Low
+* **Affected Scope:** Lines 69, 257, 260, 510
+* **Discrepancy Description:** Button copy fluctuates between "Create Greeting", "Create Greeting Card", and "Create Festive Card".
+* **Rationale:** UI consistency across documentation and codebase.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Proposed Edit:***
+  * Location: CUJ 2, Section 6, and Phase 5
+  * Change: Standardize copy uniformly to `"Create Greeting Card"`.
+
+---
+
+### Issue 18: Master Data Active Festival Payload Caching [`egm-design`] - Severity: Low
+* **Affected Scope:** Lines 208–220, Lines 480–498
+* **Discrepancy Description:** Querying database on every master data sync poll creates redundant database overhead for static multi-year data.
+* **Rationale:** Server performance optimization.
+* ***AI Suggestion:*** PROPOSE FIX
+* ***Proposed Edit:***
+  * Location: Phase 4 (`SyncController::masterData`)
+  * Change: Wrap payload generation in `Cache::rememberForever('active_festivals_master_data', ...)` and invalidate on date update/import.

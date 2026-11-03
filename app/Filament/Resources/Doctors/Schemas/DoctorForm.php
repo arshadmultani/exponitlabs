@@ -120,7 +120,15 @@ class DoctorForm
                         DatePicker::make('practice_since')
                             ->label('Practising since')
                             ->maxDate(now())
-                            ->native(false),
+                            ->native(false)
+                            ->displayFormat('d/m/Y'),
+
+                        DatePicker::make('date_of_birth')
+                            ->label('Date of Birth')
+                            ->maxDate(now())
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->helperText('Used for calendar birthday notifications & greetings.'),
 
                         TextInput::make('town')
                             ->maxLength(255),

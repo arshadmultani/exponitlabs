@@ -1,0 +1,495 @@
+[
+  {
+    "name": "Republic Day",
+    "slug": "republic-day",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Wishing you and your family a proud and inspiring Republic Day!",
+    "dates": {
+      "2025": "2025-01-26",
+      "2026": "2026-01-26",
+      "2027": "2027-01-26",
+      "2028": "2028-01-26",
+      "2029": "2029-01-26",
+      "2030": "2030-01-26"
+    }
+  },
+  {
+    "name": "Maha Shivratri",
+    "slug": "maha-shivratri",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "May the blessings of Lord Shiva bring peace, good health, and prosperity to you and your loved ones.",
+    "dates": {
+      "2025": "2025-02-26",
+      "2026": "2026-02-15",
+      "2027": "2027-03-06",
+      "2028": "2028-02-24",
+      "2029": "2029-02-12",
+      "2030": "2030-03-03"
+    }
+  },
+  {
+    "name": "Holi",
+    "slug": "holi",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Wishing you a vibrant, joyous, and colourful Holi filled with happiness and success!",
+    "dates": {
+      "2025": "2025-03-14",
+      "2026": "2026-03-04",
+      "2027": "2027-03-23",
+      "2028": "2028-03-11",
+      "2029": "2029-03-01",
+      "2030": "2030-03-20"
+    }
+  },
+  {
+    "name": "Eid-ul-Fitr",
+    "slug": "eid-ul-fitr",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Eid Mubarak! May this joyous day bring peace, prosperity, and good health to you and your family.",
+    "dates": {
+      "2025": "2025-03-31",
+      "2026": "2026-03-20",
+      "2027": "2027-03-10",
+      "2028": "2028-02-27",
+      "2029": "2029-02-15",
+      "2030": "2030-02-05"
+    }
+  },
+  {
+    "name": "Mahavir Jayanti",
+    "slug": "mahavir-jayanti",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "May the teachings of Lord Mahavira inspire truth, non-violence, and compassion in our lives.",
+    "dates": {
+      "2025": "2025-04-10",
+      "2026": "2026-03-31",
+      "2027": "2027-04-19",
+      "2028": "2028-04-07",
+      "2029": "2029-03-28",
+      "2030": "2030-04-16"
+    }
+  },
+  {
+    "name": "Good Friday",
+    "slug": "good-friday",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "May the grace and peace of this sacred day bring hope, healing, and strength to you and yours.",
+    "dates": {
+      "2025": "2025-04-18",
+      "2026": "2026-04-03",
+      "2027": "2027-03-26",
+      "2028": "2028-04-14",
+      "2029": "2029-03-30",
+      "2030": "2030-04-19"
+    }
+  },
+  {
+    "name": "Buddha Purnima",
+    "slug": "buddha-purnima",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Wishing you peace, harmony, and enlightenment on the auspicious occasion of Buddha Purnima.",
+    "dates": {
+      "2025": "2025-05-12",
+      "2026": "2026-05-01",
+      "2027": "2027-05-20",
+      "2028": "2028-05-08",
+      "2029": "2029-05-27",
+      "2030": "2030-05-16"
+    }
+  },
+  {
+    "name": "Eid-ul-Adha (Bakrid)",
+    "slug": "eid-ul-adha",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Warmest wishes on Eid-ul-Adha. May your devotion and sacrifice be rewarded with joy and peace.",
+    "dates": {
+      "2025": "2025-06-07",
+      "2026": "2026-05-27",
+      "2027": "2027-05-17",
+      "2028": "2028-05-05",
+      "2029": "2029-04-24",
+      "2030": "2030-04-14"
+    }
+  },
+  {
+    "name": "Muharram",
+    "slug": "muharram",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Wishing you peace, reflection, and fortitude on this solemn observance of Muharram.",
+    "dates": {
+      "2025": "2025-07-06",
+      "2026": "2026-06-26",
+      "2027": "2027-06-16",
+      "2028": "2028-06-04",
+      "2029": "2029-05-24",
+      "2030": "2030-05-14"
+    }
+  },
+  {
+    "name": "National Doctor's Day",
+    "slug": "national-doctors-day",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Happy National Doctor's Day! Thank you for your tireless dedication, healing touch, and selfless service to humanity.",
+    "dates": {
+      "2025": "2025-07-01",
+      "2026": "2026-07-01",
+      "2027": "2027-07-01",
+      "2028": "2028-07-01",
+      "2029": "2029-07-01",
+      "2030": "2030-07-01"
+    }
+  },
+  {
+    "name": "Independence Day",
+    "slug": "independence-day",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Happy Independence Day! Celebrating the spirit of freedom, unity, and progress across our great nation.",
+    "dates": {
+      "2025": "2025-08-15",
+      "2026": "2026-08-15",
+      "2027": "2027-08-15",
+      "2028": "2028-08-15",
+      "2029": "2029-08-15",
+      "2030": "2030-08-15"
+    }
+  },
+  {
+    "name": "Raksha Bandhan",
+    "slug": "raksha-bandhan",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Wishing you and your family a very Happy Raksha Bandhan celebrating enduring bonds of protection and care.",
+    "dates": {
+      "2025": "2025-08-09",
+      "2026": "2026-08-28",
+      "2027": "2027-08-17",
+      "2028": "2028-08-05",
+      "2029": "2029-08-24",
+      "2030": "2030-08-13"
+    }
+  },
+  {
+    "name": "Janmashtami",
+    "slug": "janmashtami",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "May Lord Krishna shower his divine blessings of health, wisdom, and joy upon you and your family.",
+    "dates": {
+      "2025": "2025-08-16",
+      "2026": "2026-09-04",
+      "2027": "2027-08-25",
+      "2028": "2028-08-13",
+      "2029": "2029-09-01",
+      "2030": "2030-08-21"
+    }
+  },
+  {
+    "name": "Ganesh Chaturthi",
+    "slug": "ganesh-chaturthi",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Wishing you an auspicious Ganesh Chaturthi! May Lord Ganesha remove all obstacles and bless you with success.",
+    "dates": {
+      "2025": "2025-08-27",
+      "2026": "2026-09-14",
+      "2027": "2027-09-04",
+      "2028": "2028-08-24",
+      "2029": "2029-09-11",
+      "2030": "2030-08-31"
+    }
+  },
+  {
+    "name": "Milad-un-Nabi (Id-e-Milad)",
+    "slug": "milad-un-nabi",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Warm greetings on Milad-un-Nabi. May the message of peace, mercy, and compassion brighten your life.",
+    "dates": {
+      "2025": "2025-09-05",
+      "2026": "2026-08-26",
+      "2027": "2027-08-15",
+      "2028": "2028-08-04",
+      "2029": "2029-07-24",
+      "2030": "2030-07-14"
+    }
+  },
+  {
+    "name": "Mahatma Gandhi Jayanti",
+    "slug": "mahatma-gandhi-jayanti",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Remembering Mahatma Gandhi on his Jayanti. May truth, simplicity, and non-violence guide our journey.",
+    "dates": {
+      "2025": "2025-10-02",
+      "2026": "2026-10-02",
+      "2027": "2027-10-02",
+      "2028": "2028-10-02",
+      "2029": "2029-10-02",
+      "2030": "2030-10-02"
+    }
+  },
+  {
+    "name": "Dussehra (Vijayadashami)",
+    "slug": "dussehra",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Happy Dussehra! May this Vijayadashami bring the triumph of wellness, vitality, and prosperity into your life.",
+    "dates": {
+      "2025": "2025-10-02",
+      "2026": "2026-10-20",
+      "2027": "2027-10-10",
+      "2028": "2028-09-28",
+      "2029": "2029-10-17",
+      "2030": "2030-10-06"
+    }
+  },
+  {
+    "name": "Diwali (Deepavali)",
+    "slug": "diwali",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 4,
+    "days_after": 2,
+    "greeting_message_template": "Wishing you and your family a very Happy and prosperous Deepavali! May light, health, and happiness illuminate your home.",
+    "dates": {
+      "2025": "2025-10-20",
+      "2026": "2026-11-08",
+      "2027": "2027-10-29",
+      "2028": "2028-10-17",
+      "2029": "2029-11-05",
+      "2030": "2030-10-26"
+    }
+  },
+  {
+    "name": "Guru Nanak Jayanti",
+    "slug": "guru-nanak-jayanti",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Heartiest wishes on Guru Nanak Jayanti. May the Guru's teachings of selfless service and unity inspire us all.",
+    "dates": {
+      "2025": "2025-11-05",
+      "2026": "2026-11-24",
+      "2027": "2027-11-14",
+      "2028": "2028-12-02",
+      "2029": "2029-11-21",
+      "2030": "2030-11-10"
+    }
+  },
+  {
+    "name": "Christmas Day",
+    "slug": "christmas-day",
+    "category": "cultural_and_national",
+    "target_specialties": null,
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Merry Christmas! Wishing you and your loved ones seasons of joy, warm memories, and lasting peace.",
+    "dates": {
+      "2025": "2025-12-25",
+      "2026": "2026-12-25",
+      "2027": "2027-12-25",
+      "2028": "2028-12-25",
+      "2029": "2029-12-25",
+      "2030": "2030-12-25"
+    }
+  },
+  {
+    "name": "World Glaucoma Day",
+    "slug": "world-glaucoma-day",
+    "category": "clinical_observance",
+    "target_specialties": ["Ophthalmology", "Eye Surgeon", "Ophthalmic Surgeon"],
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Honouring your vital role in vision preservation and glaucoma awareness on World Glaucoma Day.",
+    "dates": {
+      "2025": "2025-03-12",
+      "2026": "2026-03-12",
+      "2027": "2027-03-12",
+      "2028": "2028-03-12",
+      "2029": "2029-03-12",
+      "2030": "2030-03-12"
+    }
+  },
+  {
+    "name": "World Health Day",
+    "slug": "world-health-day",
+    "category": "clinical_observance",
+    "target_specialties": ["General Medicine", "Cardiology", "Diabetology", "Paediatrics", "Internal Medicine"],
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Saluting your lifelong commitment to global wellness and patient care on World Health Day.",
+    "dates": {
+      "2025": "2025-04-07",
+      "2026": "2026-04-07",
+      "2027": "2027-04-07",
+      "2028": "2028-04-07",
+      "2029": "2029-04-07",
+      "2030": "2030-04-07"
+    }
+  },
+  {
+    "name": "World Hypertension Day",
+    "slug": "world-hypertension-day",
+    "category": "clinical_observance",
+    "target_specialties": ["Cardiology", "Nephrology", "Internal Medicine", "General Medicine"],
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Applauding your efforts in early cardiovascular risk screening and blood pressure management on World Hypertension Day.",
+    "dates": {
+      "2025": "2025-05-17",
+      "2026": "2026-05-17",
+      "2027": "2027-05-17",
+      "2028": "2028-05-17",
+      "2029": "2029-05-17",
+      "2030": "2030-05-17"
+    }
+  },
+  {
+    "name": "World Hepatitis Day",
+    "slug": "world-hepatitis-day",
+    "category": "clinical_observance",
+    "target_specialties": ["Gastroenterology", "Hepatology", "Internal Medicine"],
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Standing with you in advancing viral hepatitis screening and liver health on World Hepatitis Day.",
+    "dates": {
+      "2025": "2025-07-28",
+      "2026": "2026-07-28",
+      "2027": "2027-07-28",
+      "2028": "2028-07-28",
+      "2029": "2029-07-28",
+      "2030": "2030-07-28"
+    }
+  },
+  {
+    "name": "National Nutrition Week",
+    "slug": "national-nutrition-week",
+    "category": "clinical_observance",
+    "target_specialties": ["Paediatrics", "Endocrinology", "Diabetology", "General Medicine"],
+    "days_before": 1,
+    "days_after": 2,
+    "greeting_message_template": "Recognizing your advocacy for pediatric growth, metabolic wellness, and balanced nutrition during National Nutrition Week.",
+    "dates": {
+      "2025": "2025-09-01",
+      "2026": "2026-09-01",
+      "2027": "2027-09-01",
+      "2028": "2028-09-01",
+      "2029": "2029-09-01",
+      "2030": "2030-09-01"
+    }
+  },
+  {
+    "name": "World Heart Day",
+    "slug": "world-heart-day",
+    "category": "clinical_observance",
+    "target_specialties": ["Cardiology", "Cardio-Thoracic Surgery", "Internal Medicine"],
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Warm regards on World Heart Day. Thank you for your leadership in beating cardiovascular disease and keeping hearts beating.",
+    "dates": {
+      "2025": "2025-09-29",
+      "2026": "2026-09-29",
+      "2027": "2027-09-29",
+      "2028": "2028-09-29",
+      "2029": "2029-09-29",
+      "2030": "2030-09-29"
+    }
+  },
+  {
+    "name": "World Arthritis Day",
+    "slug": "world-arthritis-day",
+    "category": "clinical_observance",
+    "target_specialties": ["Orthopaedics", "Rheumatology", "Physiotherapy"],
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Saluting your clinical dedication to patient mobility, joint preservation, and pain relief on World Arthritis Day.",
+    "dates": {
+      "2025": "2025-10-12",
+      "2026": "2026-10-12",
+      "2027": "2027-10-12",
+      "2028": "2028-10-12",
+      "2029": "2029-10-12",
+      "2030": "2030-10-12"
+    }
+  },
+  {
+    "name": "World Diabetes Day",
+    "slug": "world-diabetes-day",
+    "category": "clinical_observance",
+    "target_specialties": ["Diabetology", "Endocrinology", "Internal Medicine", "General Medicine"],
+    "days_before": 3,
+    "days_after": 1,
+    "greeting_message_template": "Honouring your expertise in glycemic control, metabolic health, and patient empowerment on World Diabetes Day.",
+    "dates": {
+      "2025": "2025-11-14",
+      "2026": "2026-11-14",
+      "2027": "2027-11-14",
+      "2028": "2028-11-14",
+      "2029": "2029-11-14",
+      "2030": "2030-11-14"
+    }
+  },
+  {
+    "name": "World AIDS Day",
+    "slug": "world-aids-day",
+    "category": "clinical_observance",
+    "target_specialties": ["Infectious Diseases", "Internal Medicine", "General Medicine"],
+    "days_before": 2,
+    "days_after": 1,
+    "greeting_message_template": "Recognizing your compassionate leadership and clinical care on World AIDS Day.",
+    "dates": {
+      "2025": "2025-12-01",
+      "2026": "2026-12-01",
+      "2027": "2027-12-01",
+      "2028": "2028-12-01",
+      "2029": "2029-12-01",
+      "2030": "2030-12-01"
+    }
+  }
+]

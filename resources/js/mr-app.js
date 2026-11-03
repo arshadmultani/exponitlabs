@@ -100,6 +100,7 @@ export function registerMrComponents(Alpine) {
     remarks: '',
     selectedProducts: [],
     selectedInputs: [],
+    activeObservances: [],
     toastMessage: '',
     toastType: 'success',
 
@@ -122,6 +123,19 @@ export function registerMrComponents(Alpine) {
       this.doctors = await db.doctors.toArray();
       this.products = await db.products.toArray();
       this.inputs = await db.promotional_inputs.toArray();
+      await this.loadActiveObservances();
+    },
+
+    async loadActiveObservances() {
+      try {
+        if (!db.upcoming_festivals) return;
+        const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+        this.activeObservances = await db.upcoming_festivals
+          .filter(f => todayStr >= f.window_start && todayStr <= f.window_end && f.category === 'cultural_and_national')
+          .toArray();
+      } catch (e) {
+        console.warn('[DCR] Error loading active observances:', e);
+      }
     },
 
     get filteredDoctorsList() {
@@ -344,6 +358,7 @@ export function registerMrComponents(Alpine) {
     doctor: serverDoctor,
     history: serverDoctor?.dcrs || [],
     pendingDcrs: [],
+    activeObservances: [],
 
     async init() {
       if (!this.uuid) return;
@@ -353,12 +368,64 @@ export function registerMrComponents(Alpine) {
       }
       
       await this.reloadVisits();
+      await this.loadActiveObservances();
 
       window.addEventListener('reminder-logged', async (e) => {
         if (e.detail?.doctorUuid === this.uuid) {
           await this.reloadVisits();
         }
       });
+
+      window.addEventListener('mr-sync-completed', async () => {
+        await this.loadActiveObservances();
+      });
+    },
+
+    async loadActiveObservances() {
+      try {
+        if (!db.upcoming_festivals) return;
+        const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata' }).format(new Date());
+        const allObservances = await db.upcoming_festivals.toArray();
+
+        this.activeObservances = allObservances.filter(f => {
+          const inWindow = todayStr >= f.window_start && todayStr <= f.window_end;
+          if (!inWindow) return false;
+          if (f.category === 'cultural_and_national') return true;
+          if (!this.doctor || !this.doctor.specialty) return false;
+
+          const docSpec = this.doctor.specialty.toLowerCase().trim();
+          const normDoc = docSpec.replace(/paed/g, 'ped');
+          const docTokens = normDoc.split(/[\s,\-\/]+/).filter(t => t.length >= 4);
+
+          return Array.isArray(f.target_specialties) && f.target_specialties.some(s => {
+            const tgt = s.toLowerCase().trim().replace(/paed/g, 'ped');
+            if (normDoc.includes(tgt) || tgt.includes(normDoc)) return true;
+            const tgtTokens = tgt.split(/[\s,\-\/]+/).filter(t => t.length >= 4);
+            return docTokens.some(dt => tgtTokens.some(tt => {
+              if (dt.includes(tt) || tt.includes(dt)) return true;
+              const stem = Math.min(5, dt.length, tt.length);
+              return dt.substring(0, stem) === tt.substring(0, stem);
+            }));
+          });
+        });
+      } catch (e) {
+        console.warn('[DoctorShow] Error loading active observances:', e);
+      }
+    },
+
+    openFestivalReminder(observance) {
+      if (!this.doctor || !observance) return;
+
+      window.dispatchEvent(new CustomEvent('open-call-reminder', {
+        detail: {
+          doctor: this.doctor,
+          imageTemplate: 'celebration',
+          textTemplateId: 'festive_greetings',
+          greetingQuote: (observance.name || 'Warm') + ' Greetings',
+          greetingMessage: observance.greeting_message || `Wishing you and your family a very Happy and healthy ${observance.name}!`,
+          includeDate: false
+        }
+      }));
     },
 
     async reloadVisits() {
@@ -945,6 +1012,8 @@ export function registerMrComponents(Alpine) {
     selectedProductIds: [],
     selectedImageTemplate: 'executive',
     selectedTextTemplateId: 'product_gratitude',
+    greetingQuote: null,
+    greetingMessage: null,
     messageText: '',
     textTemplates: TEXT_TEMPLATES,
     imageTemplates: IMAGE_TEMPLATES,
@@ -1186,8 +1255,19 @@ export function registerMrComponents(Alpine) {
         this.resetTemplateText();
       }
 
-      this.selectedTextTemplateId = 'product_gratitude';
-      this.resetTemplateText();
+      if (detail.imageTemplate) {
+        this.selectedImageTemplate = detail.imageTemplate;
+      }
+      this.greetingQuote = detail.greetingQuote || null;
+      this.greetingMessage = detail.greetingMessage || null;
+
+      if (detail.greetingMessage) {
+        this.selectedTextTemplateId = detail.textTemplateId || 'festive_greetings';
+        this.messageText = detail.greetingMessage;
+      } else {
+        this.selectedTextTemplateId = detail.textTemplateId || 'product_gratitude';
+        this.resetTemplateText();
+      }
 
       this.isOpen = true;
       this.toastMessage = '';
@@ -1355,7 +1435,9 @@ export function registerMrComponents(Alpine) {
             products: this.getSelectedProducts(),
             visitDate: this.includeVisitDate ? this.visitDate : '',
             showDoctorPhoto: this.showDoctorPhoto,
-            showMrPhoto: this.showMrPhoto
+            showMrPhoto: this.showMrPhoto,
+            greetingQuote: this.greetingQuote,
+            greetingMessage: this.greetingMessage
           });
           // Cache the rendered image blob immediately so it's ready with 0ms delay
           canvas.toBlob((blob) => {

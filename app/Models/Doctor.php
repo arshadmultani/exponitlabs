@@ -35,6 +35,7 @@ class Doctor extends Model
         'longitude',
         'location',
         'practice_since',
+        'date_of_birth',
         'status',
         'visit_cost_override',
         'doctor_potential_id',
@@ -44,6 +45,7 @@ class Doctor extends Model
 
     protected $casts = [
         'practice_since' => 'date',
+        'date_of_birth' => 'date',
         'location' => 'array',
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',

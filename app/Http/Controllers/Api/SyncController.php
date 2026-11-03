@@ -9,11 +9,15 @@ use App\Models\DCRProduct;
 use App\Models\DCRPromotionalInput;
 use App\Models\Doctor;
 use App\Models\DoctorPotential;
+use App\Models\FestivalDate;
 use App\Models\Headquarter;
 use App\Models\Product;
 use App\Models\PromotionalInput;
+use App\Services\FestivalGreetingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -50,6 +54,7 @@ class SyncController extends Controller
             'doctor_potential_id',
             'visiting_days',
             'visiting_shifts',
+            'date_of_birth',
             'address',
             'clinic_name',
             'latitude',
@@ -126,6 +131,28 @@ class SyncController extends Controller
                 ];
             });
 
+        $festivals = Cache::rememberForever('active_festivals_master_data', function () {
+            $currentYear = Carbon::now(FestivalGreetingService::TIMEZONE)->year;
+
+            return FestivalDate::with('festival')
+                ->whereIn('year', [$currentYear - 1, $currentYear, $currentYear + 1])
+                ->whereHas('festival', fn ($q) => $q->where('is_active', true))
+                ->get()
+                ->map(fn (FestivalDate $fd) => [
+                    'id' => $fd->id,
+                    'festival_id' => $fd->festival_id,
+                    'name' => $fd->festival->name,
+                    'slug' => $fd->festival->slug,
+                    'category' => $fd->festival->category,
+                    'target_specialties' => $fd->festival->target_specialties,
+                    'date' => $fd->date->format('Y-m-d'),
+                    'window_start' => $fd->date->copy()->subDays($fd->festival->days_before)->format('Y-m-d'),
+                    'window_end' => $fd->date->copy()->addDays($fd->festival->days_after)->format('Y-m-d'),
+                    'greeting_message' => $fd->festival->greeting_message_template,
+                ])
+                ->values();
+        });
+
         return response()->json([
             'server_time' => now()->toIso8601String(),
             'doctors' => $doctors,
@@ -134,6 +161,7 @@ class SyncController extends Controller
             'products' => $products,
             'promotional_inputs' => $promotionalInputs,
             'visit_history' => $recentDcrs,
+            'festivals' => $festivals,
         ]);
     }
 

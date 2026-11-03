@@ -77,7 +77,9 @@ export async function renderReminderCanvas(canvas, options = {}) {
     products = [],
     visitDate = '',
     showDoctorPhoto = true,
-    showMrPhoto = true
+    showMrPhoto = true,
+    greetingQuote = null,
+    greetingMessage = null
   } = options;
 
   // Asynchronously load available photos
@@ -114,7 +116,9 @@ export async function renderReminderCanvas(canvas, options = {}) {
     productImages,
     formattedDate,
     rawDate: visitDate,
-    clinic: doctor.clinic_name || doctor.town
+    clinic: doctor.clinic_name || doctor.town,
+    greetingQuote,
+    greetingMessage
   });
 }
 

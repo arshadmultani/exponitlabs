@@ -184,11 +184,17 @@ class DoctorPortfolio extends Page implements HasTable
                     ->label('Log Revenue')
                     ->icon(Heroicon::CurrencyRupee)
                     ->modalHeading(fn (Doctor $record): string => "Log Attributed Revenue for {$record->name}")
+                    ->extraModalFooterActions(fn (Action $action): array => [
+                        $action->makeModalSubmitAction('createAnother', arguments: ['another' => true])
+                            ->label('Create & create another'),
+                    ])
                     ->schema([
                         DatePicker::make('period_date')
                             ->label('Audit Period Date')
                             ->helperText('Select any date in the audit month (normalized to 1st of month)')
                             ->default(now()->startOfMonth())
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
                             ->required(),
                         TextInput::make('amount')
                             ->label('Attributed Revenue Amount')
@@ -200,7 +206,7 @@ class DoctorPortfolio extends Page implements HasTable
                             ->label('Notes / Stockist Info')
                             ->maxLength(255),
                     ])
-                    ->action(function (array $data, Doctor $record): void {
+                    ->action(function (array $data, array $arguments, Action $action, Schema $schema, Doctor $record): void {
                         $periodDate = Carbon::parse($data['period_date'])->startOfMonth()->toDateString();
                         DoctorRevenue::create([
                             'doctor_id' => $record->id,
@@ -214,6 +220,18 @@ class DoctorPortfolio extends Page implements HasTable
                             ->title("Revenue logged for {$record->name}")
                             ->success()
                             ->send();
+
+                        if ($arguments['another'] ?? false) {
+                            $schema->fill([
+                                'period_date' => $data['period_date'],
+                                'amount' => null,
+                                'notes' => null,
+                            ]);
+
+                            $schema->dispatchClientSideStateReset();
+
+                            $action->halt();
+                        }
                     }),
             ])
             ->filters([
@@ -232,6 +250,10 @@ class DoctorPortfolio extends Page implements HasTable
                 ->icon(Heroicon::CurrencyRupee)
                 ->modalHeading('Log Doctor Prescription Revenue')
                 ->modalDescription('Enter monthly secondary prescription sales audit revenue for a specific doctor.')
+                ->extraModalFooterActions(fn (Action $action): array => [
+                    $action->makeModalSubmitAction('createAnother', arguments: ['another' => true])
+                        ->label('Create & create another'),
+                ])
                 ->schema([
                     Select::make('doctor_id')
                         ->label('Doctor')
@@ -242,6 +264,8 @@ class DoctorPortfolio extends Page implements HasTable
                         ->label('Audit Period Date')
                         ->helperText('Select any date in the audit month (normalized to 1st of month)')
                         ->default(now()->startOfMonth())
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
                         ->required(),
                     TextInput::make('amount')
                         ->label('Attributed Revenue Amount')
@@ -253,7 +277,7 @@ class DoctorPortfolio extends Page implements HasTable
                         ->label('Notes / Stockist Info')
                         ->maxLength(255),
                 ])
-                ->action(function (array $data): void {
+                ->action(function (array $data, array $arguments, Action $action, Schema $schema): void {
                     $periodDate = Carbon::parse($data['period_date'])->startOfMonth()->toDateString();
                     DoctorRevenue::create([
                         'doctor_id' => $data['doctor_id'],
@@ -267,6 +291,19 @@ class DoctorPortfolio extends Page implements HasTable
                         ->title('Attributed revenue logged successfully')
                         ->success()
                         ->send();
+
+                    if ($arguments['another'] ?? false) {
+                        $schema->fill([
+                            'doctor_id' => null,
+                            'period_date' => $data['period_date'],
+                            'amount' => null,
+                            'notes' => null,
+                        ]);
+
+                        $schema->dispatchClientSideStateReset();
+
+                        $action->halt();
+                    }
                 }),
 
             Action::make('downloadTemplate')
@@ -280,6 +317,8 @@ class DoctorPortfolio extends Page implements HasTable
                         ->label('Audit Period Month')
                         ->helperText('Pre-fills the period_date column for all doctors (normalized to 1st of month).')
                         ->default(now()->startOfMonth())
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
                         ->required(),
                     Select::make('area_id')
                         ->label('Filter by Territory / Area (Optional)')
@@ -334,7 +373,9 @@ class DoctorPortfolio extends Page implements HasTable
                         ->required(),
                     DatePicker::make('fallback_period')
                         ->label('Fallback Period Date (Optional)')
-                        ->helperText('Used if period_date column is missing or blank in CSV rows.'),
+                        ->helperText('Used if period_date column is missing or blank in CSV rows.')
+                        ->native(false)
+                        ->displayFormat('d/m/Y'),
                 ])
                 ->action(function (array $data): void {
                     $rawFile = is_array($data['csv_file']) ? reset($data['csv_file']) : $data['csv_file'];

@@ -67,6 +67,13 @@ export async function syncMasterData() {
     if (data.visit_history && data.visit_history.length > 0) {
       await db.visit_history.bulkPut(data.visit_history);
     }
+
+    if (Array.isArray(data.festivals) && data.festivals.length > 0) {
+      await db.transaction('rw', db.upcoming_festivals, async () => {
+        await db.upcoming_festivals.clear();
+        await db.upcoming_festivals.bulkPut(data.festivals);
+      });
+    }
     
     if (data.server_time) {
       await setLastSyncedAt(data.server_time);
