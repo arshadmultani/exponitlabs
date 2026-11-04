@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\AppSetting;
 use App\Models\DCR;
 use App\Models\Doctor;
 use App\Models\DoctorRevenue;
@@ -12,11 +13,19 @@ use Illuminate\Support\Facades\DB;
 class DoctorPortfolioQueryService
 {
     /**
+     * Get the active global detailing visit cost.
+     */
+    public function getDefaultVisitCost(): float
+    {
+        return AppSetting::getFloat('default_visit_cost', (float) config('exponit.default_visit_cost', 250.00));
+    }
+
+    /**
      * Build the base portfolio query with correlated subqueries wrapped in an outer fromSub projection.
      */
     public function getBaseQuery(?Carbon $startDate = null, ?Carbon $endDate = null): Builder
     {
-        $defaultVisitCost = (float) config('exponit.default_visit_cost', 250.00);
+        $defaultVisitCost = $this->getDefaultVisitCost();
 
         // Snap revenue start date to beginning of month to prevent rolling date exclusion
         $revenueStartDate = $startDate ? $startDate->copy()->startOfMonth() : null;
@@ -59,6 +68,7 @@ class DoctorPortfolioQueryService
         return Doctor::query()
             ->fromSub($innerQuery, 'doctors')
             ->select('doctors.*')
+            ->with(['area.headquarter'])
             ->selectRaw('((doctors.visits_count * COALESCE(doctors.visit_cost_override, ?)) + doctors.samples_cost + doctors.promos_cost) AS total_investment', [$defaultVisitCost])
             ->selectRaw('(doctors.total_revenue - ((doctors.visits_count * COALESCE(doctors.visit_cost_override, ?)) + doctors.samples_cost + doctors.promos_cost)) AS net_pnl', [$defaultVisitCost]);
     }

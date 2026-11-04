@@ -2,35 +2,40 @@
 
 namespace App\Filament\Pages;
 
-use App\Filament\Widgets\DoctorPortfolioStatsWidget;
+use UnitEnum;
+use BackedEnum;
 use App\Models\Area;
 use App\Models\Doctor;
-use App\Models\DoctorRevenue;
-use App\Services\DoctorPortfolioQueryService;
-use App\Services\DoctorRevenueImportService;
-use BackedEnum;
+use Filament\Pages\Page;
+use App\Models\AppSetting;
+use Filament\Tables\Table;
 use Filament\Actions\Action;
+use Filament\Schemas\Schema;
+use App\Models\DoctorRevenue;
+use Illuminate\Support\Carbon;
 use Filament\Actions\ActionGroup;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\FileUpload;
+use Illuminate\Http\UploadedFile;
+use Filament\Support\Icons\Heroicon;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Repeater;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Contracts\HasTable;
+use Illuminate\Support\Facades\Storage;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
-use Filament\Pages\Page;
 use Filament\Resources\Concerns\HasTabs;
-use Filament\Schemas\Components\EmbeddedTable;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Table;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Storage;
-use UnitEnum;
+use Illuminate\Database\Eloquent\Builder;
+use App\Services\DoctorRevenueImportService;
+use App\Services\DoctorPortfolioQueryService;
+use Filament\Schemas\Components\EmbeddedTable;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Enums\RecordActionsPosition;
+use App\Filament\Widgets\DoctorPortfolioStatsWidget;
 
 class DoctorPortfolio extends Page implements HasTable
 {
@@ -111,17 +116,20 @@ class DoctorPortfolio extends Page implements HasTable
                 ...app(DoctorPortfolioQueryService::class)->resolveHorizonRange($this->activeTab ?? 'current_fy')
             ))
             ->defaultSort('net_pnl', 'desc')
+            ->recordAction('manageDoctorRevenues')
+            ->recordActionsPosition(RecordActionsPosition::BeforeColumns)
             ->columns([
                 TextColumn::make('name')
                     ->label('Doctor')
-                    ->searchable()
+                    ->searchable(query: function (Builder $query, string $search): Builder {
+                        return $query->where(function (Builder $sub) use ($search): void {
+                            $sub->where('doctors.name', 'like', "%{$search}%")
+                                ->orWhereHas('area', fn (Builder $areaQ) => $areaQ->where('name', 'like', "%{$search}%"));
+                        });
+                    })
                     ->sortable()
-                    ->description(fn (Doctor $record): ?string => $record->clinic_hospital_name),
-
-                TextColumn::make('area.name')
-                    ->label('Area / HQ')
-                    ->searchable()
-                    ->sortable(),
+                    ->description(fn (Doctor $record): ?string => $record->area?->name)
+                    ->action($this->manageDoctorRevenuesAction()),
 
                 TextColumn::make('visits_count')
                     ->label('Visits')
@@ -151,7 +159,8 @@ class DoctorPortfolio extends Page implements HasTable
                     ->label('Attributed Revenue')
                     ->money('INR')
                     ->sortable()
-                    ->alignEnd(),
+                    ->alignEnd()
+                    ->action($this->manageDoctorRevenuesAction()),
 
                 TextColumn::make('net_pnl')
                     ->label('Net P&L')
@@ -182,8 +191,11 @@ class DoctorPortfolio extends Page implements HasTable
             ])
             ->recordActions([
                 Action::make('logDoctorRevenue')
-                    ->label('Log Revenue')
-                    ->icon(Heroicon::CurrencyRupee)
+                    ->label('Log ₹')
+                    ->button()
+                    ->size('xs')
+                    ->outlined()
+                    ->color('primary')
                     ->modalHeading(fn (Doctor $record): string => "Log Attributed Revenue for {$record->name}")
                     ->extraModalFooterActions(fn (Action $action): array => [
                         $action->makeModalSubmitAction('createAnother', arguments: ['another' => true])
@@ -241,6 +253,103 @@ class DoctorPortfolio extends Page implements HasTable
                     ->searchable()
                     ->preload(),
             ]);
+    }
+
+    public function manageDoctorRevenuesAction(): Action
+    {
+        return Action::make('manageDoctorRevenues')
+            ->label('View / Edit Revenue')
+            ->icon(Heroicon::PencilSquare)
+            ->modalHeading(fn (Doctor $record): string => "Attributed Revenue History for {$record->name}")
+            ->modalDescription('View, update, or remove logged monthly revenue records for this doctor.')
+            ->modalSubmitActionLabel('Save Changes')
+            ->modalWidth('4xl')
+            ->schema([
+                Repeater::make('revenues')
+                    ->label('Monthly Revenue Entries')
+                    ->schema([
+                        Hidden::make('id'),
+                        DatePicker::make('period_date')
+                            ->label('Audit Period Date')
+                            ->helperText('Normalized to 1st of month')
+                            ->default(now()->startOfMonth())
+                            ->native(false)
+                            ->displayFormat('d/m/Y')
+                            ->required(),
+                        TextInput::make('amount')
+                            ->label('Attributed Revenue Amount')
+                            ->prefix('₹')
+                            ->numeric()
+                            ->minValue(0.01)
+                            ->required(),
+                        TextInput::make('notes')
+                            ->label('Notes / Stockist Info')
+                            ->maxLength(255),
+                    ])
+                    ->columns(3)
+                    ->addActionLabel('Log Another Revenue Entry')
+                    ->defaultItems(0)
+                    ->reorderable(false)
+                    ->itemLabel(fn (array $state): ?string => filled($state['amount'] ?? null)
+                        ? ('₹'.number_format((float) $state['amount'], 2).(filled($state['period_date'] ?? null) ? ' ('.Carbon::parse($state['period_date'])->format('M Y').')' : ''))
+                        : null),
+            ])
+            ->fillForm(fn (Doctor $record): array => [
+                'revenues' => $record->revenues()
+                    ->orderBy('period_date', 'desc')
+                    ->get()
+                    ->mapWithKeys(fn (DoctorRevenue $rev) => [
+                        "record-{$rev->id}" => [
+                            'id' => $rev->id,
+                            'period_date' => $rev->period_date->format('Y-m-d'),
+                            'amount' => $rev->amount,
+                            'notes' => $rev->notes,
+                        ],
+                    ])
+                    ->all(),
+            ])
+            ->action(function (array $data, Doctor $record): void {
+                $existingIds = $record->revenues()->pluck('id')->all();
+                $submittedIds = [];
+
+                foreach ($data['revenues'] ?? [] as $item) {
+                    if (blank($item['amount'] ?? null) || blank($item['period_date'] ?? null)) {
+                        continue;
+                    }
+
+                    $periodDate = Carbon::parse($item['period_date'])->startOfMonth()->toDateString();
+                    $amount = (float) $item['amount'];
+                    $notes = $item['notes'] ?? null;
+
+                    if (! empty($item['id']) && in_array((int) $item['id'], $existingIds, true)) {
+                        DoctorRevenue::where('id', $item['id'])->update([
+                            'period_date' => $periodDate,
+                            'amount' => $amount,
+                            'notes' => $notes,
+                        ]);
+                        $submittedIds[] = (int) $item['id'];
+                    } else {
+                        $newRevenue = DoctorRevenue::create([
+                            'doctor_id' => $record->id,
+                            'period_date' => $periodDate,
+                            'amount' => $amount,
+                            'notes' => $notes,
+                            'created_by_user_id' => auth()->id(),
+                        ]);
+                        $submittedIds[] = $newRevenue->id;
+                    }
+                }
+
+                $removedIds = array_diff($existingIds, $submittedIds);
+                if (! empty($removedIds)) {
+                    DoctorRevenue::whereIn('id', $removedIds)->delete();
+                }
+
+                Notification::make()
+                    ->title("Attributed revenue updated for {$record->name}")
+                    ->success()
+                    ->send();
+            });
     }
 
     protected function getHeaderActions(): array
@@ -418,6 +527,35 @@ class DoctorPortfolio extends Page implements HasTable
                                 ->success()
                                 ->send();
                         }
+                    }),
+
+                Action::make('adjustGlobalVisitCost')
+                    ->label('Adjust Global Visit Cost')
+                    ->icon(Heroicon::CurrencyRupee)
+                    ->color('gray')
+                    ->modalHeading('Global Detailing Visit Cost')
+                    ->modalDescription('Configure the baseline detailing investment allocated per medical representative visit across all doctors. Individual doctor overrides take precedence.')
+                    ->modalSubmitActionLabel('Update Global Cost')
+                    ->fillForm(fn (): array => [
+                        'default_visit_cost' => app(DoctorPortfolioQueryService::class)->getDefaultVisitCost(),
+                    ])
+                    ->schema([
+                        TextInput::make('default_visit_cost')
+                            ->label('Baseline Detailing Cost Per Visit')
+                            ->prefix('₹')
+                            ->numeric()
+                            ->minValue(0)
+                            ->required()
+                            ->helperText('Default is ₹250.00. Updating this immediately recalculates investment, Net P&L, ROI, and commercial tiers for all doctors.'),
+                    ])
+                    ->action(function (array $data): void {
+                        $cost = (float) $data['default_visit_cost'];
+                        AppSetting::set('default_visit_cost', $cost);
+
+                        Notification::make()
+                            ->title('Global visit cost updated to ₹'.number_format($cost, 2))
+                            ->success()
+                            ->send();
                     }),
             ])
                 ->label('Revenue Actions')

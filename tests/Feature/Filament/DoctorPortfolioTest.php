@@ -1,12 +1,14 @@
 <?php
 
 use App\Filament\Pages\DoctorPortfolio;
+use App\Models\AppSetting;
 use App\Models\Area;
 use App\Models\DCR;
 use App\Models\Doctor;
 use App\Models\DoctorRevenue;
 use App\Models\User;
 use Filament\Actions\Testing\TestAction;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -250,4 +252,165 @@ it('supports logging multiple revenue entries consecutively using create another
         ->callMountedAction();
 
     expect(DoctorRevenue::where('doctor_id', $doctor->id)->count())->toBe(2);
+});
+
+it('allows viewing and editing logged revenues for a doctor via manageDoctorRevenues action', function () {
+    $doctor = Doctor::factory()->create(['name' => 'Dr. Edit Revenue Test']);
+
+    $rev1 = DoctorRevenue::factory()->create([
+        'doctor_id' => $doctor->id,
+        'period_date' => '2026-08-01',
+        'amount' => 5000.00,
+        'notes' => 'Old August note',
+    ]);
+
+    $rev2 = DoctorRevenue::factory()->create([
+        'doctor_id' => $doctor->id,
+        'period_date' => '2026-09-01',
+        'amount' => 8000.00,
+        'notes' => 'Old September note',
+    ]);
+
+    Livewire::test(DoctorPortfolio::class)
+        ->callAction(TestAction::make('manageDoctorRevenues')->table($doctor), [
+            'revenues' => [
+                "record-{$rev1->id}" => [
+                    'id' => $rev1->id,
+                    'period_date' => '2026-08-01',
+                    'amount' => 6500.00, // updated amount
+                    'notes' => 'Updated August note',
+                ],
+                "record-{$rev2->id}" => [
+                    'id' => $rev2->id,
+                    'period_date' => '2026-09-01',
+                    'amount' => 8000.00,
+                    'notes' => 'Old September note',
+                ],
+            ],
+        ])
+        ->assertHasNoActionErrors()
+        ->assertNotified("Attributed revenue updated for {$doctor->name}");
+
+    $rev1->refresh();
+    expect($rev1->amount)->toBe('6500.00')
+        ->and($rev1->notes)->toBe('Updated August note');
+});
+
+it('supports adding and deleting revenues in manageDoctorRevenues action', function () {
+    $doctor = Doctor::factory()->create(['name' => 'Dr. Add Delete Revenue']);
+
+    $revToKeep = DoctorRevenue::factory()->create([
+        'doctor_id' => $doctor->id,
+        'period_date' => '2026-07-01',
+        'amount' => 4000.00,
+    ]);
+
+    $revToDelete = DoctorRevenue::factory()->create([
+        'doctor_id' => $doctor->id,
+        'period_date' => '2026-08-01',
+        'amount' => 3000.00,
+    ]);
+
+    // Omit $revToDelete by mounting the action and setting data with only the kept record and a new record
+    Livewire::test(DoctorPortfolio::class)
+        ->mountAction(TestAction::make('manageDoctorRevenues')->table($doctor))
+        ->set('mountedActions.0.data.revenues', [
+            "record-{$revToKeep->id}" => [
+                'id' => $revToKeep->id,
+                'period_date' => '2026-07-01',
+                'amount' => 4200.00,
+                'notes' => 'Kept and adjusted',
+            ],
+            'new-1' => [
+                'id' => null,
+                'period_date' => '2026-10-15',
+                'amount' => 9500.00,
+                'notes' => 'Brand new October entry',
+            ],
+        ])
+        ->callMountedAction()
+        ->assertHasNoActionErrors();
+
+    // Deleted record should be gone
+    expect(DoctorRevenue::where('id', $revToDelete->id)->exists())->toBeFalse();
+
+    // Updated record should have new values
+    $revToKeep->refresh();
+    expect($revToKeep->amount)->toBe('4200.00');
+
+    // New record should exist
+    $newEntry = DoctorRevenue::where('doctor_id', $doctor->id)
+        ->whereDate('period_date', '2026-10-01')
+        ->first();
+    expect($newEntry)->not->toBeNull()
+        ->and($newEntry->amount)->toBe('9500.00')
+        ->and($newEntry->notes)->toBe('Brand new October entry');
+});
+
+it('displays doctor area as description and allows searching doctors by area name', function () {
+    $areaWest = Area::create(['name' => 'Vasai West']);
+    $areaEast = Area::create(['name' => 'Nalasopara East']);
+
+    $doctorWest = Doctor::factory()->create([
+        'name' => 'Dr. West Prescriber',
+        'area_id' => $areaWest->id,
+    ]);
+
+    $doctorEast = Doctor::factory()->create([
+        'name' => 'Dr. East Prescriber',
+        'area_id' => $areaEast->id,
+    ]);
+
+    Livewire::test(DoctorPortfolio::class)
+        ->assertCanSeeTableRecords([$doctorWest, $doctorEast])
+        ->searchTable('Vasai West')
+        ->assertCanSeeTableRecords([$doctorWest])
+        ->assertCanNotSeeTableRecords([$doctorEast]);
+});
+
+it('allows adjusting the global visit cost in console and recalculates portfolio investments', function () {
+    $doctor = Doctor::factory()->create([
+        'name' => 'Dr. Baseline Cost Test',
+        'visit_cost_override' => null, // rely on global baseline
+    ]);
+
+    // Create 4 visits in current FY
+    for ($i = 0; $i < 4; $i++) {
+        DCR::factory()->create([
+            'doctor_id' => $doctor->id,
+            'date' => now()->startOfMonth()->toDateString(),
+        ]);
+    }
+
+    // Baseline is 250: 4 * 250 = 1000
+    Livewire::test(DoctorPortfolio::class)
+        ->assertTableColumnStateSet('total_investment', 1000.00, $doctor);
+
+    // Adjust global visit cost to 450
+    Livewire::test(DoctorPortfolio::class)
+        ->callAction('adjustGlobalVisitCost', [
+            'default_visit_cost' => 450.00,
+        ])
+        ->assertHasNoActionErrors()
+        ->assertNotified('Global visit cost updated to ₹450.00');
+
+    expect(AppSetting::getFloat('default_visit_cost'))->toBe(450.00);
+
+    // Now 4 * 450 = 1800
+    Livewire::test(DoctorPortfolio::class)
+        ->assertTableColumnStateSet('total_investment', 1800.00, $doctor)
+        ->assertTableColumnStateSet('net_pnl', -1800.00, $doctor);
+});
+
+it('positions the log revenue action as the first column with Log label', function () {
+    $doctor = Doctor::factory()->create(['name' => 'Dr. First Col Log']);
+
+    $test = Livewire::test(DoctorPortfolio::class);
+    $table = $test->instance()->getTable();
+
+    expect($table->getRecordActionsPosition())->toBe(RecordActionsPosition::BeforeColumns);
+
+    $action = $table->getAction('logDoctorRevenue');
+    expect($action)->not->toBeNull()
+        ->and($action->getLabel())->toBe('Log');
 });
